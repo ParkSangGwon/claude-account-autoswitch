@@ -5,6 +5,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-13
+
+### Fixed
+
+- Usage numbers and the blocker line in the popover were hard to read. The popover is a vibrancy material, so the window behind it bleeds through: amber text sat at 2.7:1 on a light backdrop and fell further over a dark one, well short of the 4.5:1 small text needs. Those numbers and the blocker line now sit on an opaque chip, which holds their contrast whatever is behind the popover.
+- The system yellow used by the cap marker and two account badges is the first colour to disappear on a light material; all three moved to the same ramp.
+
 ## [0.1.1] - 2026-09-12
 
 First public release.
@@ -21,5 +28,6 @@ First public release.
 - Seven languages: English, 한국어, 日本語, 简体中文, Español, Deutsch, Français.
 - Homebrew cask (`ParkSangGwon/tap/claude-autoswitch`) and GitHub releases.
 
-[Unreleased]: https://github.com/ParkSangGwon/claude-account-autoswitch/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ParkSangGwon/claude-account-autoswitch/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.1.2
 [0.1.1]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.1.1

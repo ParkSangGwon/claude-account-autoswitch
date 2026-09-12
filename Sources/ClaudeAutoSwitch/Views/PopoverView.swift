@@ -198,7 +198,10 @@ struct PopoverView: View {
             HStack(spacing: 10) {
                 Text(label).font(.system(size: 11)).frame(width: 56, alignment: .leading)
                 QuotaBar(ratio: total.used, severity: severity, elapsed: elapsed, cap: nil)
-                Text("\(Format.percentInt(total.used))%").font(.system(size: 13, weight: .semibold)).monospacedDigit().foregroundStyle(severity.color).frame(width: 40, alignment: .trailing).fixedSize()
+                // Wide enough for "100%" once the chip's padding is on it.
+                Text("\(Format.percentInt(total.used))%").font(.system(size: 13, weight: .semibold)).monospacedDigit().fixedSize()
+                    .severityChip(severity).padding(.trailing, -4)
+                    .frame(width: 48, alignment: .trailing)
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(L("Fleet %@ %d percent", label, Format.percentInt(total.used)))

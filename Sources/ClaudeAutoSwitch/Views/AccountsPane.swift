@@ -59,7 +59,7 @@ struct AccountCard: View {
                 Chip(text: record.plan.badge)
                 if let live {
                     Chip(text: healthText(live), color: healthColor(live))
-                    if let b = live.blocker, b != .switchedOff { Chip(text: b.text, color: .yellow) }
+                    if let b = live.blocker, b != .switchedOff { Chip(text: b.text, color: Severity.brisk.ink) }
                 } else if !record.enabled {
                     Chip(text: L("disabled"), color: .secondary)
                 } else {
@@ -119,7 +119,7 @@ struct AccountCard: View {
         if !a.enabled { return .secondary }
         switch a.health {
         case .ok: return .green
-        case .coolingDown: return .yellow
+        case .coolingDown: return Severity.brisk.ink
         case .drained, .needsLogin: return .red
         }
     }

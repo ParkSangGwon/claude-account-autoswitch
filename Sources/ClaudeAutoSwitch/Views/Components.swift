@@ -24,6 +24,20 @@ enum SeverityColors {
     static let hot = adaptive(light: (0.918, 0.345, 0.047), dark: (0.976, 0.451, 0.086))
     static let critical = adaptive(light: (0.863, 0.149, 0.149), dark: (0.937, 0.267, 0.267))
 
+    // The same ramp two steps darker (800) on light and three lighter (300) on dark. A bar is a
+    // wide block of colour and reads at the 600 step; 10pt digits in that same step sit at 3:1.
+    static let calmInk = adaptive(light: (0.086, 0.396, 0.204), dark: (0.525, 0.937, 0.675))
+    static let briskInk = adaptive(light: (0.573, 0.251, 0.055), dark: (0.988, 0.827, 0.302))
+    static let hotInk = adaptive(light: (0.604, 0.204, 0.071), dark: (0.992, 0.729, 0.455))
+    static let criticalInk = adaptive(light: (0.600, 0.106, 0.106), dark: (0.988, 0.647, 0.647))
+
+    // Chip grounds, deliberately opaque: the popover is a vibrancy material, so a translucent tint
+    // drifts with whatever window sits behind it and takes the text's contrast along with it.
+    static let calmChip = adaptive(light: (0.863, 0.988, 0.906), dark: (0.165, 0.294, 0.220))
+    static let briskChip = adaptive(light: (0.996, 0.953, 0.780), dark: (0.329, 0.263, 0.153))
+    static let hotChip = adaptive(light: (1.000, 0.929, 0.835), dark: (0.349, 0.235, 0.161))
+    static let criticalChip = adaptive(light: (0.996, 0.886, 0.886), dark: (0.341, 0.192, 0.200))
+
     static func nsColor(for severity: Severity) -> NSColor {
         switch severity {
         case .calm: return calm
@@ -32,10 +46,47 @@ enum SeverityColors {
         case .critical: return critical
         }
     }
+
+    static func ink(for severity: Severity) -> NSColor {
+        switch severity {
+        case .calm: return calmInk
+        case .brisk: return briskInk
+        case .hot: return hotInk
+        case .critical: return criticalInk
+        }
+    }
+
+    static func chip(for severity: Severity) -> NSColor {
+        switch severity {
+        case .calm: return calmChip
+        case .brisk: return briskChip
+        case .hot: return hotChip
+        case .critical: return criticalChip
+        }
+    }
 }
 
 extension Severity {
     var color: Color { Color(nsColor: SeverityColors.nsColor(for: self)) }
+    var ink: Color { Color(nsColor: SeverityColors.ink(for: self)) }
+    var chip: Color { Color(nsColor: SeverityColors.chip(for: self)) }
+}
+
+/// Severity text on its own opaque ground, so the vibrancy behind the popover cannot wash it out.
+/// Calm keeps the secondary label and a clear ground; the padding stays either way so a row does
+/// not shift as its severity changes.
+struct SeverityChip: ViewModifier {
+    var severity: Severity
+    func body(content: Content) -> some View {
+        content
+            .foregroundStyle(severity == .calm ? Color.secondary : severity.ink)
+            .padding(.horizontal, 4).padding(.vertical, 1)
+            .background(severity == .calm ? Color.clear : severity.chip, in: RoundedRectangle(cornerRadius: 4))
+    }
+}
+
+extension View {
+    func severityChip(_ severity: Severity) -> some View { modifier(SeverityChip(severity: severity)) }
 }
 
 /// A titled settings group: the same box every pane draws around a cluster of controls.
@@ -108,7 +159,7 @@ struct QuotaBar: View {
                         .offset(x: geo.size.width * min(1, max(0, elapsed)) - 0.75, y: -2)
                 }
                 if let cap {
-                    Rectangle().fill(.yellow).frame(width: 1, height: height + 2)
+                    Rectangle().fill(Severity.brisk.color).frame(width: 1, height: height + 2)
                         .offset(x: geo.size.width * min(1, max(0, cap)) - 0.5, y: -1)
                 }
             }

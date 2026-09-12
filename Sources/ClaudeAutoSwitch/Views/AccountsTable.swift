@@ -98,8 +98,8 @@ struct AccountTableRow: View {
                     Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 8))
                     Text(b.text).font(.system(size: 10)).lineLimit(1)
                 }
-                .foregroundStyle(b.needsPerson ? Severity.critical.color : Severity.brisk.color)
-                .padding(.leading, nameWidth + AccountsTable.gap)
+                .severityChip(b.needsPerson ? .critical : .brisk)
+                .padding(.leading, nameWidth + AccountsTable.gap - 4)
             }
         }
         .padding(.vertical, 2)
@@ -142,8 +142,9 @@ struct AccountTableRow: View {
                 QuotaBar(ratio: ratio, severity: severity, elapsed: elapsed, cap: nil, height: 5)
                     .frame(width: width - 6)
                 // Two lines: how much is used, then when it resets, so neither crowds the other.
-                // The number takes the bar's colour as soon as the window needs attention; a thin bar alone is easy to miss.
-                Text(prefix + "\(Format.percentInt(ratio))%").font(.system(size: isCurrent ? 11 : 10, weight: severity == .calm ? (isCurrent ? .semibold : .regular) : .semibold, design: .monospaced)).foregroundStyle(severity == .calm ? Color.secondary : severity.color).lineLimit(1)
+                // The number takes a chip as soon as the window needs attention; a thin bar alone is easy to miss.
+                Text(prefix + "\(Format.percentInt(ratio))%").font(.system(size: isCurrent ? 11 : 10, weight: severity == .calm ? (isCurrent ? .semibold : .regular) : .semibold, design: .monospaced)).lineLimit(1)
+                    .severityChip(severity).padding(.leading, -4)
                 Text(countdown(resetsAt)).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary).lineLimit(1)
             } else {
                 QuotaBar(ratio: 0, severity: .calm, elapsed: nil, cap: nil, height: 5).frame(width: width - 6)
@@ -165,7 +166,8 @@ struct AccountTableRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 QuotaBar(ratio: r.used, severity: severity, elapsed: r.elapsedShare(length: kind.length, now: now), cap: nil, height: 5)
                     .frame(width: AccountsTable.narrowCol - 6)
-                Text("\(Format.percentInt(r.used))%").font(.system(size: isCurrent ? 11 : 10, weight: severity == .calm ? (isCurrent ? .semibold : .regular) : .semibold, design: .monospaced)).foregroundStyle(severity == .calm ? Color.secondary : severity.color)
+                Text("\(Format.percentInt(r.used))%").font(.system(size: isCurrent ? 11 : 10, weight: severity == .calm ? (isCurrent ? .semibold : .regular) : .semibold, design: .monospaced))
+                    .severityChip(severity).padding(.leading, -4)
                 Text(countdown(r.resetsAt)).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary).lineLimit(1)
             }
             .frame(width: AccountsTable.narrowCol, alignment: .leading)
@@ -223,8 +225,8 @@ struct AccountTableRow: View {
         if !account.enabled { return .secondary }
         switch account.health {
         case .ok: return .secondary
-        case .coolingDown: return Severity.brisk.color
-        case .drained, .needsLogin: return Severity.critical.color
+        case .coolingDown: return Severity.brisk.ink
+        case .drained, .needsLogin: return Severity.critical.ink
         }
     }
 }

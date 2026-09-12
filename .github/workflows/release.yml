@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: build, zip, publish
+    runs-on: macos-15
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version from the tag
+        id: version
+        run: echo "${GITHUB_REF_NAME#v}" | tee VERSION | sed 's/^/version=/' >> "$GITHUB_OUTPUT" && cat VERSION
+      - name: Release notes from the changelog
+        run: |
+          scripts/release-notes.sh "$(cat VERSION)" > notes.md
+          printf '\n---\nAd-hoc signed build. On first launch macOS may ask you to allow it under System Settings → Privacy & Security. Homebrew: `brew install --cask ParkSangGwon/tap/claude-autoswitch`.\n' >> notes.md
+          cat notes.md
+      - name: Test
+        run: swift test
+      - name: App bundle
+        run: make app
+      - name: Launch smoke test
+        run: scripts/smoke.sh "dist/Claude AutoSwitch.app"
+      - name: Zip
+        run: |
+          VERSION=$(cat VERSION)
+          ditto -c -k --keepParent "dist/Claude AutoSwitch.app" "Claude-AutoSwitch-v${VERSION}.zip"
+          shasum -a 256 "Claude-AutoSwitch-v${VERSION}.zip" | tee "Claude-AutoSwitch-v${VERSION}.zip.sha256"
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(cat VERSION)
+          gh release create "v${VERSION}" "Claude-AutoSwitch-v${VERSION}.zip" "Claude-AutoSwitch-v${VERSION}.zip.sha256" \
+            --title "Claude AutoSwitch v${VERSION}" \
+            --notes-file notes.md
+
+  cask:
+    name: Homebrew cask
+    needs: release
+    uses: ./.github/workflows/bump-cask.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit

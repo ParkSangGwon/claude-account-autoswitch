@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  macos:
+    name: build and test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift version
+        run: swift --version
+      - name: Build
+        run: swift build -c release
+      - name: Test
+        run: swift test
+      - name: App bundle
+        run: make app && plutil -lint "dist/Claude AutoSwitch.app/Contents/Info.plist"
+      - name: Launch smoke test
+        run: scripts/smoke.sh "dist/Claude AutoSwitch.app"
+      - name: README translations in sync
+        run: scripts/check-readmes.sh

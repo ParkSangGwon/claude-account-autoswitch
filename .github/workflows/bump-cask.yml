@@ -1,0 +1,56 @@
+name: Bump Homebrew cask
+
+# Points Casks/claude-autoswitch.rb in ParkSangGwon/homebrew-tap at a published release.
+# Called by release.yml after every release; run it by hand to re-point at an existing one:
+#   gh workflow run bump-cask.yml -f version=0.1.1
+# Needs the TAP_GITHUB_TOKEN secret: a fine-grained PAT with Contents: read and write on homebrew-tap.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+    secrets:
+      TAP_GITHUB_TOKEN:
+        required: true
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Released version to point the cask at (without the v)
+        required: true
+        type: string
+
+jobs:
+  bump:
+    name: ParkSangGwon/homebrew-tap
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - name: Tap token present
+        env:
+          TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          test -n "$TOKEN" || { echo "::error::TAP_GITHUB_TOKEN secret is missing (fine-grained PAT, Contents: read and write on ParkSangGwon/homebrew-tap)"; exit 1; }
+      - uses: actions/checkout@v4
+      - name: Release checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "v${VERSION}" -p '*.sha256' -D release && cat release/*.sha256
+      - name: Tap checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ParkSangGwon/homebrew-tap
+          token: ${{ secrets.TAP_GITHUB_TOKEN }}
+          path: tap
+      - name: Rewrite the cask
+        run: scripts/bump-cask.sh "$VERSION" "$(cut -d' ' -f1 release/*.sha256)" tap/Casks/claude-autoswitch.rb
+      - name: Push
+        run: |
+          cd tap
+          if git diff --quiet; then echo "cask already points at ${VERSION}"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "claude-autoswitch ${VERSION}"
+          git push

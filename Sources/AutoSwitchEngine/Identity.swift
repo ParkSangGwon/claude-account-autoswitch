@@ -248,6 +248,7 @@ extension Engine {
             }
         }
         lastProbeAt = Date()
+        saveObservations()
     }
 
     func absorb(_ usage: OAuth.Usage, into i: Int, now: Date = Date()) {

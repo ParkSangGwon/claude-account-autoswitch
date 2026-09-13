@@ -89,6 +89,73 @@ final class EngineTests: XCTestCase {
         XCTAssertNotNil(s.accounts[0].windows[.session], "windows survive a config change")
     }
 
+    func testAStoredObservationKeepsASpentAccountOutOfTheFirstRequest() async throws {
+        var c = testConfiguration(accounts: [oauthAccount("alice", rank: 0), oauthAccount("bob", rank: 1)])
+        var spent = Windows()
+        spent[.weekly] = WindowReading(used: 0.99, resetsAt: Date().addingTimeInterval(3600), seenAt: Date())
+        c.observed = Configuration.Observed(lastActive: AccountID(rawValue: "id-bob"),
+                                           accounts: [.init(id: AccountID(rawValue: "id-alice"), windows: spent)])
+        let engine = Engine(store: try temporaryStore(c), version: "t")
+        try await engine.load()
+        let s = await engine.state()
+        XCTAssertEqual(s.label(s.current), "bob", "the account the last run left off on")
+        XCTAssertEqual(s.label(s.next), "bob", "alice is known to be spent, so nothing lands there first")
+        XCTAssertNotNil(s.account(AccountID(rawValue: "id-alice"))?.blocker)
+    }
+
+    func testAnObservationPastItsResetIsForgottenSoThePreferredAccountComesBack() async throws {
+        var c = testConfiguration(accounts: [oauthAccount("alice", rank: 0), oauthAccount("bob", rank: 1)])
+        var stale = Windows()
+        stale[.weekly] = WindowReading(used: 0.99, resetsAt: Date().addingTimeInterval(-60), seenAt: Date().addingTimeInterval(-7200))
+        c.observed = Configuration.Observed(lastActive: AccountID(rawValue: "id-bob"),
+                                            accounts: [.init(id: AccountID(rawValue: "id-alice"), windows: stale)])
+        let engine = Engine(store: try temporaryStore(c), version: "t")
+        try await engine.load()
+        let s = await engine.state()
+        XCTAssertNil(s.account(AccountID(rawValue: "id-alice"))?.blocker, "the window rolled over while the app was closed")
+        XCTAssertEqual(s.label(s.next), "alice", "the better rank takes the next request again")
+    }
+
+    func testAnObservationForAnAccountThatIsGoneIsIgnored() async throws {
+        var c = testConfiguration(accounts: [oauthAccount("alice")])
+        c.observed = Configuration.Observed(lastActive: AccountID(rawValue: "id-carol"), accounts: [])
+        let engine = Engine(store: try temporaryStore(c), version: "t")
+        try await engine.load()
+        let s = await engine.state()
+        XCTAssertEqual(s.label(s.current), "alice")
+    }
+
+    func testStoppingWritesWhatWasLearnedBackToTheDocument() async throws {
+        let store = try temporaryStore(testConfiguration(accounts: [oauthAccount("alice")]))
+        let engine = Engine(store: store, version: "t")
+        try await engine.load()
+        await engine.seedDemoWindows()
+        await engine.stop()
+        let saved = try store.load()
+        XCTAssertEqual(saved.observed.lastActive?.rawValue, "id-alice")
+        XCTAssertNotNil(saved.observed.windows(of: AccountID(rawValue: "id-alice"))?[.weekly])
+    }
+
+    func testACursorSettledOnLaunchIsWrittenWithoutWaitingForAQuit() async throws {
+        var c = testConfiguration(accounts: [oauthAccount("alice", rank: 0), oauthAccount("bob", rank: 1)])
+        var spent = Windows()
+        spent[.weekly] = WindowReading(used: 0.99, resetsAt: Date().addingTimeInterval(3600), seenAt: Date())
+        c.observed = Configuration.Observed(lastActive: AccountID(rawValue: "id-alice"),
+                                            accounts: [.init(id: AccountID(rawValue: "id-alice"), windows: spent)])
+        let store = try temporaryStore(c)
+        let engine = Engine(store: store, version: "t")
+        try await engine.load()
+        XCTAssertEqual(try store.load().observed.lastActive?.rawValue, "id-bob", "the launch moved off the spent account and said so")
+    }
+
+    func testAManualSwitchIsRememberedForTheNextLaunch() async throws {
+        let store = try temporaryStore(testConfiguration(accounts: [oauthAccount("alice", rank: 0), oauthAccount("bob", rank: 1)]))
+        let engine = Engine(store: store, version: "t")
+        try await engine.load()
+        _ = await engine.switchTo(AccountID(rawValue: "id-bob"))
+        XCTAssertEqual(try store.load().observed.lastActive?.rawValue, "id-bob")
+    }
+
     func testHealthAnswersOverHTTP() async throws {
         let port = Int.random(in: 20000..<40000)
         let engine = Engine(store: try temporaryStore(testConfiguration(accounts: [oauthAccount("alice")], port: port)), version: "0.0.1")

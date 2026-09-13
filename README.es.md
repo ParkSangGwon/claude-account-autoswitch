@@ -21,7 +21,7 @@
   <img src="docs/assets/menubar/menubar-item.png" width="440" alt="El elemento de la barra de menús: 3h18m 33% junto a los elementos del sistema">
 </p>
 <p align="center">
-  <img src="docs/assets/menubar/popover-dark.png" width="406" alt="El panel emergente: tabla de cuentas, barras de la flota, enrutado, sesiones y el registro de rotación">
+  <img src="docs/assets/menubar/popover-dark.png" width="406" alt="El panel emergente: tabla de cuentas, barras de todas las cuentas, enrutamiento, sesiones y el registro de rotación">
 </p>
 
 ## El problema
@@ -125,7 +125,7 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
 ## Qué obtienes
 
 - **Un elemento de la barra de menús que se lee como uso.**
-  - `1h12m 42%` es la ventana de 5 horas de la flota: el tiempo hasta que se reinicia y después cuánto se ha usado. Las barras de debajo son la de 5 horas y la semanal.
+  - `1h12m 42%` es la ventana de 5 horas de todas las cuentas: el tiempo hasta que se reinicia y después cuánto se ha usado. Las barras de debajo son la de 5 horas y la semanal.
   - Naranja cuando una barra va por delante de su ventana, rojo en el umbral de cambio o cuando nada puede servir.
   - `→ par` durante seis segundos tras una rotación, `—` cuando el proxy no está escuchando.
 - **Todas las cuentas de un vistazo.**
@@ -134,7 +134,7 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
   - Un menú por fila: usar como actual, activar, prioridad, eliminar.
 - **Adónde va la siguiente petición, y por qué.**
   - El motivo de la cuenta anterior, una prioridad mejor o "se queda en ted".
-- **Totales de la flota y la línea de tiempo de reinicios.**
+- **Totales de todas las cuentas y la línea de tiempo de reinicios.**
   - Agregados ponderados por nivel.
   - Cada reinicio de ventana que se acerca, con `↑` en los que devuelven una cuenta a la rotación.
 - **Rotación que cubre los casos reales.**
@@ -144,17 +144,17 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
   - 403 y 5xx hacen failover.
   - Cuando todas las cuentas están agotadas, las peticiones pueden esperar un tiempo configurable en lugar de fallar.
 - **Sesiones.**
-  - Cada sesión de Claude Code se queda en su cuenta por cubo semanal.
+  - Cada sesión de Claude Code se queda en su cuenta por bucket semanal.
   - La distribución uniforme opcional reparte las sesiones nuevas hacia la cuenta menos cargada.
 - **Cambia desde cualquier sitio.**
   - El menú de cuentas del panel emergente, el menú de clic derecho o `⌃⌥⌘N` para la siguiente cuenta que pueda servir.
   - `⌃⌥⌘T` abre el panel emergente.
 - **Notificaciones con sentido.**
-  - Umbrales de la flota, una rotación con su motivo, una cuenta que sale o vuelve a la rotación.
+  - Umbrales de todas las cuentas, una rotación con su motivo, una cuenta que sale o vuelve a la rotación.
   - Una cuenta que necesita iniciar sesión de nuevo, el sondeo fallando, una retención, facturación de excedente.
   - Páusalas durante una hora.
 - **Siete días de historial.**
-  - Una muestra por minuto mientras la app se ejecuta: sparklines de la flota y una franja de estado por cuenta, guardadas localmente.
+  - Una muestra por minuto mientras la app se ejecuta: sparklines de todas las cuentas y una franja de estado por cuenta, guardadas localmente.
 - **Habla tu idioma.**
   - English, 한국어, 日本語, 简体中文, Español, Deutsch, Français.
   - Sigue la lista de idiomas del Mac y se puede cambiar en el momento.
@@ -165,7 +165,7 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
 <img src="docs/assets/menubar/settings-accounts.png" width="780" alt="Panel de Cuentas">
 
 #### Rotación
-<img src="docs/assets/menubar/settings-rotation.png" width="780" alt="Panel de Rotación: umbral de cambio, umbrales por cubo, distribución de sesiones, retención">
+<img src="docs/assets/menubar/settings-rotation.png" width="780" alt="Panel de Rotación: umbral de cambio, umbrales por bucket, distribución de sesiones, retención">
 
 #### Proxy
 <img src="docs/assets/menubar/settings-proxy.png" width="780" alt="Panel de Proxy: estado del listener y la línea que Claude Code necesita">
@@ -177,7 +177,7 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
 
 | Título | Significado |
 | --- | --- |
-| `1h12m 42%` | La ventana de 5 horas de la flota se reinicia en 1h12m y está al 42% de uso. Las barras de debajo son la de 5 horas (arriba) y la semanal (abajo). |
+| `1h12m 42%` | La ventana de 5 horas de todas las cuentas se reinicia en 1h12m y está al 42% de uso. Las barras de debajo son la de 5 horas (arriba) y la semanal (abajo). |
 | `ted 1h12m 42%` | Fijado a la cuenta actual (Ajustes → General): su etiqueta de tres letras encabeza el título. |
 | `1h12m 42% · 3d12h 61%` | El estilo *Barras + 5h · 7d*: también la ventana semanal. |
 | `1h12m 93%!` | Crítico: en el umbral de cambio, o nada puede servir. |
@@ -237,7 +237,7 @@ make app              # dist/Claude AutoSwitch.app
 AUTOSWITCH_DEBUG_DEMO_QUOTA=1 CLAUDE_AUTOSWITCH_CONFIG=/tmp/demo.json swift run ClaudeAutoSwitch
 ```
 
-- `AutoSwitchCore`: el modelo (cuentas, ventanas, bloqueos), las reglas (planificación, ritmo, totales de la flota), la localización y el documento de configuración.
+- `AutoSwitchCore`: el modelo (cuentas, ventanas, bloqueos), las reglas (planificación, ritmo, totales de todas las cuentas), la localización y el documento de configuración.
 - `AutoSwitchEngine`: el proxy, con cuentas, OAuth, cuota, rotación y el listener.
 - `ClaudeAutoSwitch`: la app.
 - Las cadenas viven en `Sources/AutoSwitchCore/Resources/<lang>.lproj/Localizable.strings`, con el texto en inglés como clave.

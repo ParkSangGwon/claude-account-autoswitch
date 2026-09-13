@@ -21,7 +21,7 @@
   <img src="docs/assets/menubar/menubar-item.png" width="440" alt="L'élément de barre des menus : 3h18m 33% à côté des éléments système">
 </p>
 <p align="center">
-  <img src="docs/assets/menubar/popover-dark.png" width="406" alt="Le panneau : table des comptes, barres de la flotte, routage, sessions et journal de rotation">
+  <img src="docs/assets/menubar/popover-dark.png" width="406" alt="Le panneau : table des comptes, barres de tous les comptes, routage, sessions et journal de rotation">
 </p>
 
 ## Le problème
@@ -125,16 +125,16 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
 ## Ce que vous obtenez
 
 - **Un élément de barre des menus qui se lit comme un usage.**
-  - `1h12m 42%` est la fenêtre 5 heures de la flotte : le temps avant sa réinitialisation, puis la part utilisée. Les barres en dessous sont 5 heures et hebdomadaire.
+  - `1h12m 42%` est la fenêtre 5 heures de tous les comptes : le temps avant sa réinitialisation, puis la part utilisée. Les barres en dessous sont 5 heures et hebdomadaire.
   - Orange quand une barre devance sa fenêtre, rouge au seuil de bascule ou quand rien ne peut servir.
   - `→ par` pendant six secondes lors d'une rotation, `—` quand l'écoute est arrêtée.
 - **Chaque compte d'un coup d'œil.**
   - Barres Session, Hebdomadaire et par famille (Fable, Sonnet), avec le nombre et la réinitialisation sous chacune.
   - Palier, priorité, comptes à rebours de bridage et les sessions épinglées sur le compte.
-  - Un menu par ligne : rendre courant, activer, priorité, retirer.
+  - Un menu par ligne : définir comme compte actuel, activer, priorité, retirer.
 - **Où va la prochaine requête, et pourquoi.**
   - La raison de l'ancien compte, une meilleure priorité, ou « reste sur ted ».
-- **Totaux de la flotte et chronologie des réinitialisations.**
+- **Totaux de tous les comptes et chronologie des réinitialisations.**
   - Agrégats pondérés par palier.
   - Chaque prochaine réinitialisation de fenêtre, avec `↑` sur celles qui remettent un compte en rotation.
 - **Une rotation qui gère les cas réels.**
@@ -150,11 +150,11 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
   - Le menu des comptes dans le panneau, le menu du clic droit, ou `⌃⌥⌘N` pour le prochain compte qui peut servir.
   - `⌃⌥⌘T` ouvre le panneau.
 - **Des notifications qui ont un sens.**
-  - Seuils de la flotte, une rotation avec sa raison, un compte qui quitte la rotation ou y revient.
+  - Seuils de tous les comptes, une rotation avec sa raison, un compte qui quitte la rotation ou y revient.
   - Une reconnexion nécessaire, la sonde en échec, une mise en attente, la facturation du dépassement.
   - Suspendez-les pendant une heure.
 - **Sept jours d'historique.**
-  - Un échantillon par minute tant que l'app tourne : sparklines de la flotte et bande d'état par compte, conservés localement.
+  - Un échantillon par minute tant que l'app tourne : sparklines de tous les comptes et bande d'état par compte, conservés localement.
 - **Parle votre langue.**
   - English, 한국어, 日本語, 简体中文, Español, Deutsch, Français.
   - Suit la liste des langues du Mac et se change sur place.
@@ -177,8 +177,8 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
 
 | Titre | Signification |
 | --- | --- |
-| `1h12m 42%` | La fenêtre 5 heures de la flotte se réinitialise dans 1h12m et est utilisée à 42 %. Les barres en dessous sont 5 heures (haut) et hebdomadaire (bas). |
-| `ted 1h12m 42%` | Épinglé sur le compte courant (Réglages → Général) : son tag à trois lettres ouvre le titre. |
+| `1h12m 42%` | La fenêtre 5 heures de tous les comptes se réinitialise dans 1h12m et est utilisée à 42 %. Les barres en dessous sont 5 heures (haut) et hebdomadaire (bas). |
+| `ted 1h12m 42%` | Épinglé sur le compte actuel (Réglages → Général) : son tag à trois lettres ouvre le titre. |
 | `1h12m 42% · 3d12h 61%` | Le style *Barres + 5h · 7d* : la fenêtre hebdomadaire aussi. |
 | `1h12m 93%!` | Critique : au seuil de bascule, ou rien ne peut servir. |
 | `→ par` | Une rotation vient d'avoir lieu ; affiché pendant six secondes. |
@@ -203,12 +203,12 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
 - Les comptes sont choisis par priorité, puis par la fenêtre hebdomadaire qui se réinitialise le plus tôt.
 - Tout compte désactivé, bridé, au plafond, en erreur, ou à son seuil pour la famille de modèle de la requête est sauté.
 - Les en-têtes `anthropic-ratelimit-*` de chaque réponse maintiennent à jour les fenêtres de chaque compte.
-- Une sonde en arrière-plan du point d'accès d'usage complète les comptes inactifs.
+- Une sonde en arrière-plan de l'endpoint d'usage complète les comptes inactifs.
 - Les jetons sont rafraîchis cinq minutes avant leur expiration.
 - La configuration vit dans `~/Library/Application Support/Claude AutoSwitch/config.json`, écrite de façon atomique avec les permissions `0600`.
 - Les jetons sont dans ce fichier et nulle part ailleurs.
 
-La référence du fichier de configuration, du point d'accès de santé et des règles de rotation se trouve dans [docs/reference.md](docs/reference.md).
+La référence du fichier de configuration, de l'endpoint de santé et des règles de rotation se trouve dans [docs/reference.md](docs/reference.md).
 
 ## Confidentialité
 
@@ -225,7 +225,7 @@ Lisez les conditions qui s'appliquent à votre forfait.
 ## Documentation
 
 - [docs/troubleshooting.md](docs/troubleshooting.md) : Gatekeeper, un port occupé, la reconnexion, les jetons partagés avec d'autres outils.
-- [docs/reference.md](docs/reference.md) : le fichier de configuration, le point d'accès de santé, les règles de rotation.
+- [docs/reference.md](docs/reference.md) : le fichier de configuration, l'endpoint de santé, les règles de rotation.
 - [CHANGELOG.md](CHANGELOG.md) : ce qui a changé à chaque release.
 
 ## Développement
@@ -237,7 +237,7 @@ make app              # dist/Claude AutoSwitch.app
 AUTOSWITCH_DEBUG_DEMO_QUOTA=1 CLAUDE_AUTOSWITCH_CONFIG=/tmp/demo.json swift run ClaudeAutoSwitch
 ```
 
-- `AutoSwitchCore` : le modèle (comptes, fenêtres, bloqueurs), les règles (ordonnancement, rythme, totaux de la flotte), la localisation et le document de configuration.
+- `AutoSwitchCore` : le modèle (comptes, fenêtres, bloqueurs), les règles (ordonnancement, rythme, totaux de tous les comptes), la localisation et le document de configuration.
 - `AutoSwitchEngine` : le proxy, avec comptes, OAuth, quota, rotation et listener.
 - `ClaudeAutoSwitch` : l'app.
 - Les chaînes vivent dans `Sources/AutoSwitchCore/Resources/<lang>.lproj/Localizable.strings`, indexées par le texte anglais.

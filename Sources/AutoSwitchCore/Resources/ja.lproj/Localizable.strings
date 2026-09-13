@@ -77,7 +77,7 @@
 "Claude subscription — browser sign-in" = "Claude サブスクリプション — ブラウザでサインイン";
 "Claude subscription — paste the code" = "Claude サブスクリプション — コードを貼り付け";
 "Clear log" = "ログを消去";
-"Clock" = "時計";
+"Clock" = "時刻";
 "Close" = "閉じる";
 "Code" = "コード";
 "Config could not be read: %@" = "設定を読み込めません: %@";
@@ -179,7 +179,7 @@
 "Notifications" = "通知";
 "OAuth state mismatch" = "OAuth の state が一致しません";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "オフ: クォータ基準のローテーションのみ。オン: 新しい Claude Code セッションごとに、優先アカウントのうち最も空いているものを割り当て。";
-"On" = "オン";
+"On" = "有効";
 "Open" = "開く";
 "Open Accounts…" = "アカウントを開く…";
 "Open Terminal with Claude Code" = "ターミナルで Claude Code を開く";
@@ -228,7 +228,7 @@
 "Req " = "Req ";
 "Requests" = "リクエスト";
 "Reset display" = "リセット表示";
-"Reset overdue" = "リセット時刻到来";
+"Reset overdue" = "リセット時刻を超過";
 "Resets %@" = "%@ にリセット";
 "Resets in %@" = "%@ 後にリセット";
 "Resets in %@ (%@)" = "%@ 後にリセット（%@）";
@@ -255,7 +255,7 @@
 "Session (5-hour)" = "セッション（5 時間）";
 "Session distribution" = "セッション分配";
 "Sessions" = "セッション";
-"Set" = "設定";
+"Set" = "決定";
 "Set priority…" = "優先度を設定…";
 "Settings (⌘,)" = "設定（⌘,）";
 "Settings…" = "設定…";
@@ -303,7 +303,7 @@
 "WK" = "週次";
 "Warning" = "警告";
 "Weekly" = "週次";
-"Window" = "ウィンドウ";
+"Window" = "期間";
 "a number from 0 to 100" = "0 から 100 の数値";
 "active" = "アクティブ";
 "and %d more sessions are getting nothing back." = "さらに %d 件のセッションが空応答を受けている。";
@@ -365,7 +365,7 @@
 "tier ?" = "ティア ?";
 "under a minute" = "1 分未満";
 "unknown" = "不明";
-"unpinned" = "固定解除";
+"unpinned" = "固定なし";
 "up %@" = "稼働 %@";
 "updated %@ ago" = "更新 %@前";
 "weighted by tier · %d/%d known" = "ティア別加重 · 既知 %d/%d";

@@ -51,6 +51,7 @@ struct AccountCard: View {
     var toggle: () -> Void
     @State private var priorityText = ""
     @State private var confirmRemove = false
+    @State private var signingIn = false
 
     var isCurrent: Bool { live.map { $0.id == store.state?.current } ?? false }
 
@@ -72,6 +73,11 @@ struct AccountCard: View {
                     Chip(text: L("not loaded"), color: .secondary)
                 }
                 Spacer()
+                // Signing in again updates this record in place, so rank, cap and the switch survive
+                // where removing and re-adding would lose them.
+                if live?.health == .needsLogin, record.kind == .subscription {
+                    Button(L("Sign in again…")) { signingIn = true }.controlSize(.small).buttonStyle(.borderedProminent)
+                }
                 if !isCurrent, live != nil { Button(L("Make current")) { store.switchTo(record.id) }.controlSize(.small) }
                 Button(expanded ? L("Less") : L("More")) { toggle() }.controlSize(.small)
             }
@@ -89,6 +95,15 @@ struct AccountCard: View {
                         .help(L("This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not."))
                 }
                 Spacer()
+                if record.skipUntil != nil {
+                    Button(L("Resume now")) { Task { await store.skip(record.id, until: nil) } }.controlSize(.small)
+                } else {
+                    Menu(L("Skip…")) {
+                        Button(L("For 1 hour")) { Task { await store.skip(record.id, until: Date().addingTimeInterval(3600)) } }
+                        Button(L("For 8 hours")) { Task { await store.skip(record.id, until: Date().addingTimeInterval(8 * 3600)) } }
+                        Button(L("Until the weekly reset")) { Task { await store.skip(record.id, until: store.weeklyResetOf(record.id)) } }
+                    }.controlSize(.small).fixedSize()
+                }
                 Button(L("Remove…")) { confirmRemove = true }.controlSize(.small)
             }
             if expanded {
@@ -110,6 +125,7 @@ struct AccountCard: View {
         .confirmationDialog(L("Remove %@?", store.displayName(record.label)), isPresented: $confirmRemove) {
             Button(L("Remove"), role: .destructive) { Task { await store.removeAccount(record.id) } }
         } message: { Text(AppStore.removeAccountMessage) }
+        .sheet(isPresented: $signingIn) { AddAccountSheet(mode: .oauth) { signingIn = false } }
     }
 
     private func healthText(_ a: AccountStatus) -> String {

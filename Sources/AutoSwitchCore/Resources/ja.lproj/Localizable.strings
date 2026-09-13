@@ -126,6 +126,8 @@
 "Fleet 5-hour usage" = "全アカウント 5 時間使用量";
 "Fleet weekly thresholds" = "全アカウント週次しきい値";
 "Fleet weekly usage" = "全アカウント週次使用量";
+"For 1 hour" = "1 時間";
+"For 8 hours" = "8 時間";
 "For when the browser cannot reach this Mac: sign in on the page that opens, then paste the code it shows (or the full URL) here." = "ブラウザからこの Mac に到達できない場合用: 開いたページでサインインし、表示されたコード（または URL 全体）をここに貼り付けます。";
 "General" = "一般";
 "Global — they work from any app. No Accessibility permission is needed." = "グローバル — どのアプリからでも動作。アクセシビリティの許可は不要。";
@@ -196,6 +198,7 @@
 "Pause for 1 hour" = "1 時間停止";
 "Paused until %@" = "%@ まで停止中";
 "Per-bucket thresholds" = "バケット別しきい値";
+"Plan" = "プラン";
 "Point Claude Code at the proxy: put this in your shell profile, or run it before `claude`." = "Claude Code をプロキシに向けます。この行をシェルプロファイルに入れるか、`claude` の前に実行してください。";
 "Poll now" = "今すぐポーリング";
 "Polling slows to every 5 minutes while the display is off or the session is locked, and halves in Low Power Mode." = "ディスプレイのオフ中やセッションのロック中はポーリングが 5 分間隔になり、低電力モードでは半分になる。";
@@ -239,7 +242,9 @@
 "Resets in %@ (%@)" = "%@ 後にリセット（%@）";
 "Resets:" = "リセット:";
 "Resume" = "再開";
+"Resume %@" = "%@ を再開";
 "Resume Notifications" = "通知を再開";
+"Resume now" = "今すぐ再開";
 "Retry" = "再試行";
 "Reveal" = "Finder に表示";
 "Rotated to %@" = "%@ にローテーション";
@@ -269,7 +274,10 @@
 "Show or hide the popover" = "ポップオーバーの表示/非表示";
 "Show remaining instead of used" = "使用量ではなく残量を表示";
 "Show the current account instead of the fleet (its three-letter tag leads the title)" = "全アカウントではなく現在のアカウントを表示（3 文字のタグがタイトルの先頭に付く）";
+"Sign in again…" = "再ログイン…";
 "Sign in on the page that opens, then paste the code it shows." = "開いたページでサインインし、表示されたコードを貼り付けてください。";
+"Skip %@" = "%@ をスキップ";
+"Skip…" = "スキップ…";
 "Start" = "開始";
 "Started" = "開始済み";
 "Starting the proxy…" = "プロキシを起動中…";
@@ -284,6 +292,7 @@
 "System (%@)" = "システム（%@）";
 "That does not look like an Anthropic API key" = "Anthropic の API キーの形式ではありません";
 "The account is in an error state. Open Settings → Accounts." = "アカウントがエラー状態。設定 → アカウントを開く。";
+"The account leaves the config and rotation at once, and its sign-in goes with it — putting it back means signing in again. To take it out of rotation for a while, turn it off or skip it instead." = "アカウントは設定とローテーションから直ちに外れ、ログイン情報も一緒に消えます — 戻すには再ログインが必要です。一時的に外すだけなら、無効化かスキップを使ってください。";
 "The account leaves the config and rotation at once." = "アカウントは設定とローテーションから即座に外れます。";
 "The config file could not be read, so the accounts in it are not shown. Fix the file (Advanced → Config file → Reveal), then reload from disk." = "設定ファイルを読み取れないため、中のアカウントは表示していません。ファイルを修正してから(詳細 → 設定ファイル → Finder に表示)、ディスクから再読み込みしてください。";
 "The editor stays closed while the file cannot be read: it would open on an empty document, and saving that would replace the accounts the file still holds. Reveal the file, fix it in a text editor, then reload." = "ファイルを読み取れない間はエディタを開きません。空の文書が開き、それを保存するとファイルに残っているアカウントを上書きしてしまうためです。ファイルを Finder に表示してテキストエディタで修正し、再読み込みしてください。";
@@ -305,6 +314,8 @@
 "Tomorrow %@" = "明日 %@";
 "Top" = "最上部";
 "Try again" = "再試行";
+"Unknown plan %@" = "不明なプラン %@";
+"Until the weekly reset" = "週次リセットまで";
 "Updated %@" = "%@ を更新しました";
 "Upstream" = "アップストリーム";
 "Upstream unreachable: %@" = "アップストリームに接続できません: %@";
@@ -312,6 +323,7 @@
 "WK" = "週次";
 "Warning" = "警告";
 "Weekly" = "週次";
+"What the account counts for in the fleet total. Read from Claude when the profile answers; set it here when it did not, or the account is left out of the total entirely." = "合計余力でこのアカウントが占める分です。プロフィールが応答すれば Claude から読み取ります。応答しなかった場合はここで指定してください。指定しないとアカウントが合計から完全に外れます。";
 "Window" = "期間";
 "a number from 0 to 100" = "0 から 100 の数値";
 "active" = "アクティブ";
@@ -339,6 +351,8 @@
 "listening" = "待ち受け中";
 "manual" = "手動";
 "max %@" = "最大 %@";
+"max20" = "Max 20x";
+"max5" = "Max 5x";
 "min %@" = "最小 %@";
 "next" = "次";
 "next in %@" = "次は %@ 後";
@@ -358,10 +372,12 @@
 "over its quota threshold or in a rate-limit hold" = "クォータしきい値超過またはレート制限ホールド中";
 "over threshold" = "しきい値超過";
 "prio %d" = "優先度 %d";
+"pro" = "Pro";
 "resets in %@" = "%@ 後にリセット";
 "session %@" = "セッション %@";
 "since %@" = "%@ から";
 "single-account" = "単一アカウント";
+"skipped by hand · back in %@" = "手動でスキップ中 · %@ 後に復帰";
 "starting…" = "起動中…";
 "starved %d" = "空応答 %d";
 "switch failed" = "切り替え失敗";
@@ -369,6 +385,7 @@
 "switched to %@" = "%@ に切り替え";
 "switched to %@, but %@ has a better priority and takes the next request" = "%@ に切り替えましたが、%@ の優先度が高いため次のリクエストはそちらに行きます";
 "switched to %@, but rotation will not use it" = "%@ に切り替えたが、ローテーションでは使われない";
+"team" = "Team";
 "the proxy is back" = "Claude AutoSwitch プロキシが復帰しました";
 "the proxy is not responding" = "Claude AutoSwitch プロキシが応答しません";
 "the proxy not reachable" = "Claude AutoSwitch プロキシに到達できない";

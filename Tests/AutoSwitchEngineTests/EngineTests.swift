@@ -62,6 +62,24 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(missing.kind, .error)
     }
 
+    func testAnAccountSkippedByHandComesBackOnItsOwn() async throws {
+        // Whole seconds: the document stores this as ISO 8601, which is what comes back.
+        let soon = Date(timeIntervalSince1970: (Date().timeIntervalSince1970 + 1800).rounded(.down))
+        var alice = oauthAccount("alice", rank: 0)
+        alice.skipUntil = soon
+        let engine = Engine(store: try temporaryStore(testConfiguration(accounts: [alice, oauthAccount("bob", rank: 1)])), version: "t")
+        try await engine.load()
+
+        let held = await engine.state()
+        XCTAssertEqual(held.account(AccountID(rawValue: "id-alice"))?.blocker, .held(until: soon))
+        XCTAssertEqual(held.label(held.next), "bob", "the skip takes alice out without turning her off")
+        XCTAssertTrue(held.account(AccountID(rawValue: "id-alice"))?.enabled == true, "still enabled, just set aside")
+
+        let later = await engine.state(now: soon.addingTimeInterval(1))
+        XCTAssertNil(later.account(AccountID(rawValue: "id-alice"))?.blocker)
+        XCTAssertEqual(later.label(later.next), "alice", "back in rotation without anyone switching it on")
+    }
+
     func testSwitchingToAWorseRankSaysTheBetterOneStillTakesTheRequest() async throws {
         let engine = Engine(store: try temporaryStore(testConfiguration(accounts: [oauthAccount("alice", rank: 0), oauthAccount("bob", rank: 5)])), version: "t")
         try await engine.load()

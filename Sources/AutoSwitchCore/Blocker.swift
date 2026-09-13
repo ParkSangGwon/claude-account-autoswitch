@@ -5,6 +5,8 @@ import Foundation
 public enum Blocker: Codable, Sendable, Equatable, Hashable {
     /// Turned off in Settings.
     case switchedOff
+    /// Set aside by hand until `until` passes; rotation picks it up again on its own.
+    case held(until: Date)
     /// Its usage cap is reached on this window.
     case capped(WindowKind)
     /// A 429 asked for a pause; the account is back once `until` passes.
@@ -32,6 +34,7 @@ public enum Blocker: Codable, Sendable, Equatable, Hashable {
     public var liftsAt: Date? {
         switch self {
         case .coolingDown(let until): return until
+        case .held(let until): return until
         case .windowFull(_, let resetsAt): return resetsAt
         case .meterFull(let resetsAt): return resetsAt
         default: return nil
@@ -51,6 +54,7 @@ public enum Blocker: Codable, Sendable, Equatable, Hashable {
     public var code: String {
         switch self {
         case .switchedOff: return "off"
+        case .held: return "held"
         case .capped: return "capped"
         case .coolingDown: return "cooling"
         case .drained: return "drained"
@@ -66,6 +70,7 @@ public enum Blocker: Codable, Sendable, Equatable, Hashable {
     public func text(now: Date) -> String {
         switch self {
         case .switchedOff: return L("turned off in Settings")
+        case .held(let until): return L("skipped by hand · back in %@", Format.countdown(until, now: now))
         case .capped(let kind): return L("usage cap reached on the %@ window", kind.title.lowercased())
         case .coolingDown(let until): return L("cooling down after a 429 · %@", Format.countdown(until, now: now))
         case .drained: return L("spent, says the upstream")

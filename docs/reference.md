@@ -35,6 +35,7 @@ Tokens live in this file and nowhere else.
       "enabled": true,
       "cap": { "uniform": { "_0": 0.9 } },
       "plan": { "max": { "multiplier": 20 } },
+      "skipUntil": "2026-09-14T18:00:00Z",
       "planText": "default_claude_max_20x",
       "organization": { "name": "Example Org", "id": "org-…" },
       "claudeAccountID": "acct-…",
@@ -56,6 +57,7 @@ Tokens live in this file and nowhere else.
 | `observed` | The engine's own notes, not a setting: the account it left off on and each account's last known windows. Written when rotation moves, after a probe, and on quit. |
 | `accounts[].rank` | Lower is preferred. A strictly lower rank preempts a healthy current account. |
 | `accounts[].enabled` | Off takes the account out of rotation without removing it. |
+| `accounts[].skipUntil` | Set aside until this time, then back in rotation on its own. The switch above stays on. |
 | `accounts[].cap` | A hard ceiling per window (`uniform` for all, or `perWindow`). At the cap the account takes nothing. |
 | `accounts[].plan` | `max` (multiplier 5 or 20), `pro`, `team` (multiplier), or `unknown`. Weights the fleet total. |
 | `accounts[].credential` | `oauth` (access, refresh, expiresAt) or `apiKey`. |
@@ -89,14 +91,15 @@ The reset timeline marks a reset with `↑` when it is the one that brings its a
 For every request the engine checks each account, in this order, and skips it on the first blocker it finds:
 
 1. turned off in Settings
-2. at its usage cap on any window
-3. cooling down after a 429 (until the upstream's `retry-after` passes)
-4. spent, says the upstream
-5. needs a new sign-in (the refresh token was rejected)
-6. session or weekly window at the switch threshold
-7. token or request allowance at the switch threshold (API keys)
-8. the family window the request draws on (Fable, Sonnet) at its threshold
-9. the upstream refused its last request on a window it confirmed
+2. skipped by hand until a time that has not passed yet
+3. at its usage cap on any window
+4. cooling down after a 429 (until the upstream's `retry-after` passes)
+5. spent, says the upstream
+6. needs a new sign-in (the refresh token was rejected)
+7. session or weekly window at the switch threshold
+8. token or request allowance at the switch threshold (API keys)
+9. the family window the request draws on (Fable, Sonnet) at its threshold
+10. the upstream refused its last request on a window it confirmed
 
 Among the accounts that can serve, the choice is:
 

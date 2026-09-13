@@ -65,8 +65,11 @@ public enum SettingsCatalog {
         SettingField("api.baseURL", .proxy, "Upstream", "API base URL for Anthropic accounts.", .text(placeholder: "https://api.anthropic.com")),
     ]
 
+    public static let planKeys = ["unknown", "pro", "max5", "max20", "team"]
+
     public static let accountFields: [SettingField] = [
         SettingField("cap", .accounts, "Usage cap", "Hard per-account cap: a fraction (0–1) or a per-window table. At the cap the account receives no requests at all.", .keyedNumbers(keys: windowKeys)),
+        SettingField("plan", .accounts, "Plan", "What the account counts for in the fleet total. Read from Claude when the profile answers; set it here when it did not, or the account is left out of the total entirely.", .picker(planKeys)),
     ]
 
     public static func field(_ id: String) -> SettingField? { (fields + accountFields).first { $0.id == id } }
@@ -92,10 +95,20 @@ public enum SettingsCatalog {
     }
 
     public static func accountValue(_ field: SettingField, in r: AccountRecord) -> JSON? {
+        if field.id == "plan" { return .string(planKey(r.plan)) }
         guard field.id == "cap", let cap = r.cap else { return nil }
         switch cap {
         case .uniform(let v): return .object(["default": .number(v)])
         case .perWindow(let t): return .object(Dictionary(uniqueKeysWithValues: t.map { ($0.key.rawValue, JSON.number($0.value)) }))
+        }
+    }
+
+    static func planKey(_ plan: Plan) -> String {
+        switch plan {
+        case .pro: return "pro"
+        case .max(let m): return m >= 20 ? "max20" : "max5"
+        case .team: return "team"
+        case .unknown: return "unknown"
         }
     }
 
@@ -132,6 +145,20 @@ public enum SettingsCatalog {
     }
 
     public static func applyAccount(_ field: SettingField, value: JSON?, to r: inout AccountRecord) throws {
+        if field.id == "plan" {
+            switch value?.string {
+            case "pro": r.plan = .pro
+            case "max5": r.plan = .max(multiplier: 5)
+            case "max20": r.plan = .max(multiplier: 20)
+            case "team": r.plan = .team(multiplier: 1)
+            case "unknown": r.plan = .unknown
+            default: throw SettingsError.invalid(L("Unknown plan %@", value?.string ?? "-"))
+            }
+            // Claude's own words no longer describe what this says; a later probe may fill them in again.
+            r.planText = nil
+            r.seatText = nil
+            return
+        }
         guard field.id == "cap" else { throw SettingsError.invalid(L("Unknown setting %@", field.id)) }
         guard let o = value?.object, !o.isEmpty else { r.cap = nil; return }
         var table: [WindowKind: Double] = [:]

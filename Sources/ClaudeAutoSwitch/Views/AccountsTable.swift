@@ -119,6 +119,15 @@ struct AccountTableRow: View {
         Menu {
             if !isCurrent { Button(L("Make current")) { store.switchTo(account.id) }.disabled(store.isDown) }
             Button(account.enabled ? L("Disable") : L("Enable")) { Task { await store.setEnabled(account.id, !account.enabled) } }
+            if case .held = account.blocker {
+                Button(L("Resume now")) { Task { await store.skip(account.id, until: nil) } }
+            } else {
+                Menu(L("Skip…")) {
+                    Button(L("For 1 hour")) { Task { await store.skip(account.id, until: Date().addingTimeInterval(3600)) } }
+                    Button(L("For 8 hours")) { Task { await store.skip(account.id, until: Date().addingTimeInterval(8 * 3600)) } }
+                    Button(L("Until the weekly reset")) { Task { await store.skip(account.id, until: store.weeklyResetOf(account.id)) } }
+                }
+            }
             Button(L("Set priority…")) { priorityText = String(account.rank); askPriority = true }
             Button(L("Move to top")) { Task { await store.setRank(account.id, .first) } }
             Button(L("Move to bottom")) { Task { await store.setRank(account.id, .last) } }

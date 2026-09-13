@@ -126,6 +126,8 @@
 "Fleet 5-hour usage" = "전체 계정 5시간 사용량";
 "Fleet weekly thresholds" = "전체 계정 주간 임계값";
 "Fleet weekly usage" = "전체 계정 주간 사용량";
+"For 1 hour" = "1시간";
+"For 8 hours" = "8시간";
 "For when the browser cannot reach this Mac: sign in on the page that opens, then paste the code it shows (or the full URL) here." = "브라우저가 이 Mac에 접근할 수 없을 때: 열리는 페이지에서 로그인한 뒤 표시되는 코드(또는 전체 URL)를 여기에 붙여 넣으세요.";
 "General" = "일반";
 "Global — they work from any app. No Accessibility permission is needed." = "전역 — 어느 앱에서나 동작. 손쉬운 사용 권한 불필요.";
@@ -196,6 +198,7 @@
 "Pause for 1 hour" = "1시간 일시 정지";
 "Paused until %@" = "%@까지 일시 정지";
 "Per-bucket thresholds" = "버킷별 임계값";
+"Plan" = "플랜";
 "Point Claude Code at the proxy: put this in your shell profile, or run it before `claude`." = "Claude Code가 프록시를 쓰도록 이 줄을 셸 프로필에 넣거나 `claude` 실행 전에 실행하세요.";
 "Poll now" = "지금 폴링";
 "Polling slows to every 5 minutes while the display is off or the session is locked, and halves in Low Power Mode." = "디스플레이가 꺼지거나 세션이 잠기면 폴링이 5분 간격으로 느려지고, 저전력 모드에서는 절반으로 줄어듦.";
@@ -239,7 +242,9 @@
 "Resets in %@ (%@)" = "%@ 후 리셋 (%@)";
 "Resets:" = "리셋:";
 "Resume" = "재개";
+"Resume %@" = "%@ 재개";
 "Resume Notifications" = "알림 재개";
+"Resume now" = "지금 재개";
 "Retry" = "다시 시도";
 "Reveal" = "Finder에서 보기";
 "Rotated to %@" = "%@(으)로 로테이션됨";
@@ -269,7 +274,10 @@
 "Show or hide the popover" = "팝오버 표시 또는 가리기";
 "Show remaining instead of used" = "사용량 대신 잔여량 표시";
 "Show the current account instead of the fleet (its three-letter tag leads the title)" = "전체 계정 대신 현재 계정 표시 (세 글자 태그가 제목 앞에 옴)";
+"Sign in again…" = "다시 로그인…";
 "Sign in on the page that opens, then paste the code it shows." = "열리는 페이지에서 로그인한 뒤 표시되는 코드를 붙여 넣으세요.";
+"Skip %@" = "%@ 건너뛰기";
+"Skip…" = "건너뛰기…";
 "Start" = "시작";
 "Started" = "시작됨";
 "Starting the proxy…" = "프록시를 시작하는 중…";
@@ -284,6 +292,7 @@
 "System (%@)" = "시스템 (%@)";
 "That does not look like an Anthropic API key" = "Anthropic API 키 형식이 아닙니다";
 "The account is in an error state. Open Settings → Accounts." = "계정이 오류 상태. 설정 → 계정 열기.";
+"The account leaves the config and rotation at once, and its sign-in goes with it — putting it back means signing in again. To take it out of rotation for a while, turn it off or skip it instead." = "계정이 설정과 로테이션에서 즉시 빠지고 로그인 정보도 함께 사라집니다 — 다시 쓰려면 새로 로그인해야 합니다. 잠시만 빼두려면 비활성화하거나 건너뛰기를 쓰세요.";
 "The account leaves the config and rotation at once." = "계정이 설정과 로테이션에서 바로 빠집니다.";
 "The config file could not be read, so the accounts in it are not shown. Fix the file (Advanced → Config file → Reveal), then reload from disk." = "설정 파일을 읽지 못해 그 안의 계정을 보여주지 않습니다. 파일을 고친 뒤(고급 → 설정 파일 → Finder에서 보기) 디스크에서 다시 불러오세요.";
 "The editor stays closed while the file cannot be read: it would open on an empty document, and saving that would replace the accounts the file still holds. Reveal the file, fix it in a text editor, then reload." = "파일을 읽지 못하는 동안에는 편집기가 열리지 않습니다. 빈 문서가 열리고, 그것을 저장하면 파일에 남아 있는 계정을 덮어쓰기 때문입니다. 파일을 Finder에서 열어 텍스트 편집기로 고친 뒤 다시 불러오세요.";
@@ -305,6 +314,8 @@
 "Tomorrow %@" = "내일 %@";
 "Top" = "맨 위";
 "Try again" = "다시 시도";
+"Unknown plan %@" = "알 수 없는 플랜 %@";
+"Until the weekly reset" = "주간 리셋까지";
 "Updated %@" = "%@ 갱신됨";
 "Upstream" = "업스트림";
 "Upstream unreachable: %@" = "업스트림에 연결할 수 없음: %@";
@@ -312,6 +323,7 @@
 "WK" = "주간";
 "Warning" = "경고";
 "Weekly" = "주간";
+"What the account counts for in the fleet total. Read from Claude when the profile answers; set it here when it did not, or the account is left out of the total entirely." = "합산 여력에서 이 계정이 차지하는 몫입니다. 프로필 조회가 응답하면 Claude에서 읽어오고, 응답하지 않았다면 여기서 지정하세요. 지정하지 않으면 계정이 합산에서 통째로 빠집니다.";
 "Window" = "기간";
 "a number from 0 to 100" = "0에서 100 사이의 숫자";
 "active" = "활성";
@@ -339,6 +351,8 @@
 "listening" = "수신 중";
 "manual" = "수동";
 "max %@" = "최대 %@";
+"max20" = "Max 20x";
+"max5" = "Max 5x";
 "min %@" = "최소 %@";
 "next" = "다음";
 "next in %@" = "다음 %@ 후";
@@ -358,10 +372,12 @@
 "over its quota threshold or in a rate-limit hold" = "할당량 임계값 초과 또는 속도 제한 홀드 중";
 "over threshold" = "임계값 초과";
 "prio %d" = "우선순위 %d";
+"pro" = "Pro";
 "resets in %@" = "%@ 후 리셋";
 "session %@" = "세션 %@";
 "since %@" = "%@부터";
 "single-account" = "단일 계정";
+"skipped by hand · back in %@" = "직접 건너뛴 계정 · %@ 후 복귀";
 "starting…" = "시작 중…";
 "starved %d" = "빈 응답 %d";
 "switch failed" = "전환 실패";
@@ -369,6 +385,7 @@
 "switched to %@" = "%@(으)로 전환됨";
 "switched to %@, but %@ has a better priority and takes the next request" = "%@(으)로 전환했지만 %@의 우선순위가 더 높아 다음 요청은 그쪽으로 갑니다";
 "switched to %@, but rotation will not use it" = "%@(으)로 전환됐지만 로테이션은 사용하지 않음";
+"team" = "Team";
 "the proxy is back" = "Claude AutoSwitch 프록시 복구됨";
 "the proxy is not responding" = "Claude AutoSwitch 프록시 응답 없음";
 "the proxy not reachable" = "Claude AutoSwitch 프록시 연결 불가";

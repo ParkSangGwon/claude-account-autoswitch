@@ -126,6 +126,8 @@
 "Fleet 5-hour usage" = "全部账户 5 小时用量";
 "Fleet weekly thresholds" = "全部账户每周阈值";
 "Fleet weekly usage" = "全部账户每周用量";
+"For 1 hour" = "1 小时";
+"For 8 hours" = "8 小时";
 "For when the browser cannot reach this Mac: sign in on the page that opens, then paste the code it shows (or the full URL) here." = "用于浏览器无法访问此 Mac 的情况：在打开的页面登录，然后把显示的代码（或完整 URL）粘贴到这里。";
 "General" = "通用";
 "Global — they work from any app. No Accessibility permission is needed." = "全局 — 在任何应用中都有效。无需辅助功能权限。";
@@ -196,6 +198,7 @@
 "Pause for 1 hour" = "暂停 1 小时";
 "Paused until %@" = "已暂停至 %@";
 "Per-bucket thresholds" = "按配额桶的阈值";
+"Plan" = "套餐";
 "Point Claude Code at the proxy: put this in your shell profile, or run it before `claude`." = "让 Claude Code 使用代理：把这一行放进 shell 配置，或在运行 `claude` 前执行。";
 "Poll now" = "立即轮询";
 "Polling slows to every 5 minutes while the display is off or the session is locked, and halves in Low Power Mode." = "显示器关闭或会话锁定时，轮询减慢为每 5 分钟一次；低电量模式下减半。";
@@ -239,7 +242,9 @@
 "Resets in %@ (%@)" = "%@后重置（%@）";
 "Resets:" = "重置：";
 "Resume" = "恢复";
+"Resume %@" = "恢复 %@";
 "Resume Notifications" = "恢复通知";
+"Resume now" = "立即恢复";
 "Retry" = "重试";
 "Reveal" = "在访达中显示";
 "Rotated to %@" = "已轮换到 %@";
@@ -269,7 +274,10 @@
 "Show or hide the popover" = "显示或隐藏弹出面板";
 "Show remaining instead of used" = "显示剩余而非已用";
 "Show the current account instead of the fleet (its three-letter tag leads the title)" = "显示当前账户而非全部账户（其三字母标签置于标题开头）";
+"Sign in again…" = "重新登录…";
 "Sign in on the page that opens, then paste the code it shows." = "在打开的页面登录，然后粘贴显示的代码。";
+"Skip %@" = "跳过 %@";
+"Skip…" = "跳过…";
 "Start" = "启动";
 "Started" = "已启动";
 "Starting the proxy…" = "正在启动代理…";
@@ -284,6 +292,7 @@
 "System (%@)" = "系统（%@）";
 "That does not look like an Anthropic API key" = "这看起来不像 Anthropic API 密钥";
 "The account is in an error state. Open Settings → Accounts." = "账户处于错误状态。请打开“设置”→“账户”。";
+"The account leaves the config and rotation at once, and its sign-in goes with it — putting it back means signing in again. To take it out of rotation for a while, turn it off or skip it instead." = "该账户会立即从配置和轮换中移除，登录信息也随之消失 — 要再用就得重新登录。若只是暂时不用，请改用停用或跳过。";
 "The account leaves the config and rotation at once." = "该账户会立即从配置和轮换中移除。";
 "The config file could not be read, so the accounts in it are not shown. Fix the file (Advanced → Config file → Reveal), then reload from disk." = "无法读取配置文件，因此不显示其中的账户。修复文件后（高级 → 配置文件 → 在访达中显示），再从磁盘重新加载。";
 "The editor stays closed while the file cannot be read: it would open on an empty document, and saving that would replace the accounts the file still holds. Reveal the file, fix it in a text editor, then reload." = "无法读取文件时编辑器不会打开：它会以空文档打开，保存后会覆盖文件中仍然保留的账户。请在访达中显示该文件，用文本编辑器修复后重新加载。";
@@ -305,6 +314,8 @@
 "Tomorrow %@" = "明天 %@";
 "Top" = "顶部";
 "Try again" = "重试";
+"Unknown plan %@" = "未知套餐 %@";
+"Until the weekly reset" = "直到每周重置";
 "Updated %@" = "已更新 %@";
 "Upstream" = "上游";
 "Upstream unreachable: %@" = "无法连接上游：%@";
@@ -312,6 +323,7 @@
 "WK" = "周";
 "Warning" = "警告";
 "Weekly" = "每周";
+"What the account counts for in the fleet total. Read from Claude when the profile answers; set it here when it did not, or the account is left out of the total entirely." = "该账户在合计余量中所占的份额。资料接口有响应时从 Claude 读取；没有响应时请在此设置，否则该账户会被完全排除在合计之外。";
 "Window" = "时间范围";
 "a number from 0 to 100" = "0 到 100 之间的数字";
 "active" = "活跃";
@@ -339,6 +351,8 @@
 "listening" = "监听中";
 "manual" = "手动";
 "max %@" = "最大 %@";
+"max20" = "Max 20x";
+"max5" = "Max 5x";
 "min %@" = "最小 %@";
 "next" = "下一个";
 "next in %@" = "%@后下一次";
@@ -358,10 +372,12 @@
 "over its quota threshold or in a rate-limit hold" = "已超过配额阈值或处于速率限制挂起";
 "over threshold" = "超过阈值";
 "prio %d" = "优先级 %d";
+"pro" = "Pro";
 "resets in %@" = "%@后重置";
 "session %@" = "会话 %@";
 "since %@" = "自 %@";
 "single-account" = "单账户";
+"skipped by hand · back in %@" = "已手动跳过 · %@ 后恢复";
 "starting…" = "正在启动…";
 "starved %d" = "空响应 %d";
 "switch failed" = "切换失败";
@@ -369,6 +385,7 @@
 "switched to %@" = "已切换到 %@";
 "switched to %@, but %@ has a better priority and takes the next request" = "已切换到 %@，但 %@ 的优先级更高，下一个请求会走它";
 "switched to %@, but rotation will not use it" = "已切换到 %@，但轮换不会使用它";
+"team" = "Team";
 "the proxy is back" = "Claude AutoSwitch 代理已恢复";
 "the proxy is not responding" = "Claude AutoSwitch 代理无响应";
 "the proxy not reachable" = "Claude AutoSwitch 代理不可达";

@@ -368,6 +368,21 @@ final class AppStore {
         }
     }
 
+    /// Take an account out of rotation for a while. `nil` puts it back now. Unlike the switch, this
+    /// lifts itself, so "save this one for the demo" does not depend on anyone remembering.
+    func skip(_ id: AccountID, until: Date?) async {
+        let name = displayName(labelOf(id))
+        await update(label: until == nil ? L("Resume %@", name) : L("Skip %@", name)) { c in
+            guard let i = c.index(of: id) else { throw SettingsError.noSuchAccount(id.rawValue) }
+            c.accounts[i].skipUntil = until
+        }
+    }
+
+    /// When the account's weekly window rolls over, or a week out if it has never reported one.
+    func weeklyResetOf(_ id: AccountID) -> Date {
+        state?.account(id)?.windows[.weekly]?.resetsAt ?? Date().addingTimeInterval(7 * 24 * 3600)
+    }
+
     func setEnabled(_ id: AccountID, _ enabled: Bool) async {
         let name = displayName(labelOf(id))
         await update(label: enabled ? L("Enable %@", name) : L("Disable %@", name)) { c in
@@ -380,7 +395,8 @@ final class AppStore {
         await update(label: L("Remove %@", displayName(labelOf(id)))) { c in c.accounts.removeAll { $0.id == id } }
     }
 
-    static var removeAccountMessage: String { L("The account leaves the config and rotation at once.") }
+    /// Removing takes the credential with it, which is the part that cannot be undone from here.
+    static var removeAccountMessage: String { L("The account leaves the config and rotation at once, and its sign-in goes with it — putting it back means signing in again. To take it out of rotation for a while, turn it off or skip it instead.") }
 
     /// Sign in, paste a code, or import: the engine does the work and reports progress to the sheet.
     func addAccount(_ request: AddAccountRequest, onEvent: @escaping @Sendable (AddAccountEvent) -> Void) async throws {

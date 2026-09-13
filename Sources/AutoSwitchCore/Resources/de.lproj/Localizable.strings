@@ -126,6 +126,8 @@
 "Fleet 5-hour usage" = "5-Stunden-Verbrauch aller Konten";
 "Fleet weekly thresholds" = "Wochen-Schwellenwerte aller Konten";
 "Fleet weekly usage" = "Wochenverbrauch aller Konten";
+"For 1 hour" = "1 Stunde lang";
+"For 8 hours" = "8 Stunden lang";
 "For when the browser cannot reach this Mac: sign in on the page that opens, then paste the code it shows (or the full URL) here." = "Wenn der Browser diesen Mac nicht erreicht: auf der geöffneten Seite anmelden und den angezeigten Code (oder die ganze URL) hier einfügen.";
 "General" = "Allgemein";
 "Global — they work from any app. No Accessibility permission is needed." = "Global — sie funktionieren aus jeder App heraus. Keine Berechtigung für Bedienungshilfen nötig.";
@@ -196,6 +198,7 @@
 "Pause for 1 hour" = "Für 1 Stunde pausieren";
 "Paused until %@" = "Pausiert bis %@";
 "Per-bucket thresholds" = "Schwellenwerte pro Bucket";
+"Plan" = "Tarif";
 "Point Claude Code at the proxy: put this in your shell profile, or run it before `claude`." = "Richten Sie Claude Code auf den Proxy: in das Shell-Profil eintragen oder vor `claude` ausführen.";
 "Poll now" = "Jetzt abfragen";
 "Polling slows to every 5 minutes while the display is off or the session is locked, and halves in Low Power Mode." = "Die Abfrage verlangsamt sich auf alle 5 Minuten, wenn das Display aus oder die Sitzung gesperrt ist, und halbiert sich im Stromsparmodus.";
@@ -239,7 +242,9 @@
 "Resets in %@ (%@)" = "Zurücksetzung in %@ (%@)";
 "Resets:" = "Zurücksetzungen:";
 "Resume" = "Fortsetzen";
+"Resume %@" = "%@ fortsetzen";
 "Resume Notifications" = "Mitteilungen fortsetzen";
+"Resume now" = "Jetzt fortsetzen";
 "Retry" = "Erneut versuchen";
 "Reveal" = "Im Finder anzeigen";
 "Rotated to %@" = "Rotiert zu %@";
@@ -269,7 +274,10 @@
 "Show or hide the popover" = "Popover ein- oder ausblenden";
 "Show remaining instead of used" = "Verbleibend statt verbraucht anzeigen";
 "Show the current account instead of the fleet (its three-letter tag leads the title)" = "Aktuelles Konto statt aller Konten anzeigen (seine dreistellige Kennung steht vorn im Titel)";
+"Sign in again…" = "Erneut anmelden…";
 "Sign in on the page that opens, then paste the code it shows." = "Auf der geöffneten Seite anmelden und den angezeigten Code einfügen.";
+"Skip %@" = "%@ überspringen";
+"Skip…" = "Überspringen…";
 "Start" = "Starten";
 "Started" = "Gestartet";
 "Starting the proxy…" = "Proxy startet…";
@@ -284,6 +292,7 @@
 "System (%@)" = "System (%@)";
 "That does not look like an Anthropic API key" = "Das sieht nicht nach einem Anthropic-API-Schlüssel aus";
 "The account is in an error state. Open Settings → Accounts." = "Das Konto ist in einem Fehlerzustand. Einstellungen → Konten öffnen.";
+"The account leaves the config and rotation at once, and its sign-in goes with it — putting it back means signing in again. To take it out of rotation for a while, turn it off or skip it instead." = "Das Konto verlässt Konfiguration und Rotation sofort, und seine Anmeldung geht mit — es zurückzuholen bedeutet, sich neu anzumelden. Um es eine Weile herauszunehmen, schalte es aus oder überspringe es.";
 "The account leaves the config and rotation at once." = "Das Konto verlässt Konfiguration und Rotation sofort.";
 "The config file could not be read, so the accounts in it are not shown. Fix the file (Advanced → Config file → Reveal), then reload from disk." = "Die Konfigurationsdatei konnte nicht gelesen werden, daher werden die darin enthaltenen Konten nicht angezeigt. Korrigiere die Datei (Erweitert → Konfigurationsdatei → Im Finder anzeigen) und lade sie neu von der Festplatte.";
 "The editor stays closed while the file cannot be read: it would open on an empty document, and saving that would replace the accounts the file still holds. Reveal the file, fix it in a text editor, then reload." = "Der Editor bleibt geschlossen, solange die Datei nicht gelesen werden kann: Er würde ein leeres Dokument öffnen, und dessen Speichern würde die Konten ersetzen, die die Datei noch enthält. Zeige die Datei im Finder an, korrigiere sie in einem Texteditor und lade sie neu.";
@@ -305,6 +314,8 @@
 "Tomorrow %@" = "Morgen %@";
 "Top" = "Oben";
 "Try again" = "Erneut versuchen";
+"Unknown plan %@" = "Unbekannter Tarif %@";
+"Until the weekly reset" = "Bis zum wöchentlichen Reset";
 "Updated %@" = "%@ aktualisiert";
 "Upstream" = "Upstream";
 "Upstream unreachable: %@" = "Upstream nicht erreichbar: %@";
@@ -312,6 +323,7 @@
 "WK" = "WO";
 "Warning" = "Warnung";
 "Weekly" = "Wöchentlich";
+"What the account counts for in the fleet total. Read from Claude when the profile answers; set it here when it did not, or the account is left out of the total entirely." = "Was dieses Konto zur Gesamtkapazität beiträgt. Wird von Claude gelesen, wenn das Profil antwortet; setze es hier, wenn nicht, sonst fällt das Konto ganz aus der Summe.";
 "Window" = "Zeitraum";
 "a number from 0 to 100" = "eine Zahl von 0 bis 100";
 "active" = "aktiv";
@@ -339,6 +351,8 @@
 "listening" = "aktiv";
 "manual" = "manuell";
 "max %@" = "max. %@";
+"max20" = "Max 20x";
+"max5" = "Max 5x";
 "min %@" = "min. %@";
 "next" = "nächstes";
 "next in %@" = "nächste in %@";
@@ -358,10 +372,12 @@
 "over its quota threshold or in a rate-limit hold" = "über seinem Kontingent-Schwellenwert oder in einer Rate-Limit-Sperre";
 "over threshold" = "über Schwellenwert";
 "prio %d" = "Prio %d";
+"pro" = "Pro";
 "resets in %@" = "Zurücksetzung in %@";
 "session %@" = "Sitzung %@";
 "since %@" = "seit %@";
 "single-account" = "Einzelkonto";
+"skipped by hand · back in %@" = "von Hand übersprungen · zurück in %@";
 "starting…" = "startet…";
 "starved %d" = "ohne Antwort %d";
 "switch failed" = "Wechsel fehlgeschlagen";
@@ -369,6 +385,7 @@
 "switched to %@" = "zu %@ gewechselt";
 "switched to %@, but %@ has a better priority and takes the next request" = "Zu %@ gewechselt, aber %@ hat die bessere Priorität und erhält die nächste Anfrage";
 "switched to %@, but rotation will not use it" = "zu %@ gewechselt, aber die Rotation wird es nicht nutzen";
+"team" = "Team";
 "the proxy is back" = "Claude AutoSwitch-Proxy ist zurück";
 "the proxy is not responding" = "Claude AutoSwitch-Proxy antwortet nicht";
 "the proxy not reachable" = "Claude AutoSwitch-Proxy nicht erreichbar";

@@ -92,6 +92,8 @@ public struct AccountRecord: Codable, Sendable, Equatable, Identifiable {
     /// Lower is preferred; a strictly lower rank preempts a healthy current account.
     public var rank: Int
     public var enabled: Bool
+    /// Set aside until this passes, then back in rotation without anyone remembering to switch it on.
+    public var skipUntil: Date?
     public var cap: UsageCap?
     public var plan: Plan
     public var planText: String?
@@ -101,10 +103,10 @@ public struct AccountRecord: Codable, Sendable, Equatable, Identifiable {
     public var claudeAccountID: String?
     public var credential: Credential
 
-    public init(id: AccountID = AccountID(), label: String, rank: Int = 0, enabled: Bool = true, cap: UsageCap? = nil,
+    public init(id: AccountID = AccountID(), label: String, rank: Int = 0, enabled: Bool = true, skipUntil: Date? = nil, cap: UsageCap? = nil,
                 plan: Plan = .unknown, planText: String? = nil, seatText: String? = nil, organization: Organization? = nil,
                 claudeAccountID: String? = nil, credential: Credential) {
-        self.id = id; self.label = label; self.rank = rank; self.enabled = enabled; self.cap = cap
+        self.id = id; self.label = label; self.rank = rank; self.enabled = enabled; self.skipUntil = skipUntil; self.cap = cap
         self.plan = plan; self.planText = planText; self.seatText = seatText; self.organization = organization
         self.claudeAccountID = claudeAccountID; self.credential = credential
     }

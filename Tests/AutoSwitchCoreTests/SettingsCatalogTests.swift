@@ -51,6 +51,25 @@ final class SettingsCatalogTests: XCTestCase {
         XCTAssertNil(r.cap)
     }
 
+    func testAccountPlanCanBeSetWhenTheProfileNeverAnswered() throws {
+        var r = AccountRecord(label: "a", planText: "default_claude_max_20x", credential: .apiKey("k"))
+        let plan = field("plan")
+        XCTAssertEqual(SettingsCatalog.accountValue(plan, in: r), .string("unknown"))
+        XCTAssertNil(r.plan.weight, "an unknown plan is left out of the fleet total")
+
+        try SettingsCatalog.applyAccount(plan, value: .string("max20"), to: &r)
+        XCTAssertEqual(r.plan, .max(multiplier: 20))
+        XCTAssertEqual(r.plan.weight, 20)
+        XCTAssertNil(r.planText, "Claude's own words no longer describe what this says")
+        XCTAssertEqual(SettingsCatalog.accountValue(plan, in: r), .string("max20"))
+
+        for (key, expected) in [("pro", Plan.pro), ("max5", .max(multiplier: 5)), ("team", .team(multiplier: 1)), ("unknown", .unknown)] {
+            try SettingsCatalog.applyAccount(plan, value: .string(key), to: &r)
+            XCTAssertEqual(r.plan, expected)
+        }
+        XCTAssertThrowsError(try SettingsCatalog.applyAccount(plan, value: .string("platinum"), to: &r))
+    }
+
     func testCatalogCoversTheSections() {
         XCTAssertEqual(SettingsCatalog.fields(in: .rotation).map(\.id), ["rotation.switchAt", "rotation.switchAtByWindow", "rotation.spreadSessions", "rotation.waitWhenExhaustedSeconds"])
         XCTAssertEqual(SettingsCatalog.fields(in: .proxy).map(\.id), ["listen.port", "api.baseURL"])

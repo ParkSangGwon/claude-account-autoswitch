@@ -8,6 +8,7 @@ extension Engine {
     /// Why an account cannot take a request now, checked in the order a person would want to hear it.
     func blocker(of r: AccountRuntime, model: String? = nil, now: Date) -> Blocker? {
         if !r.record.enabled { return .switchedOff }
+        if let until = r.record.skipUntil, now < until { return .held(until: until) }
         if let cap = r.record.cap {
             for kind in WindowKind.allCases {
                 if let limit = cap.limit(for: kind), let used = r.windows[kind]?.used, used >= limit { return .capped(kind) }

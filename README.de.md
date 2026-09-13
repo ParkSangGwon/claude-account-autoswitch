@@ -21,7 +21,7 @@
   <img src="docs/assets/menubar/menubar-item.png" width="440" alt="Das Menüleisten-Element: 3h18m 33% neben den Systemelementen">
 </p>
 <p align="center">
-  <img src="docs/assets/menubar/popover-dark.png" width="406" alt="Das Popover: Kontentabelle, Flottenbalken, Routing, Sitzungen und das Rotationsprotokoll">
+  <img src="docs/assets/menubar/popover-dark.png" width="406" alt="Das Popover: Kontentabelle, Balken aller Konten, Routing, Sitzungen und das Rotationsprotokoll">
 </p>
 
 ## Das Problem
@@ -125,7 +125,7 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
 ## Was Sie bekommen
 
 - **Ein Menüleisten-Element, das sich als Verbrauch liest.**
-  - `1h12m 42%` ist das 5-Stunden-Fenster der Flotte: Zeit bis zur Zurücksetzung, dann wie viel verbraucht ist. Die Balken darunter sind 5 Stunden und Woche.
+  - `1h12m 42%` ist das 5-Stunden-Fenster aller Konten: Zeit bis zur Zurücksetzung, dann wie viel verbraucht ist. Die Balken darunter sind 5 Stunden und Woche.
   - Orange, wenn ein Balken seinem Fenster vorausläuft, rot am Wechsel-Schwellenwert oder wenn nichts bedienen kann.
   - `→ par` für sechs Sekunden bei einer Rotation, `—`, wenn der Listener aus ist.
 - **Jedes Konto auf einen Blick.**
@@ -134,7 +134,7 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
   - Ein Zeilenmenü: Als aktuell festlegen, Aktivieren, Priorität, Entfernen.
 - **Wohin die nächste Anfrage geht, und warum.**
   - Der Grund des alten Kontos, eine bessere Priorität oder „bleibt bei ted“.
-- **Flottensummen und die Zeitleiste der Zurücksetzungen.**
+- **Summen aller Konten und die Zeitleiste der Zurücksetzungen.**
   - Nach Stufe gewichtete Aggregate.
   - Jede kommende Fenster-Zurücksetzung, mit `↑` bei denen, die ein Konto zurückbringen.
 - **Rotation, die die echten Fälle abdeckt.**
@@ -150,11 +150,11 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
   - Das Kontomenü im Popover, das Rechtsklick-Menü oder `⌃⌥⌘N` für das nächste Konto, das bedienen kann.
   - `⌃⌥⌘T` öffnet das Popover.
 - **Mitteilungen, die etwas bedeuten.**
-  - Flotten-Schwellenwerte, eine Rotation mit ihrem Grund, ein Konto, das die Rotation verlässt oder zurückkehrt.
-  - Eine nötige erneute Anmeldung, eine fehlschlagende Abfrage, ein Halten, Abrechnung von Mehrverbrauch.
+  - Schwellenwerte aller Konten, eine Rotation mit ihrem Grund, ein Konto, das die Rotation verlässt oder zurückkehrt.
+  - Eine nötige erneute Anmeldung, eine fehlschlagende Abfrage, eine Sperre, Abrechnung von Mehrverbrauch.
   - Pausieren Sie sie für eine Stunde.
 - **Sieben Tage Verlauf.**
-  - Ein Messwert pro Minute, solange die App läuft: Flotten-Sparklines und ein Zustandsstreifen pro Konto, lokal gehalten.
+  - Ein Messwert pro Minute, solange die App läuft: Sparklines aller Konten und ein Zustandsstreifen pro Konto, lokal gehalten.
 - **Spricht Ihre Sprache.**
   - English, 한국어, 日本語, 简体中文, Español, Deutsch, Français.
   - Folgt der Sprachenliste des Mac und ist direkt umschaltbar.
@@ -165,7 +165,7 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
 <img src="docs/assets/menubar/settings-accounts.png" width="780" alt="Bereich Konten">
 
 #### Rotation
-<img src="docs/assets/menubar/settings-rotation.png" width="780" alt="Bereich Rotation: Wechsel-Schwellenwert, Schwellenwerte pro Bucket, Sitzungsverteilung, Halten">
+<img src="docs/assets/menubar/settings-rotation.png" width="780" alt="Bereich Rotation: Wechsel-Schwellenwert, Schwellenwerte pro Bucket, Sitzungsverteilung, Warten bei Erschöpfung">
 
 #### Proxy
 <img src="docs/assets/menubar/settings-proxy.png" width="780" alt="Bereich Proxy: Listener-Zustand und die Zeile, die Claude Code braucht">
@@ -177,7 +177,7 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
 
 | Titel | Bedeutung |
 | --- | --- |
-| `1h12m 42%` | Das 5-Stunden-Fenster der Flotte wird in 1h12m zurückgesetzt und ist zu 42% verbraucht. Die Balken darunter sind 5 Stunden (oben) und Woche (unten). |
+| `1h12m 42%` | Das 5-Stunden-Fenster aller Konten wird in 1h12m zurückgesetzt und ist zu 42% verbraucht. Die Balken darunter sind 5 Stunden (oben) und Woche (unten). |
 | `ted 1h12m 42%` | An das aktuelle Konto angeheftet (Einstellungen → Allgemein): seine dreistellige Kennung steht vorn. |
 | `1h12m 42% · 3d12h 61%` | Der Stil *Balken + 5h · 7d*: dazu das Wochenfenster. |
 | `1h12m 93%!` | Kritisch: am Wechsel-Schwellenwert, oder nichts kann bedienen. |
@@ -237,7 +237,7 @@ make app              # dist/Claude AutoSwitch.app
 AUTOSWITCH_DEBUG_DEMO_QUOTA=1 CLAUDE_AUTOSWITCH_CONFIG=/tmp/demo.json swift run ClaudeAutoSwitch
 ```
 
-- `AutoSwitchCore`: das Modell (Konten, Fenster, Blocker), die Regeln (Scheduling, Tempo, Flottensummen), Lokalisierung und das Konfigurationsdokument.
+- `AutoSwitchCore`: das Modell (Konten, Fenster, Blocker), die Regeln (Scheduling, Tempo, Summen aller Konten), Lokalisierung und das Konfigurationsdokument.
 - `AutoSwitchEngine`: der Proxy, mit Konten, OAuth, Kontingent, Rotation und Listener.
 - `ClaudeAutoSwitch`: die App.
 - Strings liegen in `Sources/AutoSwitchCore/Resources/<lang>.lproj/Localizable.strings`, mit dem englischen Text als Schlüssel.

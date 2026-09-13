@@ -77,7 +77,7 @@
 "Claude subscription — browser sign-in" = "Claude 订阅 — 浏览器登录";
 "Claude subscription — paste the code" = "Claude 订阅 — 粘贴代码";
 "Clear log" = "清除日志";
-"Clock" = "时钟";
+"Clock" = "时刻";
 "Close" = "关闭";
 "Code" = "代码";
 "Config could not be read: %@" = "无法读取配置：%@";
@@ -179,7 +179,7 @@
 "Notifications" = "通知";
 "OAuth state mismatch" = "OAuth state 不匹配";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "关：仅按配额轮换。开：每个新的 Claude Code 会话分配给优先账户中负载最低的一个。";
-"On" = "开";
+"On" = "启用";
 "Open" = "打开";
 "Open Accounts…" = "打开账户…";
 "Open Terminal with Claude Code" = "在终端中打开 Claude Code";
@@ -228,7 +228,7 @@
 "Req " = "Req ";
 "Requests" = "请求";
 "Reset display" = "重置显示";
-"Reset overdue" = "已到重置时间";
+"Reset overdue" = "重置已逾期";
 "Resets %@" = "%@ 重置";
 "Resets in %@" = "%@后重置";
 "Resets in %@ (%@)" = "%@后重置（%@）";
@@ -255,7 +255,7 @@
 "Session (5-hour)" = "会话（5 小时）";
 "Session distribution" = "会话分配";
 "Sessions" = "会话";
-"Set" = "设置";
+"Set" = "确定";
 "Set priority…" = "设置优先级…";
 "Settings (⌘,)" = "设置（⌘,）";
 "Settings…" = "设置…";
@@ -268,7 +268,7 @@
 "Start" = "启动";
 "Started" = "已启动";
 "Starting the proxy…" = "正在启动代理…";
-"Startup" = "启动";
+"Startup" = "开机启动";
 "State" = "状态";
 "Status is updating again." = "状态已恢复更新。";
 "Style" = "样式";
@@ -303,7 +303,7 @@
 "WK" = "周";
 "Warning" = "警告";
 "Weekly" = "每周";
-"Window" = "窗口";
+"Window" = "时间范围";
 "a number from 0 to 100" = "0 到 100 之间的数字";
 "active" = "活跃";
 "and %d more sessions are getting nothing back." = "另有 %d 个会话没有收到任何返回。";
@@ -365,7 +365,7 @@
 "tier ?" = "层级 ?";
 "under a minute" = "不到一分钟";
 "unknown" = "未知";
-"unpinned" = "已取消固定";
+"unpinned" = "未固定";
 "up %@" = "已运行 %@";
 "updated %@ ago" = "%@前更新";
 "weighted by tier · %d/%d known" = "按层级加权 · %d/%d 已知";

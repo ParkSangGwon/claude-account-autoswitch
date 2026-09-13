@@ -131,7 +131,7 @@ The proxy replaces the token on the way out and leaves everything else in the re
 - **Every account at a glance.**
   - Session, weekly and per-family (Fable, Sonnet) bars, with the number and reset under each.
   - Tier, priority, throttle countdowns and the sessions pinned to the account.
-  - A row menu: make current, enable, priority, remove.
+  - A row menu: make current, enable, skip for a while, priority, remove.
 - **Where the next request goes, and why.**
   - The old account's reason, a better priority, or "stays on ted".
 - **Fleet totals and the reset timeline.**
@@ -143,9 +143,13 @@ The proxy replaces the token on the way out and leaves everything else in the re
   - An expired token is refreshed once and retried.
   - 403 and 5xx fail over.
   - When every account is out, requests can hold for a configurable time instead of failing.
+  - A restart resumes where rotation left off, rather than sending the first request to an account that was already spent.
 - **Sessions.**
   - Each Claude Code session stays on its account per weekly bucket.
   - Optional even distribution spreads new sessions over the least loaded account.
+- **When something is off, it says so.**
+  - A config file it cannot read is never overwritten, and the error names the key to go and fix.
+  - A taken port names the program holding it and offers a free one; a proxy nobody is talking to says so.
 - **Switch from anywhere.**
   - The account menu in the popover, the right-click menu, or `⌃⌥⌘N` for the next account that can serve.
   - `⌃⌥⌘T` opens the popover.

@@ -131,7 +131,7 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
 - **Todas las cuentas de un vistazo.**
   - Barras de sesión, semanal y por familia (Fable, Sonnet), con el número y el reinicio bajo cada una.
   - Nivel, prioridad, cuentas atrás de limitación y las sesiones fijadas a la cuenta.
-  - Un menú por fila: usar como actual, activar, prioridad, eliminar.
+  - Un menú por fila: usar como actual, activar, omitir un rato, prioridad, eliminar.
 - **Adónde va la siguiente petición, y por qué.**
   - El motivo de la cuenta anterior, una prioridad mejor o "se queda en ted".
 - **Totales de todas las cuentas y la línea de tiempo de reinicios.**
@@ -143,9 +143,13 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
   - Un token caducado se refresca una vez y se reintenta.
   - 403 y 5xx hacen failover.
   - Cuando todas las cuentas están agotadas, las peticiones pueden esperar un tiempo configurable en lugar de fallar.
+  - Un reinicio retoma donde la rotación lo dejó, en vez de mandar la primera petición a una cuenta ya agotada.
 - **Sesiones.**
   - Cada sesión de Claude Code se queda en su cuenta por bucket semanal.
   - La distribución uniforme opcional reparte las sesiones nuevas hacia la cuenta menos cargada.
+- **Cuando algo va mal, lo dice.**
+  - Un archivo de configuración que no puede leer nunca se sobrescribe, y el error nombra la clave que hay que arreglar.
+  - Un puerto ocupado nombra el programa que lo tiene y ofrece uno libre; un proxy con el que nadie habla lo dice.
 - **Cambia desde cualquier sitio.**
   - El menú de cuentas del panel emergente, el menú de clic derecho o `⌃⌥⌘N` para la siguiente cuenta que pueda servir.
   - `⌃⌥⌘T` abre el panel emergente.

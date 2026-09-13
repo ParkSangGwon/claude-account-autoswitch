@@ -131,7 +131,7 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
 - **Jedes Konto auf einen Blick.**
   - Sitzungs-, Wochen- und Modellfamilien-Balken (Fable, Sonnet), mit Zahl und Zurücksetzung darunter.
   - Stufe, Priorität, Drossel-Countdowns und die an das Konto angehefteten Sitzungen.
-  - Ein Zeilenmenü: Als aktuell festlegen, Aktivieren, Priorität, Entfernen.
+  - Ein Zeilenmenü: Als aktuell festlegen, Aktivieren, Eine Weile überspringen, Priorität, Entfernen.
 - **Wohin die nächste Anfrage geht, und warum.**
   - Der Grund des alten Kontos, eine bessere Priorität oder „bleibt bei ted“.
 - **Summen aller Konten und die Zeitleiste der Zurücksetzungen.**
@@ -143,9 +143,13 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
   - Ein abgelaufenes Token wird einmal aufgefrischt und erneut versucht.
   - Bei 403 und 5xx wird auf ein anderes Konto gewechselt.
   - Wenn jedes Konto erschöpft ist, können Anfragen für eine konfigurierbare Zeit gehalten werden, statt fehlzuschlagen.
+  - Ein Neustart setzt dort an, wo die Rotation aufgehört hat, statt die erste Anfrage an ein bereits erschöpftes Konto zu schicken.
 - **Sitzungen.**
   - Jede Claude-Code-Sitzung bleibt pro Wochen-Bucket auf ihrem Konto.
   - Die optionale Gleichverteilung verteilt neue Sitzungen auf das am wenigsten belastete Konto.
+- **Wenn etwas nicht stimmt, sagt die App es.**
+  - Eine Konfigurationsdatei, die sie nicht lesen kann, wird nie überschrieben, und der Fehler nennt den Schlüssel, der zu korrigieren ist.
+  - Ein belegter Port nennt das Programm, das ihn hält, und bietet einen freien an; ein Proxy, mit dem niemand spricht, sagt das.
 - **Wechseln von überall.**
   - Das Kontomenü im Popover, das Rechtsklick-Menü oder `⌃⌥⌘N` für das nächste Konto, das bedienen kann.
   - `⌃⌥⌘T` öffnet das Popover.

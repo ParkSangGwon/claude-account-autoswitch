@@ -131,7 +131,7 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
 - **Chaque compte d'un coup d'œil.**
   - Barres Session, Hebdomadaire et par famille (Fable, Sonnet), avec le nombre et la réinitialisation sous chacune.
   - Palier, priorité, comptes à rebours de bridage et les sessions épinglées sur le compte.
-  - Un menu par ligne : définir comme compte actuel, activer, priorité, retirer.
+  - Un menu par ligne : définir comme compte actuel, activer, ignorer un moment, priorité, retirer.
 - **Où va la prochaine requête, et pourquoi.**
   - La raison de l'ancien compte, une meilleure priorité, ou « reste sur ted ».
 - **Totaux de tous les comptes et chronologie des réinitialisations.**
@@ -143,9 +143,13 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
   - Un jeton expiré est rafraîchi une fois puis la requête est rejouée.
   - 403 et 5xx basculent.
   - Quand tous les comptes sont épuisés, les requêtes peuvent être mises en attente pendant une durée configurable au lieu d'échouer.
+  - Un redémarrage reprend là où la rotation s'était arrêtée, au lieu d'envoyer la première requête à un compte déjà épuisé.
 - **Sessions.**
   - Chaque session Claude Code reste sur son compte par compartiment hebdomadaire.
   - La distribution équilibrée, optionnelle, répartit les nouvelles sessions sur le compte le moins chargé.
+- **Quand quelque chose cloche, l'app le dit.**
+  - Un fichier de configuration illisible n'est jamais écrasé, et l'erreur nomme la clé à corriger.
+  - Un port occupé nomme le programme qui le tient et en propose un libre ; un proxy auquel personne ne parle le signale.
 - **Basculez depuis n'importe où.**
   - Le menu des comptes dans le panneau, le menu du clic droit, ou `⌃⌥⌘N` pour le prochain compte qui peut servir.
   - `⌃⌥⌘T` ouvre le panneau.

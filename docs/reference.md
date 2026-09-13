@@ -133,6 +133,8 @@ When every account is out and the wait is over, the last upstream reply is relay
 The listener speaks HTTP/1.1 on `127.0.0.1` only.
 Every path is forwarded to `api.baseURL` with the chosen account's credential in place of the client's, except:
 
+When the configured port is taken the listener does not start, and the Proxy pane names what holds it and offers a free port nearby.
+
 - `GET /_autoswitch/health` answers `{"ok":true,"version":"…","port":10912,"accounts":2,"startedAt":"…"}` and is the only endpoint the app itself serves.
 - Paths under `/v1/code/` and `/api/oauth/` go through with the client's own credential.
 

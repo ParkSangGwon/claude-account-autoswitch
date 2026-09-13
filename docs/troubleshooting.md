@@ -13,14 +13,15 @@ The app is ad-hoc signed, not notarized, so macOS asks on first launch.
 
 The listener is not running, almost always because the port is taken.
 
-- See who holds it: `lsof -nP -iTCP:10912 -sTCP:LISTEN`.
-- Quit that program, or change the port under **Settings → Proxy**; the listener moves at once.
+- **Settings → Proxy** names the program holding the port and offers **Use a free port**, which moves the listener and writes the new port down.
+- Or quit that program and press **Try again**. To find it yourself: `lsof -nP -iTCP:10912 -sTCP:LISTEN`.
 - After a port change, update the `ANTHROPIC_BASE_URL` line in your shell profile.
 
 ## Claude Code still uses one account
 
 Claude Code is not talking to the proxy.
 
+- The popover says so on its own once the proxy has been up a while with nothing arriving.
 - In the terminal you use, run `echo $ANTHROPIC_BASE_URL`; it must print `http://127.0.0.1:10912` (or your port).
 - The line belongs in the shell profile that terminal reads (`~/.zshrc` for zsh); open a new terminal after adding it.
 - A `claude` alias or wrapper that sets its own base URL wins over the profile; check `type claude`.

@@ -5,6 +5,7 @@
 "%@ for %@" = "%@ de %@";
 "%@ is back in rotation" = "%@ est de retour en rotation";
 "%@ is billing overage" = "Dépassement facturé pour %@";
+"%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ écoute sur ce port. Quittez-le et réessayez, ou déplacez ce proxy vers un port libre — la ligne utilisée par Claude Code change avec lui.";
 "%@ is not the shape the app expects" = "%@ n'a pas la forme attendue par l'application";
 "%@ left rotation" = "%@ a quitté la rotation";
 "%@ needs a re-login" = "%@ doit se reconnecter";
@@ -184,6 +185,7 @@
 "Not valid JSON: %@" = "JSON non valide : %@";
 "Nothing recorded yet — samples start with the first successful poll." = "Rien d'enregistré pour l'instant — les échantillons commencent à la première interrogation réussie.";
 "Notifications" = "Notifications";
+"Now listening on port %d — update the line Claude Code uses." = "À l'écoute sur le port %d — mettez à jour la ligne utilisée par Claude Code.";
 "OAuth state mismatch" = "État OAuth incohérent";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "Off : rotation par quota seulement. On : chaque nouvelle session Claude Code reçoit le compte le moins chargé parmi les préférés.";
 "On" = "Activé";
@@ -304,6 +306,7 @@
 "The probe returned an error; the account's bars stop updating until it recovers." = "La sonde a renvoyé une erreur ; les barres du compte cessent de se mettre à jour jusqu'à son rétablissement.";
 "The proxy did not reload the new config; see the message above." = "Le proxy n'a pas rechargé la nouvelle configuration ; voir le message ci-dessus.";
 "The proxy is not reachable" = "Le proxy est injoignable";
+"The proxy is up but has not been asked for anything yet. Claude Code only goes through it once the line below is in the shell that runs it." = "Le proxy est actif mais n'a encore rien reçu. Claude Code ne passe par lui qu'une fois la ligne ci-dessous présente dans le shell qui le lance.";
 "The token reply carried no access token" = "La réponse ne contenait aucun jeton d’accès";
 "The translation for %@ is not in this build; showing English." = "La traduction pour %@ n'est pas dans cette version ; affichage en anglais.";
 "This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not." = "Ce proxy compte les requêtes depuis le démarrage de l'app, quitter remet donc le nombre à zéro. Les barres d'utilisation viennent de Claude et ne sont pas réinitialisées.";
@@ -316,10 +319,12 @@
 "Try again" = "Réessayer";
 "Unknown plan %@" = "Forfait inconnu %@";
 "Until the weekly reset" = "Jusqu'à la réinitialisation hebdomadaire";
+"Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell." = "Actif, mais rien n'est encore arrivé — Claude Code a besoin de l'adresse du proxy dans son shell.";
 "Updated %@" = "%@ mis à jour";
 "Upstream" = "Upstream";
 "Upstream unreachable: %@" = "Upstream injoignable : %@";
 "Usage cap" = "Plafond d'usage";
+"Use a free port" = "Utiliser un port libre";
 "WK" = "SEM";
 "Warning" = "Avertissement";
 "Weekly" = "Hebdomadaire";

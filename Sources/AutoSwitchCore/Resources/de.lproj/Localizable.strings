@@ -5,6 +5,7 @@
 "%@ for %@" = "%@ für %@";
 "%@ is back in rotation" = "%@ ist zurück in der Rotation";
 "%@ is billing overage" = "Für %@ wird Mehrverbrauch berechnet";
+"%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ lauscht auf diesem Port. Beende es und versuche es erneut, oder verschiebe diesen Proxy auf einen freien Port – die Zeile, die Claude Code verwendet, ändert sich mit.";
 "%@ is not the shape the app expects" = "%@ hat nicht die Form, die die App erwartet";
 "%@ left rotation" = "%@ hat die Rotation verlassen";
 "%@ needs a re-login" = "%@ benötigt eine erneute Anmeldung";
@@ -184,6 +185,7 @@
 "Not valid JSON: %@" = "Kein gültiges JSON: %@";
 "Nothing recorded yet — samples start with the first successful poll." = "Noch nichts aufgezeichnet — Messwerte beginnen mit der ersten erfolgreichen Abfrage.";
 "Notifications" = "Mitteilungen";
+"Now listening on port %d — update the line Claude Code uses." = "Lauscht jetzt auf Port %d – aktualisiere die Zeile, die Claude Code verwendet.";
 "OAuth state mismatch" = "OAuth-State stimmt nicht überein";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "Aus: nur kontingentgesteuerte Rotation. Ein: jede neue Claude-Code-Sitzung bekommt das am wenigsten belastete der bevorzugten Konten.";
 "On" = "Aktiviert";
@@ -304,6 +306,7 @@
 "The probe returned an error; the account's bars stop updating until it recovers." = "Die Abfrage lieferte einen Fehler; die Balken des Kontos werden nicht mehr aktualisiert, bis es sich erholt.";
 "The proxy did not reload the new config; see the message above." = "Der Proxy hat die neue Konfiguration nicht neu geladen; siehe Meldung oben.";
 "The proxy is not reachable" = "Der Proxy ist nicht erreichbar";
+"The proxy is up but has not been asked for anything yet. Claude Code only goes through it once the line below is in the shell that runs it." = "Der Proxy läuft, wurde aber noch nie etwas gefragt. Claude Code geht erst dann darüber, wenn die Zeile unten in der Shell steht, die es startet.";
 "The token reply carried no access token" = "Die Token-Antwort enthielt kein Zugriffstoken";
 "The translation for %@ is not in this build; showing English." = "Die Übersetzung für %@ ist nicht in diesem Build; Englisch wird angezeigt.";
 "This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not." = "Dieser Proxy zählt Anfragen ab dem Start der App, ein Beenden setzt die Zahl also zurück. Die Nutzungsbalken kommen von Claude und bleiben erhalten.";
@@ -316,10 +319,12 @@
 "Try again" = "Erneut versuchen";
 "Unknown plan %@" = "Unbekannter Tarif %@";
 "Until the weekly reset" = "Bis zum wöchentlichen Reset";
+"Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell." = "Läuft, aber es ist noch nichts angekommen – Claude Code braucht die Adresse des Proxys in seiner Shell.";
 "Updated %@" = "%@ aktualisiert";
 "Upstream" = "Upstream";
 "Upstream unreachable: %@" = "Upstream nicht erreichbar: %@";
 "Usage cap" = "Verbrauchsobergrenze";
+"Use a free port" = "Freien Port verwenden";
 "WK" = "WO";
 "Warning" = "Warnung";
 "Weekly" = "Wöchentlich";

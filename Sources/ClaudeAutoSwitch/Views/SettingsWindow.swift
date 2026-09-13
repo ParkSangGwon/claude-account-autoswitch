@@ -102,6 +102,7 @@ struct GeneralPane: View {
     @Environment(AppStore.self) private var store
     @State private var launchAtLogin = false
     @State private var levelsText = "90, 95"
+    @State private var notificationsBlocked = false
 
     var body: some View {
         @Bindable var prefs = store.prefs
@@ -144,12 +145,27 @@ struct GeneralPane: View {
             TitledGroup(title: L("Shortcuts")) {
                 Toggle("\(HotKeyCenter.Key.nextAccount.title)  " + L("Switch to the next available account"), isOn: $prefs.hotkeyNextAccount)
                 Toggle("\(HotKeyCenter.Key.togglePopover.title)  " + L("Show or hide the popover"), isOn: $prefs.hotkeyTogglePopover)
+                let taken = HotKeyCenter.shared.unavailable.map(\.title).sorted()
+                if !taken.isEmpty {
+                    Banner(kind: .warn, text: L("%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again.", taken.joined(separator: ", ")))
+                }
                 Text(L("Global — they work from any app. No Accessibility permission is needed.")).font(.system(size: 11)).foregroundStyle(.secondary)
             }
             TitledGroup(title: L("Notifications")) {
+                if notificationsBlocked {
+                    Banner(kind: .warn, text: L("Notifications are turned off for this app in System Settings, so none of these arrive."),
+                           action: { NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!) },
+                           actionTitle: L("Open System Settings"))
+                }
                 Toggle(L("Fleet 5-hour thresholds"), isOn: $prefs.alertPrefs.fleetFiveHour)
                 Toggle(L("Fleet weekly thresholds"), isOn: $prefs.alertPrefs.fleetWeekly)
-                HStack { Text(L("Levels (%)")); TextField(L("Levels"), text: $levelsText, prompt: Text("90, 95")).labelsHidden().textFieldStyle(.roundedBorder).frame(width: 120).onSubmit(commitLevels) }
+                HStack {
+                    Text(L("Levels (%)"))
+                    TextField(L("Levels"), text: $levelsText, prompt: Text("90, 95")).labelsHidden().textFieldStyle(.roundedBorder).frame(width: 120).onSubmit(commitLevels)
+                    if levelsText != prefs.alertPrefs.levels.map(String.init).joined(separator: ", ") {
+                        Button(L("Apply"), action: commitLevels).controlSize(.small)
+                    }
+                }
                 Toggle(L("Rotation (the account carrying requests changed, with the reason)"), isOn: $prefs.alertPrefs.rotation)
                 Toggle(L("An account left rotation (threshold, 429 hold, cap)"), isOn: $prefs.alertPrefs.accountLeft)
                 Toggle(L("An account is back in rotation (window reset, hold cleared)"), isOn: $prefs.alertPrefs.accountBack)
@@ -177,11 +193,19 @@ struct GeneralPane: View {
             launchAtLogin = LaunchAtLogin.isEnabled
             levelsText = store.prefs.alertPrefs.levels.map(String.init).joined(separator: ", ")
         }
+        // Permission can be revoked in System Settings while the app runs, so read it on the way in.
+        .task { notificationsBlocked = await Notifier.shared.isBlocked() }
     }
 
     private func commitLevels() {
         let levels = levelsText.split(separator: ",").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }.filter { (1...100).contains($0) }.sorted()
-        if !levels.isEmpty { store.prefs.alertPrefs.levels = levels }
+        guard !levels.isEmpty else {
+            // Nothing usable in the field: saying so beats leaving text that was never saved.
+            store.showToast(.error, L("Levels are whole percents between 1 and 100, separated by commas."))
+            levelsText = store.prefs.alertPrefs.levels.map(String.init).joined(separator: ", ")
+            return
+        }
+        store.prefs.alertPrefs.levels = levels
     }
 }
 

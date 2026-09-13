@@ -3,6 +3,7 @@
 "%@ applied" = "%@ 已应用";
 "%@ at %d%%" = "%@：%d%%";
 "%@ for %@" = "%2$@ 的 %1$@";
+"%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ 已被其他应用占用，在这里不会生效。请先在那边释放，然后把这个开关关掉再打开。";
 "%@ is back in rotation" = "%@ 已重新加入轮换";
 "%@ is billing overage" = "%@ 正在产生超额费用";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ 正在占用此端口。请退出它后重试，或把本代理移到空闲端口 — Claude Code 使用的那一行也会随之改变。";
@@ -147,6 +148,7 @@
 "Less" = "收起";
 "Levels" = "级别";
 "Levels (%)" = "级别（%）";
+"Levels are whole percents between 1 and 100, separated by commas." = "级别是 1 到 100 之间的整数百分比，用逗号分隔。";
 "Local port the proxy listens on. The listener moves at once." = "代理监听的本地端口。更改后立即生效。";
 "Looking up the account…" = "正在查询账户…";
 "Lower is preferred. A strictly lower value preempts a healthy current account." = "数值越低越优先。严格更低的值会抢占健康的当前账户。";
@@ -185,12 +187,14 @@
 "Not valid JSON: %@" = "无效的 JSON：%@";
 "Nothing recorded yet — samples start with the first successful poll." = "尚无记录 — 首次轮询成功后开始采样。";
 "Notifications" = "通知";
+"Notifications are turned off for this app in System Settings, so none of these arrive." = "系统设置中已关闭本应用的通知，因此下面这些都不会送达。";
 "Now listening on port %d — update the line Claude Code uses." = "现在监听端口 %d — 请同时更新 Claude Code 使用的那一行。";
 "OAuth state mismatch" = "OAuth state 不匹配";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "关：仅按配额轮换。开：每个新的 Claude Code 会话分配给优先账户中负载最低的一个。";
 "On" = "启用";
 "Open" = "打开";
 "Open Accounts…" = "打开账户…";
+"Open System Settings" = "打开系统设置";
 "Open Terminal with Claude Code" = "在终端中打开 Claude Code";
 "Opening the browser for sign-in…" = "正在打开浏览器登录…";
 "Opens your browser for the same sign-in Claude Code uses; the app waits up to two minutes for the callback." = "在浏览器中打开与 Claude Code 相同的登录页面；应用最多等待回调两分钟。";
@@ -209,6 +213,7 @@
 "Power saver (5 s / 60 s)" = "省电（5 s / 60 s）";
 "Priority" = "优先级";
 "Priority for %@" = "%@ 的优先级";
+"Priority must be a whole number, not %@" = "优先级必须是整数，不能是 %@";
 "Priority of %@" = "%@ 的优先级";
 "Probe status" = "探测状态";
 "Proxy" = "代理";

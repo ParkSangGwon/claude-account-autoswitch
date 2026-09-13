@@ -31,16 +31,26 @@ final class HotKeyCenter {
     private var handlers: [UInt32: () -> Void] = [:]
     private var eventHandler: EventHandlerRef?
 
-    func set(_ key: Key, enabled: Bool, handler: @escaping () -> Void) {
+    /// Which shortcuts are switched on but could not be registered, because another app holds the
+    /// chord. Without this the toggle stays on and the key simply never fires.
+    private(set) var unavailable: Set<Key> = []
+
+    @discardableResult
+    func set(_ key: Key, enabled: Bool, handler: @escaping () -> Void) -> Bool {
         unregister(key)
-        guard enabled else { return }
+        unavailable.remove(key)
+        guard enabled else { return true }
         installHandler()
         var ref: EventHotKeyRef?
         let id = EventHotKeyID(signature: 0x4341_5357, id: key.rawValue) // "CASW"
-        if RegisterEventHotKey(key.keyCode, Key.modifiers, id, GetApplicationEventTarget(), 0, &ref) == noErr, let ref {
-            refs[key.rawValue] = ref
-            handlers[key.rawValue] = handler
+        guard RegisterEventHotKey(key.keyCode, Key.modifiers, id, GetApplicationEventTarget(), 0, &ref) == noErr, let ref else {
+            unavailable.insert(key)
+            NSLog("[ClaudeAutoSwitch] %@ is held by another app", key.title)
+            return false
         }
+        refs[key.rawValue] = ref
+        handlers[key.rawValue] = handler
+        return true
     }
 
     private func unregister(_ key: Key) {

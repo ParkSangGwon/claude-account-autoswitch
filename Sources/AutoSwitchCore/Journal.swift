@@ -44,9 +44,10 @@ public struct SwitchEvent: Codable, Sendable, Equatable, Identifiable {
     public var reasonText: String { cause.text(from: from ?? "—", to: to, at: at) }
 }
 
-/// The last fifty switches, newest last.
+/// The most recent switches, newest last. Fifty filled up in half a day on a busy account,
+/// which put "why did it move last week" out of reach; these are small rows in a preference.
 public struct Journal: Codable, Sendable, Equatable {
-    public static let capacity = 50
+    public static let capacity = 500
     public var events: [SwitchEvent] = []
 
     public init() {}

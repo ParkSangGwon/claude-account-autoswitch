@@ -45,6 +45,10 @@ final class Preferences {
     var alertPrefs: AlertPrefs { didSet { d.set(try? JSONEncoder().encode(alertPrefs), forKey: "alertPrefs") } }
     var alertState: AlertState { didSet { d.set(try? JSONEncoder().encode(alertState), forKey: "alertState") } }
     var journal: Journal { didSet { d.set(try? JSONEncoder().encode(journal), forKey: "journal") } }
+    /// The newest release seen on GitHub, and when that was asked. A menu bar app runs for months,
+    /// so the check has to happen on its own rather than waiting to be asked.
+    var latestSeenVersion: String? { didSet { d.set(latestSeenVersion, forKey: "latestSeenVersion") } }
+    var updateCheckedAt: Date? { didSet { d.set(updateCheckedAt, forKey: "updateCheckedAt") } }
     /// UI language code from `L10n.supported`; nil follows the Mac's language setting.
     var language: String? { didSet { d.set(language, forKey: "language"); L10n.activate(language) } }
 
@@ -66,6 +70,8 @@ final class Preferences {
         alertPrefs = (d.data(forKey: "alertPrefs").flatMap { try? JSONDecoder().decode(AlertPrefs.self, from: $0) }) ?? AlertPrefs()
         alertState = (d.data(forKey: "alertState").flatMap { try? JSONDecoder().decode(AlertState.self, from: $0) }) ?? AlertState()
         journal = (d.data(forKey: "journal").flatMap { try? JSONDecoder().decode(Journal.self, from: $0) }) ?? Journal()
+        latestSeenVersion = d.string(forKey: "latestSeenVersion")
+        updateCheckedAt = d.object(forKey: "updateCheckedAt") as? Date
         // A code from a build that shipped more languages must not leave the picker on an invalid selection.
         let persisted = (d.persistentDomain(forName: Bundle.main.bundleIdentifier ?? "com.parksanggwon.claudeautoswitch")?["language"] as? String)
             .flatMap { code in L10n.supported.contains { $0.code == code } ? code : nil }

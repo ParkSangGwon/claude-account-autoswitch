@@ -4,6 +4,7 @@
 "%@ at %d%%" = "%@ %d%%";
 "%@ for %@" = "%2$@의 %1$@";
 "%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@은(는) 다른 앱이 이미 쓰고 있어 여기서는 동작하지 않습니다. 그쪽에서 비운 뒤 이 스위치를 껐다 켜세요.";
+"%@ is available" = "%@ 사용 가능";
 "%@ is back in rotation" = "%@ 로테이션 복귀";
 "%@ is billing overage" = "%@ 초과 사용 과금 중";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@이(가) 이 포트를 쓰고 있습니다. 그 프로그램을 끄고 다시 시도하거나, 이 프록시를 빈 포트로 옮기세요 — Claude Code가 쓰는 줄도 함께 바뀝니다.";
@@ -74,6 +75,8 @@
 "Cancel" = "취소";
 "Cancelled" = "취소됨";
 "Cannot read %@" = "%@을(를) 읽을 수 없음";
+"Check for updates" = "업데이트 확인";
+"Checking…" = "확인 중…";
 "Claude AutoSwitch: connecting to the proxy…" = "Claude AutoSwitch: 프록시에 연결 중…";
 "Claude Code" = "Claude Code";
 "Claude Code is not signed in on this Mac (no Keychain item)" = "이 Mac에 Claude Code 로그인이 없습니다 (키체인 항목 없음)";
@@ -83,6 +86,7 @@
 "Claude subscription — browser sign-in" = "Claude 구독 — 브라우저 로그인";
 "Claude subscription — paste the code" = "Claude 구독 — 코드 붙여넣기";
 "Clear log" = "로그 지우기";
+"Clear the rotation log?" = "로테이션 로그를 지울까요?";
 "Clock" = "시각";
 "Close" = "닫기";
 "Code" = "코드";
@@ -117,6 +121,7 @@
 "Enable %@" = "%@ 활성화";
 "Endpoint" = "엔드포인트";
 "Environment variables" = "환경 변수";
+"Every recorded switch goes, and there is no undo. Nothing else records them — the proxy keeps no history of its own." = "기록된 전환이 모두 사라지며 되돌릴 수 없습니다. 다른 곳에는 기록이 없습니다 — 프록시 자체는 이력을 남기지 않습니다.";
 "Everything else" = "그 외 모든 모델";
 "Exchanging the code for tokens…" = "코드를 토큰으로 교환하는 중…";
 "Export diagnostics…" = "진단 정보 내보내기…";
@@ -324,6 +329,7 @@
 "Try again" = "다시 시도";
 "Unknown plan %@" = "알 수 없는 플랜 %@";
 "Until the weekly reset" = "주간 리셋까지";
+"Up to date" = "최신 버전";
 "Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell." = "떠 있지만 아직 아무것도 들어오지 않았습니다 — Claude Code의 셸에 프록시 주소가 필요합니다.";
 "Updated %@" = "%@ 갱신됨";
 "Upstream" = "업스트림";

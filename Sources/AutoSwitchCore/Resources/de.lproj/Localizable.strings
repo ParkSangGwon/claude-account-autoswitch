@@ -4,6 +4,7 @@
 "%@ at %d%%" = "%@ bei %d %%";
 "%@ for %@" = "%@ für %@";
 "%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ wird bereits von einer anderen App belegt und tut hier nichts. Gib es dort frei und schalte diesen Schalter dann aus und wieder ein.";
+"%@ is available" = "%@ ist verfügbar";
 "%@ is back in rotation" = "%@ ist zurück in der Rotation";
 "%@ is billing overage" = "Für %@ wird Mehrverbrauch berechnet";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ lauscht auf diesem Port. Beende es und versuche es erneut, oder verschiebe diesen Proxy auf einen freien Port – die Zeile, die Claude Code verwendet, ändert sich mit.";
@@ -74,6 +75,8 @@
 "Cancel" = "Abbrechen";
 "Cancelled" = "Abgebrochen";
 "Cannot read %@" = "%@ kann nicht gelesen werden";
+"Check for updates" = "Nach Updates suchen";
+"Checking…" = "Wird gesucht…";
 "Claude AutoSwitch: connecting to the proxy…" = "Claude AutoSwitch: Verbindung zum Proxy wird hergestellt…";
 "Claude Code" = "Claude Code";
 "Claude Code is not signed in on this Mac (no Keychain item)" = "Claude Code ist auf diesem Mac nicht angemeldet (kein Schlüsselbund-Eintrag)";
@@ -83,6 +86,7 @@
 "Claude subscription — browser sign-in" = "Claude-Abonnement — Anmeldung im Browser";
 "Claude subscription — paste the code" = "Claude-Abonnement — Code einfügen";
 "Clear log" = "Protokoll leeren";
+"Clear the rotation log?" = "Rotationsprotokoll löschen?";
 "Clock" = "Uhrzeit";
 "Close" = "Schließen";
 "Code" = "Code";
@@ -117,6 +121,7 @@
 "Enable %@" = "%@ aktivieren";
 "Endpoint" = "Endpunkt";
 "Environment variables" = "Umgebungsvariablen";
+"Every recorded switch goes, and there is no undo. Nothing else records them — the proxy keeps no history of its own." = "Alle aufgezeichneten Wechsel verschwinden, und es gibt kein Rückgängig. Nirgendwo sonst werden sie festgehalten – der Proxy führt kein eigenes Protokoll.";
 "Everything else" = "Alles andere";
 "Exchanging the code for tokens…" = "Code wird gegen Tokens getauscht…";
 "Export diagnostics…" = "Diagnose exportieren…";
@@ -324,6 +329,7 @@
 "Try again" = "Erneut versuchen";
 "Unknown plan %@" = "Unbekannter Tarif %@";
 "Until the weekly reset" = "Bis zum wöchentlichen Reset";
+"Up to date" = "Aktuell";
 "Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell." = "Läuft, aber es ist noch nichts angekommen – Claude Code braucht die Adresse des Proxys in seiner Shell.";
 "Updated %@" = "%@ aktualisiert";
 "Upstream" = "Upstream";

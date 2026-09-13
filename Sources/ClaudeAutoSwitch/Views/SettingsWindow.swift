@@ -103,6 +103,8 @@ struct GeneralPane: View {
     @State private var launchAtLogin = false
     @State private var levelsText = "90, 95"
     @State private var notificationsBlocked = false
+    @State private var checkingUpdate = false
+    @State private var updateChecked = false
 
     var body: some View {
         @Bindable var prefs = store.prefs
@@ -185,7 +187,16 @@ struct GeneralPane: View {
                 }
             }
             TitledGroup(title: L("About")) {
-                Text("Claude AutoSwitch \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "(dev)") · MIT").font(.system(size: 12)).foregroundStyle(.secondary)
+                Text("Claude AutoSwitch \(AppStore.appVersion) · MIT").font(.system(size: 12)).foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    Button(checkingUpdate ? L("Checking…") : L("Check for updates")) { Task { await checkForUpdate() } }
+                        .controlSize(.small).disabled(checkingUpdate)
+                    if let newer = store.prefs.latestSeenVersion, ReleaseVersion.isNewer(newer, than: AppStore.appVersion) {
+                        Link(L("%@ is available", newer), destination: UpdateCheck.releasesURL).font(.system(size: 12))
+                    } else if updateChecked {
+                        Text(L("Up to date")).font(.system(size: 12)).foregroundStyle(.secondary)
+                    }
+                }
                 Link(L("%@ on GitHub", "ParkSangGwon/claude-account-autoswitch"), destination: URL(string: "https://github.com/ParkSangGwon/claude-account-autoswitch")!).font(.system(size: 12))
             }
         }
@@ -195,6 +206,14 @@ struct GeneralPane: View {
         }
         // Permission can be revoked in System Settings while the app runs, so read it on the way in.
         .task { notificationsBlocked = await Notifier.shared.isBlocked() }
+        .task { await store.checkForUpdateIfDue() }
+    }
+
+    private func checkForUpdate() async {
+        checkingUpdate = true
+        await store.checkForUpdate()
+        checkingUpdate = false
+        updateChecked = true
     }
 
     private func commitLevels() {
@@ -285,6 +304,7 @@ struct RotationPane: View {
 /// Every switch the app saw, newest first, with the engine's reason.
 struct RotationLogView: View {
     @Environment(AppStore.self) private var store
+    @State private var confirmClear = false
 
     var body: some View {
         let events = store.prefs.journal.latest
@@ -302,9 +322,12 @@ struct RotationLogView: View {
                         Spacer(minLength: 0)
                     }
                 }
-                Button(L("Clear log")) { store.prefs.journal = Journal() }.controlSize(.small)
+                Button(L("Clear log")) { confirmClear = true }.controlSize(.small)
             }
         }
+        .confirmationDialog(L("Clear the rotation log?"), isPresented: $confirmClear) {
+            Button(L("Clear log"), role: .destructive) { store.prefs.journal = Journal() }
+        } message: { Text(L("Every recorded switch goes, and there is no undo. Nothing else records them — the proxy keeps no history of its own.")) }
     }
 }
 

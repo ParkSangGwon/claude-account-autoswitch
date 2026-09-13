@@ -4,6 +4,7 @@
 "%@ at %d%%" = "%@ は %d%%";
 "%@ for %@" = "%2$@ の %1$@";
 "%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ は別のアプリが既に使っているため、ここでは動作しません。あちらで解放してから、このスイッチをオフにして入れ直してください。";
+"%@ is available" = "%@ が利用できます";
 "%@ is back in rotation" = "%@ がローテーションに復帰";
 "%@ is billing overage" = "%@ は超過利用を課金中";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ がこのポートを使っています。そのプログラムを終了して再試行するか、このプロキシを空きポートに移してください — Claude Code が使う行も一緒に変わります。";
@@ -74,6 +75,8 @@
 "Cancel" = "キャンセル";
 "Cancelled" = "キャンセル済み";
 "Cannot read %@" = "%@ を読み取れません";
+"Check for updates" = "アップデートを確認";
+"Checking…" = "確認中…";
 "Claude AutoSwitch: connecting to the proxy…" = "Claude AutoSwitch: プロキシに接続中…";
 "Claude Code" = "Claude Code";
 "Claude Code is not signed in on this Mac (no Keychain item)" = "この Mac では Claude Code にサインインしていません（キーチェーン項目なし）";
@@ -83,6 +86,7 @@
 "Claude subscription — browser sign-in" = "Claude サブスクリプション — ブラウザでサインイン";
 "Claude subscription — paste the code" = "Claude サブスクリプション — コードを貼り付け";
 "Clear log" = "ログを消去";
+"Clear the rotation log?" = "ローテーションログを消去しますか?";
 "Clock" = "時刻";
 "Close" = "閉じる";
 "Code" = "コード";
@@ -117,6 +121,7 @@
 "Enable %@" = "%@ を有効にする";
 "Endpoint" = "エンドポイント";
 "Environment variables" = "環境変数";
+"Every recorded switch goes, and there is no undo. Nothing else records them — the proxy keeps no history of its own." = "記録された切り替えがすべて消え、元に戻せません。他に記録は残っていません — プロキシ自体は履歴を保持しません。";
 "Everything else" = "その他すべて";
 "Exchanging the code for tokens…" = "コードをトークンに交換中…";
 "Export diagnostics…" = "診断情報を書き出す…";
@@ -324,6 +329,7 @@
 "Try again" = "再試行";
 "Unknown plan %@" = "不明なプラン %@";
 "Until the weekly reset" = "週次リセットまで";
+"Up to date" = "最新です";
 "Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell." = "起動済みですが、まだ何も届いていません — Claude Code のシェルにプロキシのアドレスが必要です。";
 "Updated %@" = "%@ を更新しました";
 "Upstream" = "アップストリーム";

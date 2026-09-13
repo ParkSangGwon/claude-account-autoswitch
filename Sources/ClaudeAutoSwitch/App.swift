@@ -61,6 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         store = AppStore()
         statusItem = StatusItemController(store: store, openSettings: { [weak self] in self?.showSettings() })
+        Notifier.shared.onOpen = { [weak self] in self?.statusItem.showPopover() }
         Notifier.shared.requestAuthorization()
         store.start()
         observeHotkeys()

@@ -70,6 +70,9 @@ struct NumberEditor: View {
                 .onSubmit(commit)
             if let unit { Text(L(unit)).font(.system(size: 12)).foregroundStyle(.secondary) }
             Stepper("", onIncrement: { bump(step) }, onDecrement: { bump(-step) }).labelsHidden()
+            // Without this a typed value is lost on the way out of the field, and the row looks the
+            // same before and after. The other editors on this screen all have it.
+            if text != format(value) { Button(L("Apply"), action: commit).controlSize(.small) }
             if let error { Text(error).font(.system(size: 11)).foregroundStyle(.red) }
             Spacer()
         }

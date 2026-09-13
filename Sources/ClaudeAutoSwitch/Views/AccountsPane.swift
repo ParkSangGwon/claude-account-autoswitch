@@ -86,6 +86,7 @@ struct AccountCard: View {
                 HStack(spacing: 4) {
                     Text(L("Priority")).font(.system(size: 12)).fixedSize()
                     TextField(L("Priority"), text: $priorityText).labelsHidden().textFieldStyle(.roundedBorder).frame(width: 50).multilineTextAlignment(.trailing).onSubmit(applyPriority)
+                    if priorityText != String(record.rank) { Button(L("Apply"), action: applyPriority).controlSize(.mini).fixedSize() }
                     Button(L("Top")) { Task { await store.setRank(record.id, .first) } }.controlSize(.mini).fixedSize()
                     Button(L("Bottom")) { Task { await store.setRank(record.id, .last) } }.controlSize(.mini).fixedSize()
                 }
@@ -148,7 +149,13 @@ struct AccountCard: View {
     }
 
     private func applyPriority() {
-        guard let n = Int(priorityText.trimmingCharacters(in: .whitespaces)) else { return }
+        let typed = priorityText.trimmingCharacters(in: .whitespaces)
+        guard let n = Int(typed) else {
+            // Silently dropping it left the field showing a value that was never saved.
+            store.showToast(.error, L("Priority must be a whole number, not %@", typed))
+            priorityText = String(record.rank)
+            return
+        }
         Task { await store.setRank(record.id, .number(n)) }
     }
 }

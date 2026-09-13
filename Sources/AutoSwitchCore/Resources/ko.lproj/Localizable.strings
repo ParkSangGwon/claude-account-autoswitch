@@ -3,6 +3,7 @@
 "%@ applied" = "%@ 적용됨";
 "%@ at %d%%" = "%@ %d%%";
 "%@ for %@" = "%2$@의 %1$@";
+"%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@은(는) 다른 앱이 이미 쓰고 있어 여기서는 동작하지 않습니다. 그쪽에서 비운 뒤 이 스위치를 껐다 켜세요.";
 "%@ is back in rotation" = "%@ 로테이션 복귀";
 "%@ is billing overage" = "%@ 초과 사용 과금 중";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@이(가) 이 포트를 쓰고 있습니다. 그 프로그램을 끄고 다시 시도하거나, 이 프록시를 빈 포트로 옮기세요 — Claude Code가 쓰는 줄도 함께 바뀝니다.";
@@ -147,6 +148,7 @@
 "Less" = "간략히";
 "Levels" = "레벨";
 "Levels (%)" = "레벨 (%)";
+"Levels are whole percents between 1 and 100, separated by commas." = "단계는 1에서 100 사이의 정수 퍼센트를 쉼표로 구분해 입력합니다.";
 "Local port the proxy listens on. The listener moves at once." = "프록시가 수신하는 로컬 포트. 바꾸면 즉시 옮겨 갑니다.";
 "Looking up the account…" = "계정 정보를 확인하는 중…";
 "Lower is preferred. A strictly lower value preempts a healthy current account." = "낮을수록 우선. 더 낮은 값은 정상인 현재 계정을 선점.";
@@ -185,12 +187,14 @@
 "Not valid JSON: %@" = "유효한 JSON이 아님: %@";
 "Nothing recorded yet — samples start with the first successful poll." = "아직 기록 없음 — 첫 폴링 성공부터 샘플 시작.";
 "Notifications" = "알림";
+"Notifications are turned off for this app in System Settings, so none of these arrive." = "시스템 설정에서 이 앱의 알림이 꺼져 있어 아래 알림은 하나도 도착하지 않습니다.";
 "Now listening on port %d — update the line Claude Code uses." = "이제 포트 %d에서 듣습니다 — Claude Code가 쓰는 줄도 바꿔주세요.";
 "OAuth state mismatch" = "OAuth state 불일치";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "끔: 할당량 기준 로테이션만. 켬: 새 Claude Code 세션마다 우선 계정 중 가장 한가한 계정을 배정.";
 "On" = "사용";
 "Open" = "열기";
 "Open Accounts…" = "계정 열기…";
+"Open System Settings" = "시스템 설정 열기";
 "Open Terminal with Claude Code" = "터미널에서 Claude Code 열기";
 "Opening the browser for sign-in…" = "로그인을 위해 브라우저를 여는 중…";
 "Opens your browser for the same sign-in Claude Code uses; the app waits up to two minutes for the callback." = "Claude Code와 같은 로그인 화면을 브라우저에서 엽니다. 앱은 콜백을 최대 2분 기다립니다.";
@@ -209,6 +213,7 @@
 "Power saver (5 s / 60 s)" = "절전 (5 s / 60 s)";
 "Priority" = "우선순위";
 "Priority for %@" = "%@ 우선순위";
+"Priority must be a whole number, not %@" = "우선순위는 정수여야 합니다 — %@은(는) 쓸 수 없습니다";
 "Priority of %@" = "%@의 우선순위";
 "Probe status" = "프로브 상태";
 "Proxy" = "프록시";

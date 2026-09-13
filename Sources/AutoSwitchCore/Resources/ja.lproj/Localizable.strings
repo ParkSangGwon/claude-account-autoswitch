@@ -3,6 +3,7 @@
 "%@ applied" = "%@ を適用済み";
 "%@ at %d%%" = "%@ は %d%%";
 "%@ for %@" = "%2$@ の %1$@";
+"%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ は別のアプリが既に使っているため、ここでは動作しません。あちらで解放してから、このスイッチをオフにして入れ直してください。";
 "%@ is back in rotation" = "%@ がローテーションに復帰";
 "%@ is billing overage" = "%@ は超過利用を課金中";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ がこのポートを使っています。そのプログラムを終了して再試行するか、このプロキシを空きポートに移してください — Claude Code が使う行も一緒に変わります。";
@@ -147,6 +148,7 @@
 "Less" = "簡易表示";
 "Levels" = "レベル";
 "Levels (%)" = "レベル（%）";
+"Levels are whole percents between 1 and 100, separated by commas." = "レベルは 1〜100 の整数パーセントをカンマ区切りで入力します。";
 "Local port the proxy listens on. The listener moves at once." = "プロキシが待ち受けるローカルポート。変更は即座に反映されます。";
 "Looking up the account…" = "アカウント情報を確認中…";
 "Lower is preferred. A strictly lower value preempts a healthy current account." = "小さいほど優先。厳密に小さい値は正常な現在のアカウントを先取りする。";
@@ -185,12 +187,14 @@
 "Not valid JSON: %@" = "有効な JSON ではない: %@";
 "Nothing recorded yet — samples start with the first successful poll." = "まだ記録なし — 最初のポーリング成功からサンプルが始まる。";
 "Notifications" = "通知";
+"Notifications are turned off for this app in System Settings, so none of these arrive." = "システム設定でこのアプリの通知がオフになっているため、以下の通知は一つも届きません。";
 "Now listening on port %d — update the line Claude Code uses." = "ポート %d で待ち受けています — Claude Code が使う行も更新してください。";
 "OAuth state mismatch" = "OAuth の state が一致しません";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "オフ: クォータ基準のローテーションのみ。オン: 新しい Claude Code セッションごとに、優先アカウントのうち最も空いているものを割り当て。";
 "On" = "有効";
 "Open" = "開く";
 "Open Accounts…" = "アカウントを開く…";
+"Open System Settings" = "システム設定を開く";
 "Open Terminal with Claude Code" = "ターミナルで Claude Code を開く";
 "Opening the browser for sign-in…" = "サインインのためブラウザを開いています…";
 "Opens your browser for the same sign-in Claude Code uses; the app waits up to two minutes for the callback." = "Claude Code と同じサインインをブラウザで開きます。アプリはコールバックを最大 2 分待ちます。";
@@ -209,6 +213,7 @@
 "Power saver (5 s / 60 s)" = "省電力（5 s / 60 s）";
 "Priority" = "優先度";
 "Priority for %@" = "%@ の優先度";
+"Priority must be a whole number, not %@" = "優先度は整数で入力してください — %@ は使えません";
 "Priority of %@" = "%@ の優先度";
 "Probe status" = "プローブの状態";
 "Proxy" = "プロキシ";

@@ -3,6 +3,7 @@
 "%@ applied" = "%@ aplicado";
 "%@ at %d%%" = "%@ al %d%%";
 "%@ for %@" = "%@ de %@";
+"%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ ya lo usa otra app, así que aquí no hace nada. Libéralo allí y luego apaga y enciende este interruptor.";
 "%@ is back in rotation" = "%@ vuelve a la rotación";
 "%@ is billing overage" = "Excedente facturado en %@";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ está escuchando en este puerto. Ciérralo y vuelve a intentarlo, o mueve este proxy a un puerto libre: la línea que usa Claude Code cambia con él.";
@@ -147,6 +148,7 @@
 "Less" = "Menos";
 "Levels" = "Niveles";
 "Levels (%)" = "Niveles (%)";
+"Levels are whole percents between 1 and 100, separated by commas." = "Los niveles son porcentajes enteros entre 1 y 100, separados por comas.";
 "Local port the proxy listens on. The listener moves at once." = "Puerto local en el que escucha el proxy. El cambio se aplica al instante.";
 "Looking up the account…" = "Consultando la cuenta…";
 "Lower is preferred. A strictly lower value preempts a healthy current account." = "Menor es preferible. Un valor estrictamente menor desplaza a una cuenta actual sana.";
@@ -185,12 +187,14 @@
 "Not valid JSON: %@" = "JSON no válido: %@";
 "Nothing recorded yet — samples start with the first successful poll." = "Aún no hay nada registrado — las muestras empiezan con la primera consulta correcta.";
 "Notifications" = "Notificaciones";
+"Notifications are turned off for this app in System Settings, so none of these arrive." = "Las notificaciones de esta app están desactivadas en Ajustes del Sistema, así que no llega ninguna de estas.";
 "Now listening on port %d — update the line Claude Code uses." = "Ahora escucha en el puerto %d: actualiza la línea que usa Claude Code.";
 "OAuth state mismatch" = "El estado de OAuth no coincide";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "Off: solo rotación por cuota. On: cada sesión nueva de Claude Code recibe la cuenta menos cargada entre las preferidas.";
 "On" = "Activado";
 "Open" = "Abrir";
 "Open Accounts…" = "Abrir Cuentas…";
+"Open System Settings" = "Abrir Ajustes del Sistema";
 "Open Terminal with Claude Code" = "Abrir Terminal con Claude Code";
 "Opening the browser for sign-in…" = "Abriendo el navegador para iniciar sesión…";
 "Opens your browser for the same sign-in Claude Code uses; the app waits up to two minutes for the callback." = "Abre el navegador con el mismo inicio de sesión que usa Claude Code; la app espera la respuesta hasta dos minutos.";
@@ -209,6 +213,7 @@
 "Power saver (5 s / 60 s)" = "Ahorro de energía (5 s / 60 s)";
 "Priority" = "Prioridad";
 "Priority for %@" = "Prioridad para %@";
+"Priority must be a whole number, not %@" = "La prioridad debe ser un número entero, no %@";
 "Priority of %@" = "Prioridad de %@";
 "Probe status" = "Estado del sondeo";
 "Proxy" = "Proxy";

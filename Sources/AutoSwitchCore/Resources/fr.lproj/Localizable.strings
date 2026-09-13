@@ -3,6 +3,7 @@
 "%@ applied" = "%@ appliqué";
 "%@ at %d%%" = "%@ à %d%%";
 "%@ for %@" = "%@ de %@";
+"%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ est déjà utilisé par une autre app, il ne fait donc rien ici. Libérez-le là-bas, puis désactivez et réactivez ce commutateur.";
 "%@ is back in rotation" = "%@ est de retour en rotation";
 "%@ is billing overage" = "Dépassement facturé pour %@";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ écoute sur ce port. Quittez-le et réessayez, ou déplacez ce proxy vers un port libre — la ligne utilisée par Claude Code change avec lui.";
@@ -147,6 +148,7 @@
 "Less" = "Moins";
 "Levels" = "Niveaux";
 "Levels (%)" = "Niveaux (%)";
+"Levels are whole percents between 1 and 100, separated by commas." = "Les niveaux sont des pourcentages entiers entre 1 et 100, séparés par des virgules.";
 "Local port the proxy listens on. The listener moves at once." = "Port local sur lequel le proxy écoute. Le changement s’applique aussitôt.";
 "Looking up the account…" = "Recherche du compte…";
 "Lower is preferred. A strictly lower value preempts a healthy current account." = "Plus bas est préféré. Une valeur strictement inférieure préempte un compte actuel sain.";
@@ -185,12 +187,14 @@
 "Not valid JSON: %@" = "JSON non valide : %@";
 "Nothing recorded yet — samples start with the first successful poll." = "Rien d'enregistré pour l'instant — les échantillons commencent à la première interrogation réussie.";
 "Notifications" = "Notifications";
+"Notifications are turned off for this app in System Settings, so none of these arrive." = "Les notifications de cette app sont désactivées dans Réglages Système, aucune de celles-ci n'arrive donc.";
 "Now listening on port %d — update the line Claude Code uses." = "À l'écoute sur le port %d — mettez à jour la ligne utilisée par Claude Code.";
 "OAuth state mismatch" = "État OAuth incohérent";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "Off : rotation par quota seulement. On : chaque nouvelle session Claude Code reçoit le compte le moins chargé parmi les préférés.";
 "On" = "Activé";
 "Open" = "Ouvrir";
 "Open Accounts…" = "Ouvrir les comptes…";
+"Open System Settings" = "Ouvrir Réglages Système";
 "Open Terminal with Claude Code" = "Ouvrir le Terminal avec Claude Code";
 "Opening the browser for sign-in…" = "Ouverture du navigateur pour la connexion…";
 "Opens your browser for the same sign-in Claude Code uses; the app waits up to two minutes for the callback." = "Ouvre le navigateur sur la même connexion que Claude Code ; l’app attend le retour jusqu’à deux minutes.";
@@ -209,6 +213,7 @@
 "Power saver (5 s / 60 s)" = "Économie d'énergie (5 s / 60 s)";
 "Priority" = "Priorité";
 "Priority for %@" = "Priorité pour %@";
+"Priority must be a whole number, not %@" = "La priorité doit être un nombre entier, pas %@";
 "Priority of %@" = "Priorité de %@";
 "Probe status" = "État de la sonde";
 "Proxy" = "Proxy";

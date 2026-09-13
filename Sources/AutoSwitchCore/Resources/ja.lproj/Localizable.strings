@@ -5,6 +5,7 @@
 "%@ for %@" = "%2$@ の %1$@";
 "%@ is back in rotation" = "%@ がローテーションに復帰";
 "%@ is billing overage" = "%@ は超過利用を課金中";
+"%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ がこのポートを使っています。そのプログラムを終了して再試行するか、このプロキシを空きポートに移してください — Claude Code が使う行も一緒に変わります。";
 "%@ is not the shape the app expects" = "%@ の形式がアプリの想定と異なります";
 "%@ left rotation" = "%@ がローテーションを離脱";
 "%@ needs a re-login" = "%@ は再ログインが必要";
@@ -184,6 +185,7 @@
 "Not valid JSON: %@" = "有効な JSON ではない: %@";
 "Nothing recorded yet — samples start with the first successful poll." = "まだ記録なし — 最初のポーリング成功からサンプルが始まる。";
 "Notifications" = "通知";
+"Now listening on port %d — update the line Claude Code uses." = "ポート %d で待ち受けています — Claude Code が使う行も更新してください。";
 "OAuth state mismatch" = "OAuth の state が一致しません";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "オフ: クォータ基準のローテーションのみ。オン: 新しい Claude Code セッションごとに、優先アカウントのうち最も空いているものを割り当て。";
 "On" = "有効";
@@ -304,6 +306,7 @@
 "The probe returned an error; the account's bars stop updating until it recovers." = "プローブがエラーを返した。回復するまでアカウントのバーは更新されない。";
 "The proxy did not reload the new config; see the message above." = "プロキシが新しい設定を再読み込みしなかった。上のメッセージを参照。";
 "The proxy is not reachable" = "プロキシに到達できない";
+"The proxy is up but has not been asked for anything yet. Claude Code only goes through it once the line below is in the shell that runs it." = "プロキシは起動していますが、まだ一度もリクエストを受けていません。下の行を claude を実行するシェルに入れて初めて、Claude Code がプロキシを経由します。";
 "The token reply carried no access token" = "トークンの応答にアクセストークンがありません";
 "The translation for %@ is not in this build; showing English." = "%@ の翻訳はこのビルドに含まれていない。英語で表示。";
 "This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not." = "リクエスト数はアプリの起動時からこのプロキシが数えたもので、終了するとリセットされます。使用量のバーは Claude が報告した値なのでリセットされません。";
@@ -316,10 +319,12 @@
 "Try again" = "再試行";
 "Unknown plan %@" = "不明なプラン %@";
 "Until the weekly reset" = "週次リセットまで";
+"Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell." = "起動済みですが、まだ何も届いていません — Claude Code のシェルにプロキシのアドレスが必要です。";
 "Updated %@" = "%@ を更新しました";
 "Upstream" = "アップストリーム";
 "Upstream unreachable: %@" = "アップストリームに接続できません: %@";
 "Usage cap" = "使用上限";
+"Use a free port" = "空きポートを使う";
 "WK" = "週次";
 "Warning" = "警告";
 "Weekly" = "週次";

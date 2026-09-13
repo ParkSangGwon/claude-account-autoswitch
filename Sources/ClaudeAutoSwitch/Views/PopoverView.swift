@@ -151,6 +151,11 @@ struct PopoverView: View {
         if case .down(let since, let error) = store.connection {
             out.append(Banner(kind: .bad, text: L("%@ — showing data from %@ ago", error.message, Format.duration(Date().timeIntervalSince(since))), action: { store.refreshNow() }, actionTitle: L("Retry")))
         }
+        if store.nothingHasArrivedYet {
+            // Everything reads green in this state, so nothing else would ever mention it.
+            out.append(Banner(kind: .warn, text: L("Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell."),
+                              action: { Actions.copySecret(store.claudeCodeEnvLine) }, actionTitle: L("Copy")))
+        }
         if let state = store.state {
             for n in Explain.notices(state) { out.append(Banner(kind: n.severity == .bad ? .bad : .warn, text: n.text)) }
             if state.isExhausted {

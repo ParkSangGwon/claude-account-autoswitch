@@ -241,4 +241,32 @@ enum Actions {
     }
 
     static func shellQuote(_ s: String) -> String { "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'" }
+
+    /// What is listening on a port, as `lsof` names it. Best effort: no answer at all is normal,
+    /// and the point is to save the person the trip to a terminal, not to be authoritative.
+    static func processHolding(port: Int) -> String? {
+        let lsof = URL(fileURLWithPath: "/usr/sbin/lsof")
+        guard FileManager.default.isExecutableFile(atPath: lsof.path) else { return nil }
+        let task = Process()
+        task.executableURL = lsof
+        task.arguments = ["-nP", "-iTCP:\(port)", "-sTCP:LISTEN", "-F", "cp"]
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        task.standardError = FileHandle.nullDevice
+        do { try task.run() } catch { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        task.waitUntilExit()
+        // `-F cp` prints one field per line: `p<pid>` then `c<command>`.
+        var command: String?
+        var pid: String?
+        for line in String(decoding: data, as: UTF8.self).split(separator: "\n") {
+            switch line.first {
+            case "c": command = String(line.dropFirst())
+            case "p": pid = String(line.dropFirst())
+            default: break
+            }
+            if let command, let pid { return "\(command) (\(pid))" }
+        }
+        return command
+    }
 }

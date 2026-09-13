@@ -183,6 +183,21 @@ public actor Engine {
         startedAt = nil
     }
 
+    /// A port near the configured one that nothing is listening on, or nil if the neighbourhood is full.
+    public func freePortNearby() -> Int? {
+        let configured = configuration.effectivePort
+        return (1...64).lazy.map { configured + $0 }.first { $0 <= 65535 && HTTPServer.isFree($0) }
+    }
+
+    /// Move the listener to a port that is actually free and write it to the document.
+    public func moveToFreePort() async throws -> Int {
+        guard let port = freePortNearby() else { throw EngineError.portInUse(configuration.effectivePort) }
+        try update { $0.listen.port = port }
+        await stop()
+        try await start()
+        return port
+    }
+
     /// Bind to a new port when the config moved it.
     public func restartIfPortChanged() async throws {
         guard let l = listener, l.port != port else { return }

@@ -247,6 +247,34 @@ final class EngineTests: XCTestCase {
         await engine.stop()
     }
 
+    func testAFreePortIsOfferedAndTakenWhenTheConfiguredOneIsBusy() async throws {
+        let port = Int.random(in: 20000..<40000)
+        let squatter = Engine(store: try temporaryStore(testConfiguration(accounts: [], port: port)), version: "t")
+        try await squatter.start()
+
+        let store = try temporaryStore(testConfiguration(accounts: [oauthAccount("alice")], port: port))
+        let engine = Engine(store: store, version: "t")
+        do {
+            try await engine.start()
+            XCTFail("the port is taken")
+        } catch let e as EngineError {
+            XCTAssertEqual(e, .portInUse(port))
+        }
+
+        let suggestion = await engine.freePortNearby()
+        XCTAssertNotNil(suggestion)
+        XCTAssertNotEqual(suggestion, port)
+
+        let moved = try await engine.moveToFreePort()
+        XCTAssertEqual(try store.load().listen.port, moved, "the new port is written down, not just bound")
+        let s = await engine.state()
+        XCTAssertTrue(s.listener.isRunning)
+        XCTAssertEqual(s.listener.port, moved)
+
+        await engine.stop()
+        await squatter.stop()
+    }
+
     func testABusyPortIsReportedNotSwallowed() async throws {
         let port = Int.random(in: 20000..<40000)
         let first = Engine(store: try temporaryStore(testConfiguration(accounts: [], port: port)), version: "t")

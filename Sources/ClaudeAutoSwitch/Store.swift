@@ -141,6 +141,37 @@ final class AppStore {
         }
     }
 
+    /// The port is taken: move to one that is not, and say where it went.
+    func moveToFreePort() async {
+        do {
+            let port = try await engine.moveToFreePort()
+            endpoint = ProxyEndpoint(port: port)
+            connection = .up
+            failureStreak = 0
+            await loadConfiguration()
+            await poll()
+            showToast(.ok, L("Now listening on port %d — update the line Claude Code uses.", port))
+        } catch let e as EngineError {
+            showToast(.error, e.message)
+        } catch {
+            showToast(.error, error.localizedDescription)
+        }
+    }
+
+    /// Who holds the configured port, when something does.
+    var portHeldBy: String? {
+        guard case .down(_, let error) = connection, case .portInUse(let port) = error else { return nil }
+        return Actions.processHolding(port: port)
+    }
+
+    /// Listening, accounts configured, and not one request has arrived. Almost always the shell
+    /// never got `ANTHROPIC_BASE_URL`, which the app cannot see and so has to ask about.
+    var nothingHasArrivedYet: Bool {
+        guard let s = state, s.listener.isRunning, let since = s.listener.startedAt, !s.accounts.isEmpty else { return false }
+        guard s.sessions.isEmpty, s.accounts.allSatisfy({ $0.traffic.requests == 0 }) else { return false }
+        return Date().timeIntervalSince(since) > 300
+    }
+
     /// Bind again after a port change or a failed start.
     func restartEngine() async {
         await engine.stop()

@@ -18,9 +18,17 @@ struct ProxyPane: View {
                 HStack {
                     Button(L("Poll now")) { store.refreshNow() }.controlSize(.small)
                     if store.isDown { Button(L("Try again")) { Task { await store.restartEngine() } }.controlSize(.small).buttonStyle(.borderedProminent) }
+                    if store.isDown { Button(L("Use a free port")) { Task { await store.moveToFreePort() } }.controlSize(.small) }
                 }
                 if store.isDown {
-                    Text(L("Another program holds this port, or the address cannot be bound. Change the port below or quit the other program, then try again.")).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    if let holder = store.portHeldBy {
+                        Text(L("%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it.", holder)).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text(L("Another program holds this port, or the address cannot be bound. Change the port below or quit the other program, then try again.")).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                if store.nothingHasArrivedYet {
+                    Banner(kind: .warn, text: L("The proxy is up but has not been asked for anything yet. Claude Code only goes through it once the line below is in the shell that runs it."))
                 }
             }
             card(L("Claude Code")) {

@@ -5,6 +5,7 @@
 "%@ for %@" = "%2$@ 的 %1$@";
 "%@ is back in rotation" = "%@ 已重新加入轮换";
 "%@ is billing overage" = "%@ 正在产生超额费用";
+"%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ 正在占用此端口。请退出它后重试，或把本代理移到空闲端口 — Claude Code 使用的那一行也会随之改变。";
 "%@ is not the shape the app expects" = "%@ 的格式与应用预期的不符";
 "%@ left rotation" = "%@ 已退出轮换";
 "%@ needs a re-login" = "%@ 需要重新登录";
@@ -184,6 +185,7 @@
 "Not valid JSON: %@" = "无效的 JSON：%@";
 "Nothing recorded yet — samples start with the first successful poll." = "尚无记录 — 首次轮询成功后开始采样。";
 "Notifications" = "通知";
+"Now listening on port %d — update the line Claude Code uses." = "现在监听端口 %d — 请同时更新 Claude Code 使用的那一行。";
 "OAuth state mismatch" = "OAuth state 不匹配";
 "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones." = "关：仅按配额轮换。开：每个新的 Claude Code 会话分配给优先账户中负载最低的一个。";
 "On" = "启用";
@@ -304,6 +306,7 @@
 "The probe returned an error; the account's bars stop updating until it recovers." = "探测返回错误；该账户的条形图在恢复前停止更新。";
 "The proxy did not reload the new config; see the message above." = "代理未重新加载新配置；请查看上方信息。";
 "The proxy is not reachable" = "代理不可达";
+"The proxy is up but has not been asked for anything yet. Claude Code only goes through it once the line below is in the shell that runs it." = "代理已启动，但还没收到任何请求。只有把下面这一行放进运行 claude 的 shell 里，Claude Code 才会走代理。";
 "The token reply carried no access token" = "令牌响应中没有访问令牌";
 "The translation for %@ is not in this build; showing English." = "此版本不包含 %@ 的翻译；显示英文。";
 "This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not." = "请求数是本代理从应用启动那一刻开始统计的，退出后会归零。使用量条来自 Claude，不会归零。";
@@ -316,10 +319,12 @@
 "Try again" = "重试";
 "Unknown plan %@" = "未知套餐 %@";
 "Until the weekly reset" = "直到每周重置";
+"Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell." = "已启动，但还没有任何请求进来 — Claude Code 的 shell 里需要代理地址。";
 "Updated %@" = "已更新 %@";
 "Upstream" = "上游";
 "Upstream unreachable: %@" = "无法连接上游：%@";
 "Usage cap" = "用量上限";
+"Use a free port" = "使用空闲端口";
 "WK" = "周";
 "Warning" = "警告";
 "Weekly" = "每周";

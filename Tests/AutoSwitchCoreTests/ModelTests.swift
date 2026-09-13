@@ -29,15 +29,6 @@ final class ModelTests: XCTestCase {
         XCTAssertEqual(WindowKind.weeklySonnet.tag, "S7")
     }
 
-    func testElapsedShare() {
-        let now = Fixture.now
-        let r = WindowReading(used: 0.5, resetsAt: now.addingTimeInterval(3600))
-        XCTAssertEqual(try XCTUnwrap(r.elapsedShare(length: 5 * 3600, now: now)), 0.8, accuracy: 1e-9)
-        XCTAssertNil(WindowReading(used: 0.5, resetsAt: nil).elapsedShare(length: 3600, now: now))
-        XCTAssertEqual(WindowReading(used: 0.5, resetsAt: now.addingTimeInterval(-1)).elapsedShare(length: 3600, now: now), 1)
-        XCTAssertNil(WindowReading(used: 0.5, resetsAt: now.addingTimeInterval(8 * 3600)).elapsedShare(length: 5 * 3600, now: now), "a reset beyond the window's length is not a running window")
-    }
-
     func testSweepForgetsExpiredWindowsAndStaleRefusals() {
         let now = Fixture.now
         var w = Windows()

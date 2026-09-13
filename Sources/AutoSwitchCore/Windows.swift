@@ -68,15 +68,6 @@ public struct WindowReading: Codable, Sendable, Equatable {
     public init(used: Double, resetsAt: Date?, seenAt: Date? = nil) {
         self.used = used; self.resetsAt = resetsAt; self.seenAt = seenAt
     }
-
-    /// Fraction of the window already elapsed (the tick on a bar); nil when the reset is unknown.
-    public func elapsedShare(length: TimeInterval, now: Date) -> Double? {
-        guard let resetsAt else { return nil }
-        let remaining = resetsAt.timeIntervalSince(now)
-        if remaining <= 0 { return 1 }
-        guard remaining <= length else { return nil }
-        return (length - remaining) / length
-    }
 }
 
 /// A counted allowance (tokens or requests) an API key has per window.

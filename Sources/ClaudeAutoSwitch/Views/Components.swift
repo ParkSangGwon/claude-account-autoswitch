@@ -141,11 +141,10 @@ struct Card<Content: View>: View {
     }
 }
 
-/// A quota bar with an elapsed-time tick, coloured by pace.
+/// A quota bar, coloured by pace.
 struct QuotaBar: View {
     var ratio: Double
     var severity: Severity
-    var elapsed: Double?
     var cap: Double?
     var height: CGFloat = 4
 
@@ -154,10 +153,6 @@ struct QuotaBar: View {
             ZStack(alignment: .leading) {
                 Capsule().fill(.primary.opacity(0.12))
                 Capsule().fill(severity.color).frame(width: max(ratio > 0 ? 1 : 0, geo.size.width * min(1, max(0, ratio))))
-                if let elapsed {
-                    Rectangle().fill(.primary.opacity(0.9)).frame(width: 1.5, height: height + 4)
-                        .offset(x: geo.size.width * min(1, max(0, elapsed)) - 0.75, y: -2)
-                }
                 if let cap {
                     Rectangle().fill(Severity.brisk.color).frame(width: 1, height: height + 2)
                         .offset(x: geo.size.width * min(1, max(0, cap)) - 0.5, y: -1)
@@ -198,8 +193,7 @@ struct UsageRow: View {
                 }
             }
             if let ratio {
-                let elapsed = length.flatMap { WindowReading(used: ratio, resetsAt: resetsAt).elapsedShare(length: $0, now: now) }
-                QuotaBar(ratio: ratio, severity: severity(ratio), elapsed: elapsed, cap: cap)
+                QuotaBar(ratio: ratio, severity: severity(ratio), cap: cap)
             }
             let reset = Format.resetSentence(resetsAt, style: resetStyle, now: now)
             if !reset.isEmpty || footNote != nil {

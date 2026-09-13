@@ -38,16 +38,6 @@ public enum Fleet {
         state.accounts.filter { $0.enabled && $0.plan.weight == nil }
     }
 
-    /// The fleet's elapsed share of a window: each known account's, weighted the same way.
-    public static func elapsedShare(_ state: EngineState, _ kind: WindowKind, now: Date = Date()) -> Double? {
-        var weightSum = 0.0, acc = 0.0
-        for a in state.accounts where a.enabled {
-            guard let w = a.plan.weight, w > 0, let e = a.windows[kind]?.elapsedShare(length: kind.length, now: now) else { continue }
-            weightSum += Double(w); acc += Double(w) * e
-        }
-        return weightSum > 0 ? acc / weightSum : nil
-    }
-
     /// Every account's coming window resets, soonest first, so the return of capacity is visible.
     public static func resetTimeline(_ state: EngineState, now: Date = Date(), limit: Int = 6) -> [ResetEntry] {
         var out: [ResetEntry] = []

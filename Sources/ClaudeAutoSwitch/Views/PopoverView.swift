@@ -189,15 +189,14 @@ struct PopoverView: View {
         }
     }
 
-    /// The fleet bar coloured by the same pace rule as an account bar, with the tier-weighted elapsed tick.
+    /// The fleet bar coloured by the same pace rule as an account bar.
     @ViewBuilder
     private func fleetRow(_ label: String, _ state: EngineState, _ kind: WindowKind, now: Date) -> some View {
         if let total = Fleet.total(state, kind) {
-            let elapsed = Fleet.elapsedShare(state, kind, now: now)
             let severity = Pace.severity(used: total.used, resetsAt: total.nextResetAt, length: kind.length, threshold: state.rotation.switchAt(kind), now: now)
             HStack(spacing: 10) {
                 Text(label).font(.system(size: 11)).frame(width: 56, alignment: .leading)
-                QuotaBar(ratio: total.used, severity: severity, elapsed: elapsed, cap: nil)
+                QuotaBar(ratio: total.used, severity: severity, cap: nil)
                 // Wide enough for "100%" once the chip's padding is on it.
                 Text("\(Format.percentInt(total.used))%").font(.system(size: 13, weight: .semibold)).monospacedDigit().fixedSize()
                     .severityChip(severity).padding(.trailing, -4)

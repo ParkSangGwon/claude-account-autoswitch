@@ -141,6 +141,19 @@ final class AppStore {
         }
     }
 
+    func checkForUpdate() async {
+        prefs.updateCheckedAt = Date()
+        guard let latest = await UpdateCheck.latestVersion() else { return }
+        prefs.latestSeenVersion = latest
+    }
+
+    /// Once a day is often enough for a release feed, and it costs one request.
+    func checkForUpdateIfDue() async {
+        guard Bundle.main.bundleIdentifier != nil else { return }
+        if let last = prefs.updateCheckedAt, Date().timeIntervalSince(last) < 86_400 { return }
+        await checkForUpdate()
+    }
+
     /// The port is taken: move to one that is not, and say where it went.
     func moveToFreePort() async {
         do {
@@ -501,6 +514,13 @@ final class AppStore {
             app.append("endpoint \(endpoint.label) · connection \(connection)")
             app.append("macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
             try app.joined(separator: "\n").write(to: dir.appending(path: "app.txt"), atomically: true, encoding: .utf8)
+            // Why rotation moved is the first question a report raises, and the log is the only record.
+            let journal = prefs.journal.latest.map { e in
+                "\(ISO8601DateFormatter().string(from: e.at))  \(e.from.map(displayName) ?? "—") → \(displayName(e.to))"
+                    + (e.manual ? "  [manual]" : "") + "  \(e.reasonText)"
+            }
+            try (journal.isEmpty ? "no switches recorded" : journal.joined(separator: "\n"))
+                .write(to: dir.appending(path: "rotation-log.txt"), atomically: true, encoding: .utf8)
             showToast(.ok, L("Diagnostics written to Downloads"))
             return dir
         } catch {

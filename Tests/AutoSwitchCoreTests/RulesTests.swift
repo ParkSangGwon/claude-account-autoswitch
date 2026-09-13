@@ -218,12 +218,13 @@ final class ExplainTests: XCTestCase {
         XCTAssertEqual(numbered["alice@y.com"], "alice 2")
     }
 
-    func testJournalKeepsFifty() {
+    func testJournalKeepsTheMostRecentUpToCapacity() {
         var j = Journal()
-        for i in 0..<60 { j.append(SwitchEvent(at: now.addingTimeInterval(Double(i)), from: "a", to: "b", cause: .manual)) }
+        let total = Journal.capacity + 10
+        for i in 0..<total { j.append(SwitchEvent(at: now.addingTimeInterval(Double(i)), from: "a", to: "b", cause: .manual)) }
         XCTAssertEqual(j.events.count, Journal.capacity)
-        XCTAssertEqual(j.latest.first?.at, now.addingTimeInterval(59))
-        XCTAssertEqual(j.count(within: 5, now: now.addingTimeInterval(59)), 6)
+        XCTAssertEqual(j.latest.first?.at, now.addingTimeInterval(Double(total - 1)), "the newest survives, the oldest is dropped")
+        XCTAssertEqual(j.count(within: 5, now: now.addingTimeInterval(Double(total - 1))), 6)
         let data = try! JSONEncoder().encode(j)
         XCTAssertEqual(try! JSONDecoder().decode(Journal.self, from: data), j)
     }

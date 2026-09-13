@@ -64,6 +64,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Notifier.shared.onOpen = { [weak self] in self?.statusItem.showPopover() }
         Notifier.shared.requestAuthorization()
         store.start()
+        // Once a day, whether or not anyone opens Settings — that is the point of the check.
+        Task { await store.checkForUpdateIfDue() }
         observeHotkeys()
         // `AUTOSWITCH_SNAPSHOT=<dir>` renders the popover to PNG after the first
         // poll and quits: PR screenshots and a look at the layout without a click.

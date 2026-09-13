@@ -4,6 +4,7 @@
 "%@ at %d%%" = "%@：%d%%";
 "%@ for %@" = "%2$@ 的 %1$@";
 "%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ 已被其他应用占用，在这里不会生效。请先在那边释放，然后把这个开关关掉再打开。";
+"%@ is available" = "%@ 可用";
 "%@ is back in rotation" = "%@ 已重新加入轮换";
 "%@ is billing overage" = "%@ 正在产生超额费用";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the line Claude Code uses changes with it." = "%@ 正在占用此端口。请退出它后重试，或把本代理移到空闲端口 — Claude Code 使用的那一行也会随之改变。";
@@ -74,6 +75,8 @@
 "Cancel" = "取消";
 "Cancelled" = "已取消";
 "Cannot read %@" = "无法读取 %@";
+"Check for updates" = "检查更新";
+"Checking…" = "检查中…";
 "Claude AutoSwitch: connecting to the proxy…" = "Claude AutoSwitch：正在连接代理…";
 "Claude Code" = "Claude Code";
 "Claude Code is not signed in on this Mac (no Keychain item)" = "此 Mac 上未登录 Claude Code（没有钥匙串项目）";
@@ -83,6 +86,7 @@
 "Claude subscription — browser sign-in" = "Claude 订阅 — 浏览器登录";
 "Claude subscription — paste the code" = "Claude 订阅 — 粘贴代码";
 "Clear log" = "清除日志";
+"Clear the rotation log?" = "要清除轮换日志吗？";
 "Clock" = "时刻";
 "Close" = "关闭";
 "Code" = "代码";
@@ -117,6 +121,7 @@
 "Enable %@" = "启用 %@";
 "Endpoint" = "端点";
 "Environment variables" = "环境变量";
+"Every recorded switch goes, and there is no undo. Nothing else records them — the proxy keeps no history of its own." = "所有已记录的切换都会消失，且无法撤销。别处没有记录 — 代理本身不保留历史。";
 "Everything else" = "其他所有模型";
 "Exchanging the code for tokens…" = "正在用授权码换取令牌…";
 "Export diagnostics…" = "导出诊断信息…";
@@ -324,6 +329,7 @@
 "Try again" = "重试";
 "Unknown plan %@" = "未知套餐 %@";
 "Until the weekly reset" = "直到每周重置";
+"Up to date" = "已是最新";
 "Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell." = "已启动，但还没有任何请求进来 — Claude Code 的 shell 里需要代理地址。";
 "Updated %@" = "已更新 %@";
 "Upstream" = "上游";

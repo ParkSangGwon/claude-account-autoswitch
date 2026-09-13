@@ -102,6 +102,7 @@ struct GeneralPane: View {
     @Environment(AppStore.self) private var store
     @State private var launchAtLogin = false
     @State private var levelsText = "90, 95"
+    @State private var notificationsBlocked = false
 
     var body: some View {
         @Bindable var prefs = store.prefs
@@ -151,7 +152,7 @@ struct GeneralPane: View {
                 Text(L("Global — they work from any app. No Accessibility permission is needed.")).font(.system(size: 11)).foregroundStyle(.secondary)
             }
             TitledGroup(title: L("Notifications")) {
-                if Notifier.shared.isBlocked {
+                if notificationsBlocked {
                     Banner(kind: .warn, text: L("Notifications are turned off for this app in System Settings, so none of these arrive."),
                            action: { NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!) },
                            actionTitle: L("Open System Settings"))
@@ -193,7 +194,7 @@ struct GeneralPane: View {
             levelsText = store.prefs.alertPrefs.levels.map(String.init).joined(separator: ", ")
         }
         // Permission can be revoked in System Settings while the app runs, so read it on the way in.
-        .task { await Notifier.shared.refreshPermission() }
+        .task { notificationsBlocked = await Notifier.shared.isBlocked() }
     }
 
     private func commitLevels() {

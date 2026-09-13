@@ -6,44 +6,34 @@ import AutoSwitchCore
 /// Posts alerts through UNUserNotificationCenter. A no-op outside a bundle
 /// (`swift run` has no bundle identifier and the centre would crash).
 @MainActor
-@Observable
 final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     static let shared = Notifier()
-    /// What the system says about permission, so the settings screen can stop promising alerts
-    /// the Mac will never show. Unknown until the first check answers.
-    private(set) var permission: UNAuthorizationStatus?
     private let available = Bundle.main.bundleIdentifier != nil
-    /// Set by the app so a tapped notification can open the popover.
-    @ObservationIgnored var onOpen: (() -> Void)?
+    /// Set by the app so a clicked notification can open the popover.
+    var onOpen: (() -> Void)?
 
-    private override init() {
-        super.init()
-        guard available else { return }
-        UNUserNotificationCenter.current().delegate = self
-    }
+    private override init() { super.init() }
 
     func requestAuthorization() {
         guard available else { return }
+        // Everything that touches the centre waits until here: `Notifier.shared` is reached during
+        // launch, and a centre call from an initialiser takes the app down where there is no bundle.
+        UNUserNotificationCenter.current().delegate = self
         // The async API answers on the main actor; the completion-handler form calls back on a
         // private queue, which Swift 6.1 builds trap on when the closure is inferred @MainActor.
         Task {
             _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
-            await refreshPermission()
         }
     }
 
-    func refreshPermission() async {
-        guard available else { return }
-        // `UNNotificationSettings` is not Sendable, so only the status crosses back.
-        permission = await withCheckedContinuation { (continuation: CheckedContinuation<UNAuthorizationStatus, Never>) in
+    /// Whether the Mac will actually show what the alert switches promise. `UNNotificationSettings`
+    /// is not Sendable, so only the status crosses back.
+    func isBlocked() async -> Bool {
+        guard available else { return false }
+        let status = await withCheckedContinuation { (continuation: CheckedContinuation<UNAuthorizationStatus, Never>) in
             UNUserNotificationCenter.current().getNotificationSettings { continuation.resume(returning: $0.authorizationStatus) }
         }
-    }
-
-    /// Alerts are switched on in Settings but the Mac will not show them.
-    var isBlocked: Bool {
-        guard let permission else { return false }
-        return permission == .denied
+        return status == .denied
     }
 
     func post(_ alert: Alert) {

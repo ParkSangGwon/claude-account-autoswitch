@@ -90,7 +90,6 @@ final class FleetTests: XCTestCase {
         XCTAssertEqual(five.capacity, 21)
         XCTAssertEqual(Fleet.unweighed(s).map(\.label), ["mystery"])
         XCTAssertNil(Fleet.total(s, .weeklyFable))
-        XCTAssertEqual(try XCTUnwrap(Fleet.elapsedShare(s, .session, now: now)), 0.8, accuracy: 1e-9)
     }
 
     func testResetTimelineSkipsAFamilyThatRollsWithTheWeek() {

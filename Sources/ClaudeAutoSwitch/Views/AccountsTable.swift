@@ -3,8 +3,7 @@ import AppKit
 import AutoSwitchCore
 
 /// Per-account rows as a dense table: one column per window (session, weekly, and the
-/// family weeks when any account has one), a bar with the elapsed tick and the number
-/// and reset under it.
+/// family weeks when any account has one), a bar with the number and reset under it.
 struct AccountsTable: View {
     @Environment(AppStore.self) private var store
     var state: EngineState
@@ -138,8 +137,7 @@ struct AccountTableRow: View {
             if let ratio {
                 let threshold = kind.map { state.rotation.switchAt($0) } ?? state.rotation.switchAt
                 let severity = Pace.severity(used: ratio, resetsAt: resetsAt, length: kind?.length, threshold: threshold, now: now)
-                let elapsed = kind.flatMap { WindowReading(used: ratio, resetsAt: resetsAt).elapsedShare(length: $0.length, now: now) }
-                QuotaBar(ratio: ratio, severity: severity, elapsed: elapsed, cap: nil, height: 5)
+                QuotaBar(ratio: ratio, severity: severity, cap: nil, height: 5)
                     .frame(width: width - 6)
                 // Two lines: how much is used, then when it resets, so neither crowds the other.
                 // The number takes a chip as soon as the window needs attention; a thin bar alone is easy to miss.
@@ -147,7 +145,7 @@ struct AccountTableRow: View {
                     .severityChip(severity).padding(.leading, -4)
                 Text(countdown(resetsAt)).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary).lineLimit(1)
             } else {
-                QuotaBar(ratio: 0, severity: .calm, elapsed: nil, cap: nil, height: 5).frame(width: width - 6)
+                QuotaBar(ratio: 0, severity: .calm, cap: nil, height: 5).frame(width: width - 6)
                 Text(prefix + "—").font(.system(size: 10, design: .monospaced)).foregroundStyle(.tertiary)
                 Text(" ").font(.system(size: 10, design: .monospaced))
             }
@@ -164,7 +162,7 @@ struct AccountTableRow: View {
             let severity = Pace.severity(r, kind: kind, threshold: state.rotation.switchAt(kind), now: now)
             let resetLong = Format.resetSentence(r.resetsAt, style: .both, now: now)
             VStack(alignment: .leading, spacing: 2) {
-                QuotaBar(ratio: r.used, severity: severity, elapsed: r.elapsedShare(length: kind.length, now: now), cap: nil, height: 5)
+                QuotaBar(ratio: r.used, severity: severity, cap: nil, height: 5)
                     .frame(width: AccountsTable.narrowCol - 6)
                 Text("\(Format.percentInt(r.used))%").font(.system(size: isCurrent ? 11 : 10, weight: severity == .calm ? (isCurrent ? .semibold : .regular) : .semibold, design: .monospaced))
                     .severityChip(severity).padding(.leading, -4)
@@ -176,7 +174,7 @@ struct AccountTableRow: View {
             .accessibilityLabel("\(name) \(Format.percent(r.used)), \(resetLong)")
         } else {
             VStack(alignment: .leading, spacing: 2) {
-                QuotaBar(ratio: 0, severity: .calm, elapsed: nil, cap: nil, height: 5).frame(width: AccountsTable.narrowCol - 6)
+                QuotaBar(ratio: 0, severity: .calm, cap: nil, height: 5).frame(width: AccountsTable.narrowCol - 6)
                 Text(L("=wk")).font(.system(size: 10, design: .monospaced)).foregroundStyle(.tertiary)
                 Text(" ").font(.system(size: 10, design: .monospaced))
             }

@@ -84,8 +84,9 @@ struct AccountCard: View {
                     Button(L("Bottom")) { Task { await store.setRank(record.id, .last) } }.controlSize(.mini).fixedSize()
                 }
                 if let live {
-                    Text(live.activeSessions == 1 ? L("1 session · %d requests", live.traffic.requests) : L("%d sessions · %d requests", live.activeSessions, live.traffic.requests))
+                    Text(live.activeSessions == 1 ? L("1 session · %d requests since launch", live.traffic.requests) : L("%d sessions · %d requests since launch", live.activeSessions, live.traffic.requests))
                         .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                        .help(L("This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not."))
                 }
                 Spacer()
                 Button(L("Remove…")) { confirmRemove = true }.controlSize(.small)

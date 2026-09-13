@@ -28,12 +28,14 @@
 "%d requests" = "%d リクエスト";
 "%d samples · one a minute while the app runs" = "%d サンプル · アプリ実行中は毎分 1 件";
 "%d sess" = "%d セッション";
+"%d sessions · %d requests since launch" = "セッション %d · 起動後 %d リクエスト";
 "%d without a tier" = "ティア不明 %d";
 "%d/%d accounts available" = "%d/%d アカウントが利用可能";
 "(default)" = "（デフォルト）";
 "+%d more" = "他 %d 件";
 "1 account" = "1 アカウント";
 "1 account in the config" = "設定内のアカウント 1 件";
+"1 session · %d requests since launch" = "セッション 1 · 起動後 %d リクエスト";
 "24 h" = "24 h";
 "5h resets in %@" = "5h は %@ 後にリセット";
 "6 h" = "6 h";
@@ -295,6 +297,7 @@
 "The proxy is not reachable" = "プロキシに到達できない";
 "The token reply carried no access token" = "トークンの応答にアクセストークンがありません";
 "The translation for %@ is not in this build; showing English." = "%@ の翻訳はこのビルドに含まれていない。英語で表示。";
+"This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not." = "リクエスト数はアプリの起動時からこのプロキシが数えたもので、終了するとリセットされます。使用量のバーは Claude が報告した値なのでリセットされません。";
 "Timed out waiting for the sign-in" = "サインインの待機がタイムアウトしました";
 "Today %@" = "今日 %@";
 "Tok " = "Tok ";
@@ -364,6 +367,7 @@
 "switch failed" = "切り替え失敗";
 "switched from the app" = "アプリから切り替え";
 "switched to %@" = "%@ に切り替え";
+"switched to %@, but %@ has a better priority and takes the next request" = "%@ に切り替えましたが、%@ の優先度が高いため次のリクエストはそちらに行きます";
 "switched to %@, but rotation will not use it" = "%@ に切り替えたが、ローテーションでは使われない";
 "the proxy is back" = "Claude AutoSwitch プロキシが復帰しました";
 "the proxy is not responding" = "Claude AutoSwitch プロキシが応答しません";
@@ -379,8 +383,6 @@
 "%@ %@ has had %d requests in a row come back with nothing" = "%@ %@ は %d 件連続で空応答を受けている";
 "%@ weekly" = "%@ 週次";
 "%@ window at the switch threshold" = "%@ ウィンドウが切り替えしきい値に到達";
-"%d sessions · %d requests" = "%d セッション · %d リクエスト";
-"1 session · %d requests" = "1 セッション · %d リクエスト";
 "Cannot read the config: %@" = "設定を読み込めません: %@";
 "Cannot write the config: %@" = "設定を書き込めません: %@";
 "Hand-editable JSON. The editor shows secrets as %@ and puts them back on save; the file is written atomically with 0600 permissions and applied at once." = "手で編集できる JSON。エディタはシークレットを %@ と表示し、保存時に元に戻します。ファイルは 0600 権限でアトミックに書き込まれ、即座に適用されます。";

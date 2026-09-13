@@ -45,6 +45,9 @@ final class AppStore {
     /// Display names that stay unique per account (see `Explain.aliases`).
     private(set) var aliases: [String: String] = [:]
     private(set) var history = HistoryStore()
+    /// The file on disk has been read. Until it has, `history` is empty because nothing was loaded,
+    /// not because there is nothing — writing it then would throw away every past sample.
+    private var historyLoaded = false
     /// The display is asleep or the session is locked: nobody is looking, poll rarely.
     private(set) var displayAsleep = false
 
@@ -71,7 +74,11 @@ final class AppStore {
         alertState = Preferences.shared.alertState
         Task.detached { [url = AppStore.historyURL] in
             let loaded = HistoryStore.load(from: url)
-            await MainActor.run { [weak self] in if let self, self.history.samples.isEmpty { self.history = loaded } }
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                if self.history.samples.isEmpty { self.history = loaded }
+                self.historyLoaded = true
+            }
         }
     }
 
@@ -98,10 +105,15 @@ final class AppStore {
         }
     }
 
-    func stop() {
+    /// Quitting: the engine writes what it learned and the listener closes, and both have to finish
+    /// before the process goes. `NSApplication` waits for this through `applicationShouldTerminate`.
+    /// The main-actor half of quitting, done synchronously so nothing is left in flight. The engine's
+    /// own shutdown is awaited off this actor — see `applicationShouldTerminate`.
+    func prepareForQuit() {
         pollTask?.cancel()
-        saveHistory()
-        Task { await engine.stop() }
+        guard historyLoaded else { return }
+        historySavedAt = Date()
+        try? history.save(to: AppStore.historyURL)
     }
 
     /// Load the config and bind the listener; a failure (typically the port) is the "down" state the UI shows.
@@ -253,6 +265,7 @@ final class AppStore {
     }
 
     private func saveHistory() {
+        guard historyLoaded else { return }
         historySavedAt = Date()
         let snapshot = history
         Task.detached { try? snapshot.save(to: AppStore.historyURL) }

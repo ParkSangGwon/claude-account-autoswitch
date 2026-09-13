@@ -236,7 +236,14 @@ public actor Engine {
         guard let r = runtime.first(where: { $0.id == id }) else { return .failed(L("No such account")) }
         cursor = id
         saveObservations()
-        return .switched(to: r.label, blocker: blocker(of: r, now: Date()))
+        let now = Date()
+        let blocked = blocker(of: r, now: now)
+        // The cursor moved, but a strictly better rank still wins the next request; say so rather
+        // than report a switch that the very next reply undoes.
+        if blocked == nil, let next = nextTarget(now: now), next != id {
+            return .switched(to: r.label, blocker: nil, outrankedBy: runtime.first { $0.id == next }?.label ?? next.rawValue)
+        }
+        return .switched(to: r.label, blocker: blocked)
     }
 
     // MARK: - listener

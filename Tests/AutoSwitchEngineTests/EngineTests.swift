@@ -62,6 +62,26 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(missing.kind, .error)
     }
 
+    func testSwitchingToAWorseRankSaysTheBetterOneStillTakesTheRequest() async throws {
+        let engine = Engine(store: try temporaryStore(testConfiguration(accounts: [oauthAccount("alice", rank: 0), oauthAccount("bob", rank: 5)])), version: "t")
+        try await engine.load()
+        let outcome = await engine.switchTo(AccountID(rawValue: "id-bob"))
+        XCTAssertEqual(outcome.kind, .warn)
+        XCTAssertEqual(outcome.text, "switched to bob, but alice has a better priority and takes the next request")
+        let s = await engine.state()
+        XCTAssertEqual(s.label(s.current), "bob")
+        XCTAssertEqual(s.label(s.next), "alice", "what the toast just said")
+    }
+
+    func testSwitchingToTheBestRankIsPlainlyOK() async throws {
+        let engine = Engine(store: try temporaryStore(testConfiguration(accounts: [oauthAccount("alice", rank: 0), oauthAccount("bob", rank: 5)])), version: "t")
+        try await engine.load()
+        _ = await engine.switchTo(AccountID(rawValue: "id-bob"))
+        let outcome = await engine.switchTo(AccountID(rawValue: "id-alice"))
+        XCTAssertEqual(outcome.kind, .ok)
+        XCTAssertEqual(outcome.text, "switched to alice")
+    }
+
     func testUpdatesApplyLiveAndAReloadSeesOutsideEdits() async throws {
         let store = try temporaryStore(testConfiguration(accounts: [oauthAccount("alice")]))
         let engine = Engine(store: store, version: "t")

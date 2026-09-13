@@ -37,16 +37,38 @@ public struct Configuration: Codable, Sendable, Equatable {
         public init(refreshEverySeconds: Int = 300) { self.refreshEverySeconds = refreshEverySeconds }
     }
 
+    /// What the engine learned while it ran, written back so a restart resumes from it instead of
+    /// treating a spent account as fresh until the first probe lands. Not settings: the engine owns it.
+    public struct Observed: Codable, Sendable, Equatable {
+        public struct Account: Codable, Sendable, Equatable {
+            public var id: AccountID
+            public var windows: Windows
+            public init(id: AccountID, windows: Windows) { self.id = id; self.windows = windows }
+        }
+
+        /// The account new requests started from when the engine last ran.
+        public var lastActive: AccountID?
+        public var accounts: [Account]
+
+        public init(lastActive: AccountID? = nil, accounts: [Account] = []) {
+            self.lastActive = lastActive; self.accounts = accounts
+        }
+
+        public func windows(of id: AccountID) -> Windows? { accounts.first { $0.id == id }?.windows }
+    }
+
     public var version: Int
     public var listen: Listen
     public var api: API
     public var rotation: Rotation
     public var quota: Quota
     public var accounts: [AccountRecord]
+    public var observed: Observed
 
     public init(version: Int = Configuration.currentVersion, listen: Listen = Listen(), api: API = API(), rotation: Rotation = Rotation(),
-                quota: Quota = Quota(), accounts: [AccountRecord] = []) {
-        self.version = version; self.listen = listen; self.api = api; self.rotation = rotation; self.quota = quota; self.accounts = accounts
+                quota: Quota = Quota(), accounts: [AccountRecord] = [], observed: Observed = Observed()) {
+        self.version = version; self.listen = listen; self.api = api; self.rotation = rotation; self.quota = quota
+        self.accounts = accounts; self.observed = observed
     }
 
     public static let defaults = Configuration()
@@ -60,6 +82,7 @@ public struct Configuration: Codable, Sendable, Equatable {
         rotation = try c.decodeIfPresent(Rotation.self, forKey: .rotation) ?? Rotation()
         quota = try c.decodeIfPresent(Quota.self, forKey: .quota) ?? Quota()
         accounts = try c.decodeIfPresent([AccountRecord].self, forKey: .accounts) ?? []
+        observed = try c.decodeIfPresent(Observed.self, forKey: .observed) ?? Observed()
     }
 
     public func account(_ id: AccountID?) -> AccountRecord? {

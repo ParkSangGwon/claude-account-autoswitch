@@ -69,18 +69,38 @@ public actor Engine {
     }
 
     /// Rebuild the runtime from a document, keeping what was learned about accounts that stay.
+    /// On the first adoption there is nothing to keep, so the document's own observations stand in.
     func adopt(_ c: Configuration) {
         configuration = c
         let old = runtime
         runtime = c.accounts.map { record in
             var r = AccountRuntime(record: record)
             if let prev = old.first(where: { $0.id == record.id || $0.record.sameIdentity(as: record) }) { r.inherit(from: prev) }
+            else if let seen = c.observed.windows(of: record.id) { r.windows = seen }
             return r
         }
         affinity.retain(Set(runtime.map(\.id)))
+        let before = cursor
+        if cursor == nil { cursor = c.observed.lastActive }
         if let cur = cursor, !runtime.contains(where: { $0.id == cur }) { cursor = nil }
         let now = Date()
+        sweep(now: now)
         if cursor == nil || !canServe(cursor!, now: now) { cursor = bestCandidate(excluding: [], now: now) ?? cursor }
+        // Quitting cannot be relied on to write, so a cursor settled here is written now.
+        if cursor != before { saveObservations() }
+    }
+
+    /// Write back what the engine has learned, so the next launch starts where this one left off
+    /// instead of sending its first request to an account it has no numbers for. The cursor moving
+    /// and a finished probe are the moments worth a write; a failed one costs freshness, nothing in flight.
+    func saveObservations() {
+        let observed = Configuration.Observed(
+            lastActive: cursor,
+            accounts: runtime.compactMap { $0.windows.isEmpty ? nil : .init(id: $0.id, windows: $0.windows) }
+        )
+        guard observed != configuration.observed else { return }
+        configuration.observed = observed
+        try? store.save(configuration)
     }
 
     /// The settings screens' write path: the document is saved, then applied live.
@@ -133,6 +153,7 @@ public actor Engine {
     public func stop() async {
         probeTask?.cancel()
         probeTask = nil
+        saveObservations()
         await listener?.stop()
         listener = nil
         startedAt = nil
@@ -190,6 +211,7 @@ public actor Engine {
     public func switchTo(_ id: AccountID) -> SwitchOutcome {
         guard let r = runtime.first(where: { $0.id == id }) else { return .failed(L("No such account")) }
         cursor = id
+        saveObservations()
         return .switched(to: r.label, blocker: blocker(of: r, now: Date()))
     }
 

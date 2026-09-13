@@ -21,6 +21,12 @@ Tokens live in this file and nowhere else.
     "waitWhenExhaustedSeconds": 0
   },
   "quota": { "refreshEverySeconds": 300 },
+  "observed": {
+    "lastActive": "6f1c…",
+    "accounts": [
+      { "id": "6f1c…", "windows": { "readings": ["weekly", { "used": 0.99, "resetsAt": "2026-09-18T09:00:00Z" }] } }
+    ]
+  },
   "accounts": [
     {
       "id": "6f1c…",
@@ -47,6 +53,7 @@ Tokens live in this file and nowhere else.
 | `rotation.spreadSessions` | Give each new Claude Code session the least loaded account among the best-ranked ones. |
 | `rotation.waitWhenExhaustedSeconds` | When every account is out, hold the request this long before answering 429. |
 | `quota.refreshEverySeconds` | Background refresh of idle accounts from the usage endpoint. 0 turns it off; the minimum is 30. |
+| `observed` | The engine's own notes, not a setting: the account it left off on and each account's last known windows. Written when rotation moves, after a probe, and on quit. |
 | `accounts[].rank` | Lower is preferred. A strictly lower rank preempts a healthy current account. |
 | `accounts[].enabled` | Off takes the account out of rotation without removing it. |
 | `accounts[].cap` | A hard ceiling per window (`uniform` for all, or `perWindow`). At the cap the account takes nothing. |
@@ -84,6 +91,9 @@ Among the accounts that can serve, the choice is:
 4. the best-ranked account, ties broken by the weekly window that resets soonest, then config order
 
 A successful reply makes its account the current one and pins the session to it for that weekly window.
+
+A restart picks up where the last run left off: the current account and every account's last known windows come back from `observed`, so the first request is not sent to an account that was already spent when the app quit.
+Windows whose reset passed while the app was closed are forgotten on the way in, so an account that rolled over is preferred again straight away.
 
 ## What a reply does
 

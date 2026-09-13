@@ -6,6 +6,7 @@
 #   make smoke      launch the bundle with a scratch config and check the listener answers
 #   make run        make app, then open it
 #   make install    copy the bundle to /Applications
+#   make release V=X.Y.Z  bump VERSION, re-shoot the README screenshots, commit and push the tag
 #   make clean
 #
 # The bundle version comes from the VERSION file at the repository root.
@@ -23,7 +24,7 @@ APP := $(DIST)/$(APP_NAME).app
 VERSION := $(shell cat VERSION 2>/dev/null || echo 0.0.0)
 BIN := $(shell $(SWIFT) build -c release $(SCRATCH_FLAG) --show-bin-path 2>/dev/null)
 
-.PHONY: build test app smoke run install clean
+.PHONY: build test app smoke run install release clean
 
 build:
 	$(SWIFT) build -c release $(SCRATCH_FLAG) --product $(PRODUCT)
@@ -52,6 +53,10 @@ install: app
 	rm -rf "/Applications/$(APP_NAME).app"
 	cp -R "$(APP)" "/Applications/$(APP_NAME).app"
 	@echo "installed /Applications/$(APP_NAME).app"
+
+release:
+	@[ -n "$(V)" ] || { echo "usage: make release V=X.Y.Z"; exit 1; }
+	scripts/release.sh "$(V)"
 
 clean:
 	rm -rf .build $(DIST)

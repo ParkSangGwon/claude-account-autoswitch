@@ -399,6 +399,7 @@
 "Upstream must be an http(s) URL" = "アップストリームは http(s) の URL で指定してください";
 "Usage at which rotation leaves an account. Reported usage arrives in whole percents." = "ローテーションがアカウントを離れる使用量。報告される使用量は整数パーセント単位です。";
 "Writes the engine's state, the config with every secret replaced and the app's state to a folder in Downloads — what a bug report needs, without tokens." = "エンジンの状態、すべてのシークレットを置き換えた設定、アプリの状態をダウンロード内のフォルダに書き出します — バグ報告に必要な情報を、トークン抜きで。";
+"cannot be spent · %@" = "使用不可 · %@";
 "capped" = "上限到達";
 "cooling down" = "クールダウン中";
 "cooling down %@" = "クールダウン中 %@";

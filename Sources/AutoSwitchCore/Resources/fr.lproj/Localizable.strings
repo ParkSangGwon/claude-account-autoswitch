@@ -399,6 +399,7 @@
 "Upstream must be an http(s) URL" = "L'upstream doit être une URL http(s)";
 "Usage at which rotation leaves an account. Reported usage arrives in whole percents." = "Usage à partir duquel la rotation quitte un compte. L'usage rapporté arrive en pourcentages entiers.";
 "Writes the engine's state, the config with every secret replaced and the app's state to a folder in Downloads — what a bug report needs, without tokens." = "Écrit l'état du moteur, la configuration avec tous les secrets remplacés et l'état de l'app dans un dossier de Téléchargements — ce dont un rapport de bug a besoin, sans les jetons.";
+"cannot be spent · %@" = "inutilisable · %@";
 "capped" = "plafonné";
 "cooling down" = "en refroidissement";
 "cooling down %@" = "en refroidissement %@";

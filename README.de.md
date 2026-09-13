@@ -135,7 +135,7 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
 - **Wohin die nächste Anfrage geht, und warum.**
   - Der Grund des alten Kontos, eine bessere Priorität oder „bleibt bei ted“.
 - **Summen aller Konten und die Zeitleiste der Zurücksetzungen.**
-  - Nach Stufe gewichtete Aggregate.
+  - Nach Stufe gewichtete Aggregate, die nur Konten zählen, die das Fenster noch nutzen können.
   - Jede kommende Fenster-Zurücksetzung, mit `↑` bei denen, die ein Konto zurückbringen.
 - **Rotation, die die echten Fälle abdeckt.**
   - Ein 429, das ein geschlossenes Fenster nennt, drosselt das Konto für sein Retry-After.

@@ -202,6 +202,9 @@ struct PopoverView: View {
                     .severityChip(severity).padding(.trailing, -4)
                     .frame(width: 48, alignment: .trailing)
             }
+            // The stranded accounts are already greyed out in the table above; the count only has
+            // to be reachable, not to crowd a row this narrow.
+            .help(total.countedAccounts < total.knownAccounts ? L("%d of %d eligible", total.countedAccounts, total.knownAccounts) : "")
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(L("Fleet %@ %d percent", label, Format.percentInt(total.used)))
         }

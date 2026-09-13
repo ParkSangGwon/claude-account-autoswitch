@@ -38,6 +38,10 @@ enum SeverityColors {
     static let hotChip = adaptive(light: (1.000, 0.929, 0.835), dark: (0.349, 0.235, 0.161))
     static let criticalChip = adaptive(light: (0.996, 0.886, 0.886), dark: (0.341, 0.192, 0.200))
 
+    // A window its account cannot spend. Tailwind's gray 400/600: it has to sit clear of the
+    // 12% track underneath it and still read as "off" next to any of the four severities.
+    static let inert = adaptive(light: (0.612, 0.639, 0.686), dark: (0.322, 0.357, 0.404))
+
     static func nsColor(for severity: Severity) -> NSColor {
         switch severity {
         case .calm: return calm
@@ -147,12 +151,15 @@ struct QuotaBar: View {
     var severity: Severity
     var cap: Double?
     var height: CGFloat = 4
+    /// The account cannot spend this window before it rolls over, so pace says nothing about it:
+    /// grey, or a spare five hours behind a spent week reads as room to work.
+    var stranded = false
 
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(.primary.opacity(0.12))
-                Capsule().fill(severity.color).frame(width: max(ratio > 0 ? 1 : 0, geo.size.width * min(1, max(0, ratio))))
+                Capsule().fill(stranded ? Color(nsColor: SeverityColors.inert) : severity.color).frame(width: max(ratio > 0 ? 1 : 0, geo.size.width * min(1, max(0, ratio))))
                 if let cap {
                     Rectangle().fill(Severity.brisk.color).frame(width: 1, height: height + 2)
                         .offset(x: geo.size.width * min(1, max(0, cap)) - 0.5, y: -1)

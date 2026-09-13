@@ -38,6 +38,15 @@ public enum Blocker: Codable, Sendable, Equatable, Hashable {
         }
     }
 
+    /// The window this blocker names, when it names one.
+    public var window: WindowKind? {
+        switch self {
+        case .capped(let kind): return kind
+        case .windowFull(let kind, _): return kind
+        default: return nil
+        }
+    }
+
     /// A short key for logs and history strips.
     public var code: String {
         switch self {

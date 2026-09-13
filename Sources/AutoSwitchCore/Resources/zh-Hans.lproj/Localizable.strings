@@ -399,6 +399,7 @@
 "Upstream must be an http(s) URL" = "上游必须是 http(s) URL";
 "Usage at which rotation leaves an account. Reported usage arrives in whole percents." = "达到该用量时，轮换将离开该账户。上报的用量为整数百分比。";
 "Writes the engine's state, the config with every secret replaced and the app's state to a folder in Downloads — what a bug report needs, without tokens." = "将引擎状态、替换掉所有机密的配置以及应用状态写入“下载”中的一个文件夹 — 错误报告所需的一切，且不含令牌。";
+"cannot be spent · %@" = "无法使用 · %@";
 "capped" = "已达上限";
 "cooling down" = "冷却中";
 "cooling down %@" = "冷却中 %@";

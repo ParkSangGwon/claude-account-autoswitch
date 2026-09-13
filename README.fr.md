@@ -135,7 +135,7 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
 - **Où va la prochaine requête, et pourquoi.**
   - La raison de l'ancien compte, une meilleure priorité, ou « reste sur ted ».
 - **Totaux de tous les comptes et chronologie des réinitialisations.**
-  - Agrégats pondérés par palier.
+  - Agrégats pondérés par palier qui ne comptent que les comptes pouvant encore utiliser la fenêtre.
   - Chaque prochaine réinitialisation de fenêtre, avec `↑` sur celles qui remettent un compte en rotation.
 - **Une rotation qui gère les cas réels.**
   - Un 429 qui nomme une fenêtre fermée bride le compte pour la durée de son retry-after.

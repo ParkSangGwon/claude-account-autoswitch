@@ -133,16 +133,18 @@ struct AccountTableRow: View {
     @ViewBuilder
     private func cell(_ ratio: Double?, resetsAt: Date?, kind: WindowKind?, name: String, prefix: String = "", width: CGFloat) -> some View {
         let resetLong = Format.resetSentence(resetsAt, style: .both, now: now)
+        let stranded = kind.map { !account.canSpend($0) } ?? false
+        let note = strandedNote(stranded)
         VStack(alignment: .leading, spacing: 2) {
             if let ratio {
                 let threshold = kind.map { state.rotation.switchAt($0) } ?? state.rotation.switchAt
                 let severity = Pace.severity(used: ratio, resetsAt: resetsAt, length: kind?.length, threshold: threshold, now: now)
-                QuotaBar(ratio: ratio, severity: severity, cap: nil, height: 5)
+                QuotaBar(ratio: ratio, severity: severity, cap: nil, height: 5, stranded: stranded)
                     .frame(width: width - 6)
                 // Two lines: how much is used, then when it resets, so neither crowds the other.
                 // The number takes a chip as soon as the window needs attention; a thin bar alone is easy to miss.
                 Text(prefix + "\(Format.percentInt(ratio))%").font(.system(size: isCurrent ? 11 : 10, weight: severity == .calm ? (isCurrent ? .semibold : .regular) : .semibold, design: .monospaced)).lineLimit(1)
-                    .severityChip(severity).padding(.leading, -4)
+                    .severityChip(stranded ? .calm : severity).padding(.leading, -4)
                 Text(countdown(resetsAt)).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary).lineLimit(1)
             } else {
                 QuotaBar(ratio: 0, severity: .calm, cap: nil, height: 5).frame(width: width - 6)
@@ -151,9 +153,16 @@ struct AccountTableRow: View {
             }
         }
         .frame(width: width, alignment: .leading)
-        .help(ratio.map { "\(name) \(Format.percent($0))" + (resetLong.isEmpty ? "" : " · " + resetLong) } ?? L("%@ unknown", name))
+        .opacity(stranded ? 0.55 : 1)
+        .help((ratio.map { "\(name) \(Format.percent($0))" + (resetLong.isEmpty ? "" : " · " + resetLong) } ?? L("%@ unknown", name)) + note)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(ratio.map { "\(name) \(Format.percent($0))" + (resetLong.isEmpty ? "" : ", " + resetLong) } ?? L("%@ unknown", name))
+        .accessibilityLabel((ratio.map { "\(name) \(Format.percent($0))" + (resetLong.isEmpty ? "" : ", " + resetLong) } ?? L("%@ unknown", name)) + note)
+    }
+
+    /// Grey says nothing to a screen reader, so the reason rides along in the label.
+    private func strandedNote(_ stranded: Bool) -> String {
+        guard stranded, let b = account.blocker else { return "" }
+        return " · " + L("cannot be spent · %@", b.text(now: now))
     }
 
     @ViewBuilder
@@ -161,17 +170,20 @@ struct AccountTableRow: View {
         if let r = reading {
             let severity = Pace.severity(r, kind: kind, threshold: state.rotation.switchAt(kind), now: now)
             let resetLong = Format.resetSentence(r.resetsAt, style: .both, now: now)
+            let stranded = !account.canSpend(kind)
+            let note = strandedNote(stranded)
             VStack(alignment: .leading, spacing: 2) {
-                QuotaBar(ratio: r.used, severity: severity, cap: nil, height: 5)
+                QuotaBar(ratio: r.used, severity: severity, cap: nil, height: 5, stranded: stranded)
                     .frame(width: AccountsTable.narrowCol - 6)
                 Text("\(Format.percentInt(r.used))%").font(.system(size: isCurrent ? 11 : 10, weight: severity == .calm ? (isCurrent ? .semibold : .regular) : .semibold, design: .monospaced))
-                    .severityChip(severity).padding(.leading, -4)
+                    .severityChip(stranded ? .calm : severity).padding(.leading, -4)
                 Text(countdown(r.resetsAt)).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary).lineLimit(1)
             }
             .frame(width: AccountsTable.narrowCol, alignment: .leading)
-            .help("\(name) \(Format.percent(r.used)) · \(resetLong)")
+            .opacity(stranded ? 0.55 : 1)
+            .help("\(name) \(Format.percent(r.used)) · \(resetLong)" + note)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(name) \(Format.percent(r.used)), \(resetLong)")
+            .accessibilityLabel("\(name) \(Format.percent(r.used)), \(resetLong)" + note)
         } else {
             VStack(alignment: .leading, spacing: 2) {
                 QuotaBar(ratio: 0, severity: .calm, cap: nil, height: 5).frame(width: AccountsTable.narrowCol - 6)

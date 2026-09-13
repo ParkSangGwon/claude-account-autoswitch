@@ -11,6 +11,7 @@ public enum EngineError: Error, Sendable, Equatable {
     case noSuchAccount
     case timedOut
     case cancelled
+    case configUnreadable
 
     public var message: String {
         switch self {
@@ -23,6 +24,7 @@ public enum EngineError: Error, Sendable, Equatable {
         case .noSuchAccount: return L("No such account")
         case .timedOut: return L("Timed out waiting for the sign-in")
         case .cancelled: return L("Cancelled")
+        case .configUnreadable: return L("Not saving — the config file could not be read. Fix the file first so the accounts in it are not lost.")
         }
     }
 }
@@ -41,6 +43,9 @@ public actor Engine {
     var startedAt: Date?
     private var listener: HTTPServer?
     public private(set) var lastError: EngineError?
+    /// The document on disk could not be parsed. Every write is refused while this stands, so a file
+    /// the app never read is not replaced by the empty defaults it fell back to.
+    public private(set) var loadFailure: ConfigError?
     /// A paste-the-code login waiting for its code, and a browser login waiting for its callback.
     var pendingPaste: (pkce: OAuth.PKCE, continuation: CheckedContinuation<String, Error>)?
     var pendingCallback: (pkce: OAuth.PKCE, continuation: CheckedContinuation<(code: String, state: String), Error>)?
@@ -64,8 +69,18 @@ public actor Engine {
         } catch ConfigError.notFound {
             try store.save(Configuration.defaults)
             adopt(Configuration.defaults)
+        } catch let failure as ConfigError {
+            loadFailure = failure
+            throw failure
         }
+        loadFailure = nil
         loaded = true
+    }
+
+    /// A write while the document is unreadable would put the app's in-memory defaults — no accounts,
+    /// no tokens — over a file that still holds them.
+    private func refuseWhileUnreadable() throws {
+        if loadFailure != nil { throw EngineError.configUnreadable }
     }
 
     /// Rebuild the runtime from a document, keeping what was learned about accounts that stay.
@@ -94,6 +109,7 @@ public actor Engine {
     /// instead of sending its first request to an account it has no numbers for. The cursor moving
     /// and a finished probe are the moments worth a write; a failed one costs freshness, nothing in flight.
     func saveObservations() {
+        guard loadFailure == nil else { return }
         let observed = Configuration.Observed(
             lastActive: cursor,
             accounts: runtime.compactMap { $0.windows.isEmpty ? nil : .init(id: $0.id, windows: $0.windows) }
@@ -105,6 +121,7 @@ public actor Engine {
 
     /// The settings screens' write path: the document is saved, then applied live.
     public func update(_ mutate: @Sendable (inout Configuration) throws -> Void) throws {
+        try refuseWhileUnreadable()
         var c = configuration
         try mutate(&c)
         try store.save(c)
@@ -115,12 +132,19 @@ public actor Engine {
     public func replace(_ c: Configuration) throws {
         try store.save(c)
         adopt(c)
+        loadFailure = nil
     }
 
     /// Re-read the file (something else edited it); returns how many accounts appeared.
     public func reloadFromDisk() throws -> Int {
         let before = Set(runtime.map(\.id))
-        adopt(try store.load())
+        do {
+            adopt(try store.load())
+        } catch let failure as ConfigError {
+            loadFailure = failure
+            throw failure
+        }
+        loadFailure = nil
         return runtime.filter { !before.contains($0.id) }.count
     }
 

@@ -5,6 +5,7 @@
 "%@ for %@" = "%2$@의 %1$@";
 "%@ is back in rotation" = "%@ 로테이션 복귀";
 "%@ is billing overage" = "%@ 초과 사용 과금 중";
+"%@ is not the shape the app expects" = "%@ 항목의 형식이 앱이 기대하는 것과 다릅니다";
 "%@ left rotation" = "%@ 로테이션 이탈";
 "%@ needs a re-login" = "%@ 재로그인 필요";
 "%@ on GitHub" = "GitHub의 %@";
@@ -47,6 +48,7 @@
 "Account %@ needs a re-login." = "%@ 계정에 재로그인 필요.";
 "Account needs a re-login" = "계정 재로그인 필요";
 "Accounts" = "계정";
+"Accounts unknown" = "계정을 알 수 없음";
 "Actions" = "동작";
 "Add account…" = "계정 추가…";
 "Added %@" = "%@ 추가됨";
@@ -174,6 +176,7 @@
 "No rotation observed yet. Entries are recorded while the app runs (the proxy itself keeps no history)." = "아직 관찰된 로테이션 없음. 항목은 앱 실행 중에 기록됨 (프록시 자체는 기록을 보관하지 않음).";
 "Normal (2 s / 30 s)" = "보통 (2 s / 30 s)";
 "Not eligible: %@" = "사용 불가: %@";
+"Not saving — the config file could not be read. Fix the file first so the accounts in it are not lost." = "저장하지 않았습니다 — 설정 파일을 읽지 못했습니다. 파일을 먼저 고쳐야 그 안의 계정을 잃지 않습니다.";
 "Not valid JSON: %@" = "유효한 JSON이 아님: %@";
 "Nothing recorded yet — samples start with the first successful poll." = "아직 기록 없음 — 첫 폴링 성공부터 샘플 시작.";
 "Notifications" = "알림";
@@ -280,6 +283,9 @@
 "That does not look like an Anthropic API key" = "Anthropic API 키 형식이 아닙니다";
 "The account is in an error state. Open Settings → Accounts." = "계정이 오류 상태. 설정 → 계정 열기.";
 "The account leaves the config and rotation at once." = "계정이 설정과 로테이션에서 바로 빠집니다.";
+"The config file could not be read, so the accounts in it are not shown. Fix the file (Advanced → Config file → Reveal), then reload from disk." = "설정 파일을 읽지 못해 그 안의 계정을 보여주지 않습니다. 파일을 고친 뒤(고급 → 설정 파일 → Finder에서 보기) 디스크에서 다시 불러오세요.";
+"The editor stays closed while the file cannot be read: it would open on an empty document, and saving that would replace the accounts the file still holds. Reveal the file, fix it in a text editor, then reload." = "파일을 읽지 못하는 동안에는 편집기가 열리지 않습니다. 빈 문서가 열리고, 그것을 저장하면 파일에 남아 있는 계정을 덮어쓰기 때문입니다. 파일을 Finder에서 열어 텍스트 편집기로 고친 뒤 다시 불러오세요.";
+"The file is not valid JSON" = "파일이 올바른 JSON이 아닙니다";
 "The icon turns orange when a bar runs ahead of its window (the same rule that colours the bars) and red at the switch threshold or when nothing can serve." = "막대가 윈도우보다 앞서 나가면 아이콘이 주황색(막대 색과 같은 규칙), 전환 임계값이거나 처리 가능한 계정이 없으면 빨간색.";
 "The listener could not start. Change the port under Settings → Proxy, or quit the program holding it, then try again." = "수신을 시작하지 못했습니다. 설정 → 프록시에서 포트를 바꾸거나 그 포트를 쓰는 프로그램을 종료한 뒤 다시 시도하세요.";
 "The listener is down — edits are saved and apply as soon as it starts." = "수신이 중단된 상태입니다. 변경 사항은 저장되며 시작되는 즉시 적용됩니다.";

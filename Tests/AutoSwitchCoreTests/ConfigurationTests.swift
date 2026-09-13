@@ -85,6 +85,36 @@ final class ConfigurationTests: XCTestCase {
         XCTAssertThrowsError(try store.load()) { if case .malformed = $0 as? ConfigError {} else { XCTFail("\($0)") } }
     }
 
+    func testPerWindowThresholdsAreWrittenByNameAndOlderFilesStillRead() throws {
+        var c = Configuration.defaults
+        c.rotation.switchAtByWindow = [.weekly: 0.9, .session: 0.5]
+        let text = String(decoding: try Configuration.encoder().encode(c), as: UTF8.self)
+        XCTAssertTrue(text.contains("\"weekly\" : 0.9"), "written the way a person writes it:\n\(text)")
+        XCTAssertEqual(try Configuration.decoder().decode(Configuration.self, from: Data(text.utf8)).rotation.switchAtByWindow, c.rotation.switchAtByWindow)
+
+        // What Swift's own dictionary encoding produced before this: a flat array of key, value.
+        let older = #"{"rotation":{"switchAt":0.98,"switchAtByWindow":["weekly",0.9],"spreadSessions":false,"waitWhenExhaustedSeconds":0}}"#
+        let decoded = try Configuration.decoder().decode(Configuration.self, from: Data(older.utf8))
+        XCTAssertEqual(decoded.rotation.switchAtByWindow, [.weekly: 0.9])
+
+        let unknownWindow = #"{"rotation":{"switchAtByWindow":{"weekly":0.9,"monthly":0.4}}}"#
+        let lenient = try Configuration.decoder().decode(Configuration.self, from: Data(unknownWindow.utf8))
+        XCTAssertEqual(lenient.rotation.switchAtByWindow, [.weekly: 0.9], "a window nobody knows is skipped, not fatal")
+        XCTAssertEqual(lenient.rotation.switchAt, 0.98, "the rest of the section keeps its defaults")
+    }
+
+    func testAParseFailureNamesTheKeyToGoAndLookAt() throws {
+        let store = ConfigStore(path: dir.appending(path: "config.json"))
+        try Data(#"{"listen":{"port":"ten thousand"}}"#.utf8).write(to: store.path)
+        XCTAssertThrowsError(try store.load()) {
+            XCTAssertEqual(($0 as? ConfigError)?.message, "The config is not valid: listen.port is not the shape the app expects")
+        }
+        try Data("{not json".utf8).write(to: store.path)
+        XCTAssertThrowsError(try store.load()) {
+            XCTAssertEqual(($0 as? ConfigError)?.message, "The config is not valid: The file is not valid JSON")
+        }
+    }
+
     func testWriteThroughASymlinkKeepsTheLink() throws {
         let real = dir.appending(path: "real.json")
         try Data("{}".utf8).write(to: real)

@@ -394,7 +394,14 @@ final class AppStore {
     // MARK: - configuration (settings screens)
 
     /// The configuration as the engine holds it; the screens update when it lands.
+    /// While the file cannot be parsed the engine holds defaults, not the document — publishing
+    /// those would show "no accounts" over a file that has them, so the screens get nothing instead.
     func loadConfiguration() async {
+        if let failure = await engine.loadFailure {
+            configuration = nil
+            configError = failure.message
+            return
+        }
         configuration = await engine.configuration
         configError = nil
     }

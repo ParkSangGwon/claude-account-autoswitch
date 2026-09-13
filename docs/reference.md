@@ -49,7 +49,7 @@ Tokens live in this file and nowhere else.
 | `listen.port` | Local port for the listener. 1–65535; anything else falls back to 10912. |
 | `api.baseURL` | Where requests are forwarded. |
 | `rotation.switchAt` | Usage (0–1) at which rotation leaves an account. |
-| `rotation.switchAtByWindow` | Per-window overrides: `session`, `weekly`, `weeklyFable`, `weeklySonnet`. A missing window uses `switchAt`. |
+| `rotation.switchAtByWindow` | Per-window overrides, keyed by window name: `session`, `weekly`, `weeklyFable`, `weeklySonnet`. A missing window uses `switchAt`; a name the app does not know is skipped. |
 | `rotation.spreadSessions` | Give each new Claude Code session the least loaded account among the best-ranked ones. |
 | `rotation.waitWhenExhaustedSeconds` | When every account is out, hold the request this long before answering 429. |
 | `quota.refreshEverySeconds` | Background refresh of idle accounts from the usage endpoint. 0 turns it off; the minimum is 30. |
@@ -61,6 +61,10 @@ Tokens live in this file and nowhere else.
 | `accounts[].credential` | `oauth` (access, refresh, expiresAt) or `apiKey`. |
 
 Missing sections take their defaults, so a hand-written file needs only what it changes.
+
+A section the app cannot parse stops it from writing the file at all: the settings screens show what went wrong and which key to look at, the accounts pane says the accounts are unknown rather than showing none, and the JSON editor stays closed.
+Otherwise a file it never read would be replaced by the empty defaults it fell back to, and the tokens in it would be gone.
+Fix the file, then Advanced → Config file → Reload from disk.
 
 ## Windows
 

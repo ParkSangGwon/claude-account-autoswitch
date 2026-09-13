@@ -29,6 +29,34 @@ public struct Configuration: Codable, Sendable, Equatable {
         }
 
         public func switchAt(_ kind: WindowKind) -> Double { switchAtByWindow[kind] ?? switchAt }
+
+        enum CodingKeys: String, CodingKey { case switchAt, switchAtByWindow, spreadSessions, waitWhenExhaustedSeconds }
+
+        /// `switchAtByWindow` is written `{"weekly": 0.9}`, the shape a person writing this file by
+        /// hand reaches for. Swift's own dictionary encoding puts a non-string key in a flat array,
+        /// so documents written before this still decode; a window name nobody knows is skipped.
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            let d = Rotation()
+            switchAt = try c.decodeIfPresent(Double.self, forKey: .switchAt) ?? d.switchAt
+            spreadSessions = try c.decodeIfPresent(Bool.self, forKey: .spreadSessions) ?? d.spreadSessions
+            waitWhenExhaustedSeconds = try c.decodeIfPresent(Int.self, forKey: .waitWhenExhaustedSeconds) ?? d.waitWhenExhaustedSeconds
+            if let named = try? c.decodeIfPresent([String: Double].self, forKey: .switchAtByWindow) {
+                switchAtByWindow = named.reduce(into: [:]) { table, pair in
+                    if let kind = WindowKind(rawValue: pair.key) { table[kind] = pair.value }
+                }
+            } else {
+                switchAtByWindow = try c.decodeIfPresent([WindowKind: Double].self, forKey: .switchAtByWindow) ?? [:]
+            }
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var c = encoder.container(keyedBy: CodingKeys.self)
+            try c.encode(switchAt, forKey: .switchAt)
+            try c.encode(Dictionary(uniqueKeysWithValues: switchAtByWindow.map { ($0.key.rawValue, $0.value) }), forKey: .switchAtByWindow)
+            try c.encode(spreadSessions, forKey: .spreadSessions)
+            try c.encode(waitWhenExhaustedSeconds, forKey: .waitWhenExhaustedSeconds)
+        }
     }
 
     public struct Quota: Codable, Sendable, Equatable {
@@ -123,6 +151,24 @@ public enum ConfigError: Error, Sendable, Equatable {
         case .writeFailed(let why): return L("Cannot write the config: %@", why)
         }
     }
+
+    /// A decoder describes a failure in Swift types and coding keys, which tells a person nothing.
+    /// What they need is the line of the document to go and look at.
+    public static func describe(_ error: Error) -> String {
+        guard let decoding = error as? DecodingError else { return error.localizedDescription }
+        let context: DecodingError.Context
+        var missingKey: String?
+        switch decoding {
+        case .typeMismatch(_, let c), .valueNotFound(_, let c), .dataCorrupted(let c): context = c
+        case .keyNotFound(let key, let c): context = c; missingKey = key.stringValue
+        @unknown default: return error.localizedDescription
+        }
+        var path = context.codingPath.map { $0.intValue.map { "[\($0)]" } ?? ".\($0.stringValue)" }.joined()
+        if let missingKey { path += ".\(missingKey)" }
+        path = String(path.drop(while: { $0 == "." }))
+        if path.isEmpty { return L("The file is not valid JSON") }
+        return L("%@ is not the shape the app expects", path)
+    }
 }
 
 /// Where the document lives and how it is written: a same-directory temp file, 0600, fsynced,
@@ -143,7 +189,7 @@ public struct ConfigStore: Sendable, Equatable {
         guard FileManager.default.fileExists(atPath: path.path) else { throw ConfigError.notFound(path.path) }
         let data: Data
         do { data = try Data(contentsOf: path) } catch { throw ConfigError.unreadable(error.localizedDescription) }
-        do { return try Configuration.decoder().decode(Configuration.self, from: data) } catch { throw ConfigError.malformed(String(describing: error)) }
+        do { return try Configuration.decoder().decode(Configuration.self, from: data) } catch { throw ConfigError.malformed(ConfigError.describe(error)) }
     }
 
     public func save(_ configuration: Configuration) throws {

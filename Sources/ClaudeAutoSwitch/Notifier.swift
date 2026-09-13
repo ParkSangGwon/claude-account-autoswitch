@@ -34,7 +34,10 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
 
     func refreshPermission() async {
         guard available else { return }
-        permission = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        // `UNNotificationSettings` is not Sendable, so only the status crosses back.
+        permission = await withCheckedContinuation { (continuation: CheckedContinuation<UNAuthorizationStatus, Never>) in
+            UNUserNotificationCenter.current().getNotificationSettings { continuation.resume(returning: $0.authorizationStatus) }
+        }
     }
 
     /// Alerts are switched on in Settings but the Mac will not show them.

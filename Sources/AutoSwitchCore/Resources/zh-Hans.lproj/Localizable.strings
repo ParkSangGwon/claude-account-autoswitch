@@ -28,12 +28,14 @@
 "%d requests" = "%d 个请求";
 "%d samples · one a minute while the app runs" = "%d 个样本 · 应用运行时每分钟一个";
 "%d sess" = "%d 会话";
+"%d sessions · %d requests since launch" = "%d 个会话 · 启动后 %d 个请求";
 "%d without a tier" = "%d 个未知层级";
 "%d/%d accounts available" = "%d/%d 个账户可用";
 "(default)" = "（默认）";
 "+%d more" = "+%d 个";
 "1 account" = "1 个账户";
 "1 account in the config" = "配置中有 1 个账户";
+"1 session · %d requests since launch" = "1 个会话 · 启动后 %d 个请求";
 "24 h" = "24 h";
 "5h resets in %@" = "5h %@后重置";
 "6 h" = "6 h";
@@ -295,6 +297,7 @@
 "The proxy is not reachable" = "代理不可达";
 "The token reply carried no access token" = "令牌响应中没有访问令牌";
 "The translation for %@ is not in this build; showing English." = "此版本不包含 %@ 的翻译；显示英文。";
+"This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not." = "请求数是本代理从应用启动那一刻开始统计的，退出后会归零。使用量条来自 Claude，不会归零。";
 "Timed out waiting for the sign-in" = "等待登录超时";
 "Today %@" = "今天 %@";
 "Tok " = "Tok ";
@@ -364,6 +367,7 @@
 "switch failed" = "切换失败";
 "switched from the app" = "从应用切换";
 "switched to %@" = "已切换到 %@";
+"switched to %@, but %@ has a better priority and takes the next request" = "已切换到 %@，但 %@ 的优先级更高，下一个请求会走它";
 "switched to %@, but rotation will not use it" = "已切换到 %@，但轮换不会使用它";
 "the proxy is back" = "Claude AutoSwitch 代理已恢复";
 "the proxy is not responding" = "Claude AutoSwitch 代理无响应";
@@ -379,8 +383,6 @@
 "%@ %@ has had %d requests in a row come back with nothing" = "%@ %@ 已连续 %d 个请求没有收到任何返回";
 "%@ weekly" = "%@ 每周";
 "%@ window at the switch threshold" = "%@ 窗口已达切换阈值";
-"%d sessions · %d requests" = "%d 个会话 · %d 个请求";
-"1 session · %d requests" = "1 个会话 · %d 个请求";
 "Cannot read the config: %@" = "无法读取配置：%@";
 "Cannot write the config: %@" = "无法写入配置：%@";
 "Hand-editable JSON. The editor shows secrets as %@ and puts them back on save; the file is written atomically with 0600 permissions and applied at once." = "可手动编辑的 JSON。编辑器将机密显示为 %@，存储时再放回；文件以 0600 权限原子写入并立即应用。";

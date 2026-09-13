@@ -28,12 +28,14 @@
 "%d requests" = "요청 %d건";
 "%d samples · one a minute while the app runs" = "샘플 %d개 · 앱 실행 중 1분마다";
 "%d sess" = "세션 %d";
+"%d sessions · %d requests since launch" = "세션 %d개 · 실행 후 요청 %d건";
 "%d without a tier" = "티어 미확인 %d";
 "%d/%d accounts available" = "계정 %d/%d 사용 가능";
 "(default)" = "(기본값)";
 "+%d more" = "+%d개 더";
 "1 account" = "계정 1개";
 "1 account in the config" = "설정에 계정 1개";
+"1 session · %d requests since launch" = "세션 1개 · 실행 후 요청 %d건";
 "24 h" = "24 h";
 "5h resets in %@" = "5h %@ 후 리셋";
 "6 h" = "6 h";
@@ -295,6 +297,7 @@
 "The proxy is not reachable" = "프록시에 연결할 수 없음";
 "The token reply carried no access token" = "토큰 응답에 액세스 토큰이 없습니다";
 "The translation for %@ is not in this build; showing English." = "%@ 번역이 이 빌드에 없음. 영어로 표시.";
+"This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not." = "요청 수는 앱이 시작한 순간부터 이 프록시가 센 것이라 종료하면 0으로 돌아갑니다. 사용량 막대는 Claude가 보고한 값이라 그렇지 않습니다.";
 "Timed out waiting for the sign-in" = "로그인을 기다리다 시간이 초과됨";
 "Today %@" = "오늘 %@";
 "Tok " = "토큰 ";
@@ -364,6 +367,7 @@
 "switch failed" = "전환 실패";
 "switched from the app" = "앱에서 전환";
 "switched to %@" = "%@(으)로 전환됨";
+"switched to %@, but %@ has a better priority and takes the next request" = "%@(으)로 전환했지만 %@의 우선순위가 더 높아 다음 요청은 그쪽으로 갑니다";
 "switched to %@, but rotation will not use it" = "%@(으)로 전환됐지만 로테이션은 사용하지 않음";
 "the proxy is back" = "Claude AutoSwitch 프록시 복구됨";
 "the proxy is not responding" = "Claude AutoSwitch 프록시 응답 없음";
@@ -380,8 +384,6 @@
 "%@ %@ has had %d requests in a row come back with nothing" = "%@ %@이(가) 요청 %d건 연속 빈 응답을 받음";
 "%@ weekly" = "%@ 주간";
 "%@ window at the switch threshold" = "%@ 윈도우 전환 임계값 도달";
-"%d sessions · %d requests" = "세션 %d개 · 요청 %d건";
-"1 session · %d requests" = "세션 1개 · 요청 %d건";
 "Cannot read the config: %@" = "설정을 읽을 수 없음: %@";
 "Cannot write the config: %@" = "설정을 쓸 수 없음: %@";
 "Hand-editable JSON. The editor shows secrets as %@ and puts them back on save; the file is written atomically with 0600 permissions and applied at once." = "직접 편집할 수 있는 JSON. 편집기는 비밀 값을 %@(으)로 표시하고 저장 시 원래 값으로 되돌립니다. 파일은 0600 권한으로 원자적으로 쓰이며 즉시 적용됩니다.";

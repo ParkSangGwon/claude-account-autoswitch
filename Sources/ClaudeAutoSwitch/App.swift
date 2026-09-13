@@ -99,8 +99,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
-        store.stop()
+    /// `applicationWillTerminate` cannot wait for anything: the work it starts is still in flight when
+    /// the process goes, which lost the last rotation and up to five minutes of history on every quit.
+    /// The engine is an actor of its own, so waiting for it here blocks nothing it needs; the timeout
+    /// is there because a quit that hangs is worse than a quit that skips the last write.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        store.prepareForQuit()
+        let engine = store.engine
+        let finished = DispatchSemaphore(value: 0)
+        Task.detached { await engine.stop(); finished.signal() }
+        _ = finished.wait(timeout: .now() + 3)
+        return .terminateNow
     }
 
     /// Bind the two global shortcuts to their switches, re-binding whenever a switch changes.

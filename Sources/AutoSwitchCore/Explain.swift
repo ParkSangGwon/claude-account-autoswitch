@@ -38,9 +38,14 @@ public struct SwitchOutcome: Sendable, Equatable {
 
     public init(kind: Kind, text: String) { self.kind = kind; self.text = text }
 
-    public static func switched(to label: String, blocker: Blocker?) -> SwitchOutcome {
-        guard let blocker else { return SwitchOutcome(kind: .ok, text: L("switched to %@", label)) }
-        return SwitchOutcome(kind: .warn, text: L("switched to %@, but rotation will not use it", label) + ": " + blocker.text)
+    /// `outrankedBy` names the account rotation will still pick: a switch can be recorded and
+    /// have no effect, because a strictly better rank preempts the cursor on the very next request.
+    public static func switched(to label: String, blocker: Blocker?, outrankedBy: String? = nil) -> SwitchOutcome {
+        if let blocker { return SwitchOutcome(kind: .warn, text: L("switched to %@, but rotation will not use it", label) + ": " + blocker.text) }
+        if let outrankedBy {
+            return SwitchOutcome(kind: .warn, text: L("switched to %@, but %@ has a better priority and takes the next request", label, outrankedBy))
+        }
+        return SwitchOutcome(kind: .ok, text: L("switched to %@", label))
     }
 
     public static func failed(_ why: String) -> SwitchOutcome { SwitchOutcome(kind: .error, text: L("switch failed") + ": " + why) }

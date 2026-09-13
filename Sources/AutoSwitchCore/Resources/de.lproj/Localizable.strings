@@ -28,12 +28,14 @@
 "%d requests" = "%d Anfragen";
 "%d samples · one a minute while the app runs" = "%d Messwerte · einer pro Minute, solange die App läuft";
 "%d sess" = "%d Sess.";
+"%d sessions · %d requests since launch" = "%d Sitzungen · %d Anfragen seit dem Start";
 "%d without a tier" = "%d ohne Stufe";
 "%d/%d accounts available" = "%d/%d Konten verfügbar";
 "(default)" = "(Standard)";
 "+%d more" = "+%d weitere";
 "1 account" = "1 Konto";
 "1 account in the config" = "1 Konto in der Konfiguration";
+"1 session · %d requests since launch" = "1 Sitzung · %d Anfragen seit dem Start";
 "24 h" = "24 h";
 "5h resets in %@" = "5h: Zurücksetzung in %@";
 "6 h" = "6 h";
@@ -295,6 +297,7 @@
 "The proxy is not reachable" = "Der Proxy ist nicht erreichbar";
 "The token reply carried no access token" = "Die Token-Antwort enthielt kein Zugriffstoken";
 "The translation for %@ is not in this build; showing English." = "Die Übersetzung für %@ ist nicht in diesem Build; Englisch wird angezeigt.";
+"This proxy counts requests from the moment the app starts, so quitting resets the number. The usage bars come from Claude and do not." = "Dieser Proxy zählt Anfragen ab dem Start der App, ein Beenden setzt die Zahl also zurück. Die Nutzungsbalken kommen von Claude und bleiben erhalten.";
 "Timed out waiting for the sign-in" = "Zeitüberschreitung beim Warten auf die Anmeldung";
 "Today %@" = "Heute %@";
 "Tok " = "Tok ";
@@ -364,6 +367,7 @@
 "switch failed" = "Wechsel fehlgeschlagen";
 "switched from the app" = "aus der App gewechselt";
 "switched to %@" = "zu %@ gewechselt";
+"switched to %@, but %@ has a better priority and takes the next request" = "Zu %@ gewechselt, aber %@ hat die bessere Priorität und erhält die nächste Anfrage";
 "switched to %@, but rotation will not use it" = "zu %@ gewechselt, aber die Rotation wird es nicht nutzen";
 "the proxy is back" = "Claude AutoSwitch-Proxy ist zurück";
 "the proxy is not responding" = "Claude AutoSwitch-Proxy antwortet nicht";
@@ -379,8 +383,6 @@
 "%@ %@ has had %d requests in a row come back with nothing" = "Bei %@ %@ kamen %d Anfragen in Folge ohne Antwort zurück";
 "%@ weekly" = "%@ wöchentlich";
 "%@ window at the switch threshold" = "Fenster „%@“ am Wechsel-Schwellenwert";
-"%d sessions · %d requests" = "%d Sitzungen · %d Anfragen";
-"1 session · %d requests" = "1 Sitzung · %d Anfragen";
 "Cannot read the config: %@" = "Konfiguration kann nicht gelesen werden: %@";
 "Cannot write the config: %@" = "Konfiguration kann nicht geschrieben werden: %@";
 "Hand-editable JSON. The editor shows secrets as %@ and puts them back on save; the file is written atomically with 0600 permissions and applied at once." = "Von Hand editierbares JSON. Der Editor zeigt Geheimnisse als %@ und setzt sie beim Sichern wieder ein; die Datei wird atomar mit 0600-Rechten geschrieben und sofort übernommen.";

@@ -135,7 +135,7 @@ The proxy replaces the token on the way out and leaves everything else in the re
 - **Where the next request goes, and why.**
   - The old account's reason, a better priority, or "stays on ted".
 - **Fleet totals and the reset timeline.**
-  - Tier-weighted aggregates.
+  - Tier-weighted aggregates that count only the accounts still able to spend the window.
   - Every coming window reset, with `↑` on the ones that bring an account back.
 - **Rotation that handles the real cases.**
   - A 429 that names a closed window throttles the account for its retry-after.

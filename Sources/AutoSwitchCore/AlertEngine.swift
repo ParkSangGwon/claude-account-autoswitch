@@ -151,7 +151,7 @@ public enum AlertEngine {
                             let reset = total.nextResetAt.map { " · " + L("next reset in %@", Format.countdown($0, now: inputs.now)) } ?? ""
                             // One id per metric and level: the next window's alert replaces the last instead of piling up.
                             emit(Alert(kind: .fleetLevel, id: "\(key).\(level)", title: L("%@ at %d%%", title, Format.percentInt(total.used)),
-                                       body: L("%d accounts weighted by tier", total.knownAccounts) + reset, sound: false))
+                                       body: L("%d accounts weighted by tier", total.countedAccounts) + reset, sound: false))
                         }
                     }
                 } else if pct < Double(level - hysteresisPoints) {

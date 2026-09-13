@@ -64,6 +64,17 @@ public struct AccountStatus: Sendable, Equatable, Identifiable {
 
     public var canServe: Bool { blocker == nil }
 
+    /// Whether the account can still spend its `kind` allowance before that window rolls over.
+    /// A weekly-capped account keeps a fresh five-hour window it will never get to use, so that
+    /// allowance is not the fleet's to count.
+    public func canSpend(_ kind: WindowKind) -> Bool {
+        guard let blocker else { return true }
+        // The blocker names this very window: its own number is the honest one.
+        if blocker.window == kind { return true }
+        guard let rolls = windows[kind]?.resetsAt else { return false }
+        return (blocker.liftsAt ?? .distantFuture) < rolls
+    }
+
     /// The family windows this account reports, Fable before Sonnet.
     public var familyReadings: [(family: Family, reading: WindowReading)] {
         Family.allCases.compactMap { f in windows[f.window].map { (f, $0) } }

@@ -92,6 +92,52 @@ final class FleetTests: XCTestCase {
         XCTAssertNil(Fleet.total(s, .weeklyFable))
     }
 
+    /// A spent week strands the account's other windows: its fresh five hours are capacity the
+    /// fleet cannot reach before they roll over again, so only the week itself still counts it.
+    func testAWeekCappedAccountIsCountedOnlyOnItsWeek() throws {
+        let s = Fixture.state([
+            Fixture.account("full", session: 0.03, sessionReset: 13_920, weekly: 0.99, weeklyReset: 38_520, fable: 0.72,
+                             blocker: .windowFull(.weekly, resetsAt: now.addingTimeInterval(38_520))),
+            Fixture.account("free", session: 0.19, weekly: 0.21, weeklyReset: 371_000, fable: 0.12),
+        ])
+        let five = try XCTUnwrap(Fleet.total(s, .session))
+        XCTAssertEqual(five.used, 0.19, accuracy: 1e-9)
+        XCTAssertEqual(five.countedAccounts, 1)
+        XCTAssertEqual(five.knownAccounts, 2, "the stranded account is still a known one")
+        XCTAssertEqual(five.nextResetAt, now.addingTimeInterval(3600), "the countdown names a reset the total counts")
+
+        let week = try XCTUnwrap(Fleet.total(s, .weekly))
+        XCTAssertEqual(week.used, 0.6, accuracy: 1e-9)
+        XCTAssertEqual(week.countedAccounts, 2)
+
+        let fable = try XCTUnwrap(Fleet.total(s, .weeklyFable))
+        XCTAssertEqual(fable.used, 0.12, accuracy: 1e-9)
+        XCTAssertEqual(fable.countedAccounts, 1)
+    }
+
+    /// Ordinary rotation: the account is back long before the week rolls over, so the week still has it.
+    func testASessionCappedAccountStillCountsOnTheWeek() throws {
+        let s = Fixture.state([
+            Fixture.account("spent", session: 0.99, weekly: 0.4, blocker: .windowFull(.session, resetsAt: now.addingTimeInterval(3600))),
+            Fixture.account("fresh", session: 0.1, weekly: 0.2),
+        ])
+        let week = try XCTUnwrap(Fleet.total(s, .weekly))
+        XCTAssertEqual(week.used, 0.3, accuracy: 1e-9)
+        XCTAssertEqual(week.countedAccounts, 2)
+        XCTAssertEqual(try XCTUnwrap(Fleet.total(s, .session)).countedAccounts, 2, "the window that blocks still reports its own number")
+    }
+
+    func testNothingCanSpendTheWindowReadsAsSpent() throws {
+        let s = Fixture.state([
+            Fixture.account("a", session: 0.03, weekly: 0.99, blocker: .windowFull(.weekly, resetsAt: now.addingTimeInterval(9000))),
+            Fixture.account("b", session: 0.05, weekly: 0.98, blocker: .windowFull(.weekly, resetsAt: now.addingTimeInterval(7000))),
+        ])
+        let five = try XCTUnwrap(Fleet.total(s, .session))
+        XCTAssertEqual(five.used, 1)
+        XCTAssertEqual(five.countedAccounts, 0)
+        XCTAssertEqual(five.nextResetAt, now.addingTimeInterval(7000), "the soonest blocker to lift is when capacity comes back")
+    }
+
     func testResetTimelineSkipsAFamilyThatRollsWithTheWeek() {
         let s = Fixture.state([
             Fixture.account("a", session: 0.5, sessionReset: 600, weekly: 0.2, fable: 0.3, blocker: .windowFull(.session, resetsAt: now.addingTimeInterval(600))),
@@ -101,6 +147,7 @@ final class FleetTests: XCTestCase {
         XCTAssertEqual(entries.map { "\($0.label)/\($0.kind.rawValue)" }, ["a/session", "b/weekly", "b/session", "a/weekly"])
         XCTAssertTrue(entries[0].freesCapacity)
         XCTAssertFalse(entries[1].freesCapacity)
+        XCTAssertFalse(entries[3].freesCapacity, "a's week is not the reset that brings it back; its session is")
     }
 }
 

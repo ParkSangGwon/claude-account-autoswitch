@@ -73,6 +73,17 @@ The app learns each account's windows from the `anthropic-ratelimit-*` headers o
 A window whose reset has passed is forgotten, so a stale number never keeps an account out.
 An API key has token and request allowances instead of windows.
 
+## The fleet total
+
+The fleet bars average every enabled account's window, weighted by what its plan is worth: a Max 20x counts for twenty Pro plans, and an account whose tier is unknown counts for nothing.
+
+An account only counts on a window it can still spend before that window rolls over.
+A blocker that outlasts the window strands the allowance behind it: an account at its weekly threshold gets a fresh five-hour window every five hours and can use none of them, so it is left out of the five-hour and family totals while staying in the weekly one, which is the number that explains it.
+A blocker that lifts sooner changes nothing — an account whose five hours are spent is back long before the week turns, so the weekly total still counts it and does not swing with ordinary rotation.
+When nothing can spend a window, its bar reads 100% and counts down to the first blocker that lifts.
+
+The reset timeline marks a reset with `↑` when it is the one that brings its account back, not merely because the account is out.
+
 ## How an account is chosen
 
 For every request the engine checks each account, in this order, and skips it on the first blocker it finds:

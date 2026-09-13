@@ -135,7 +135,7 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
 - **Adónde va la siguiente petición, y por qué.**
   - El motivo de la cuenta anterior, una prioridad mejor o "se queda en ted".
 - **Totales de todas las cuentas y la línea de tiempo de reinicios.**
-  - Agregados ponderados por nivel.
+  - Agregados ponderados por nivel que solo cuentan las cuentas que aún pueden usar la ventana.
   - Cada reinicio de ventana que se acerca, con `↑` en los que devuelven una cuenta a la rotación.
 - **Rotación que cubre los casos reales.**
   - Un 429 que nombra una ventana cerrada limita la cuenta durante su retry-after.

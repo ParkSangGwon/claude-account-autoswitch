@@ -9,11 +9,13 @@ struct AccountsPane: View {
     @State private var expanded: Set<AccountID> = []
 
     var records: [AccountRecord] { store.configuration?.accounts ?? [] }
+    /// The file could not be parsed, so what it holds is unknown — not empty.
+    private var unreadable: Bool { store.configuration == nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(records.count == 1 ? L("1 account in the config") : L("%d accounts in the config", records.count)).font(.system(size: 13, weight: .semibold))
+                Text(unreadable ? L("Accounts unknown") : (records.count == 1 ? L("1 account in the config") : L("%d accounts in the config", records.count))).font(.system(size: 13, weight: .semibold))
                 Spacer()
                 Menu(L("Add account…")) {
                     Button(L("Claude subscription (browser sign-in)")) { adding = .oauth }
@@ -22,16 +24,20 @@ struct AccountsPane: View {
                     Divider()
                     Button(L("Import from Claude Code")) { adding = .importCLI }
                     Button(L("Import from a credentials file…")) { adding = .importFile }
-                }.fixedSize()
+                }.fixedSize().disabled(unreadable)
             }
-            if records.isEmpty {
+            if unreadable {
+                Text(L("The config file could not be read, so the accounts in it are not shown. Fix the file (Advanced → Config file → Reveal), then reload from disk.")).font(.system(size: 12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            } else if records.isEmpty {
                 Text(L("No accounts yet — add a Claude subscription, an API key, or import the one Claude Code is logged into.")).font(.system(size: 12)).foregroundStyle(.secondary)
             }
             ForEach(records) { record in
                 AccountCard(record: record, live: store.state?.account(record.id), expanded: expanded.contains(record.id),
                             toggle: { if expanded.contains(record.id) { expanded.remove(record.id) } else { expanded.insert(record.id) } })
             }
-            Text(L("Priority: lower is preferred; a strictly lower value preempts a healthy current account. Disabling keeps the entry but takes it out of rotation.")).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            if !unreadable {
+                Text(L("Priority: lower is preferred; a strictly lower value preempts a healthy current account. Disabling keeps the entry but takes it out of rotation.")).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
         }
         .sheet(item: $adding) { mode in AddAccountSheet(mode: mode) { adding = nil } }
     }

@@ -156,6 +156,43 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(try store.load().observed.lastActive?.rawValue, "id-bob")
     }
 
+    func testAnUnreadableDocumentIsNeverOverwritten() async throws {
+        let store = try temporaryStore(testConfiguration(accounts: [oauthAccount("alice"), oauthAccount("bob")]))
+        let intact = try Data(contentsOf: store.path)
+        try Data(#"{"accounts": "not a list"}"#.utf8).write(to: store.path)
+
+        let engine = Engine(store: store, version: "t")
+        do {
+            try await engine.load()
+            XCTFail("loading a broken document should throw")
+        } catch let e as ConfigError {
+            if case .malformed = e {} else { XCTFail("\(e)") }
+        }
+        let failure = await engine.loadFailure
+        XCTAssertNotNil(failure, "the engine remembers it never read the file")
+
+        // Every write path the settings screens reach refuses while that stands.
+        do {
+            try await engine.update { $0.rotation.switchAt = 0.5 }
+            XCTFail("a write should be refused")
+        } catch let e as EngineError {
+            XCTAssertEqual(e, .configUnreadable)
+        }
+        _ = await engine.switchTo(AccountID(rawValue: "id-alice"))
+        await engine.stop()
+        XCTAssertEqual(try Data(contentsOf: store.path), Data(#"{"accounts": "not a list"}"#.utf8),
+                       "the broken file is left exactly as it was, tokens and all")
+
+        // Fixing the file by hand and reloading clears the refusal.
+        try intact.write(to: store.path)
+        let added = try await engine.reloadFromDisk()
+        XCTAssertEqual(added, 2)
+        let cleared = await engine.loadFailure
+        XCTAssertNil(cleared)
+        try await engine.update { $0.rotation.switchAt = 0.5 }
+        XCTAssertEqual(try store.load().rotation.switchAt, 0.5)
+    }
+
     func testHealthAnswersOverHTTP() async throws {
         let port = Int.random(in: 20000..<40000)
         let engine = Engine(store: try temporaryStore(testConfiguration(accounts: [oauthAccount("alice")], port: port)), version: "0.0.1")

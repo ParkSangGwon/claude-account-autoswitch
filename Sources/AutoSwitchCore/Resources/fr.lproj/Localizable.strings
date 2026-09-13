@@ -5,6 +5,7 @@
 "%@ for %@" = "%@ de %@";
 "%@ is back in rotation" = "%@ est de retour en rotation";
 "%@ is billing overage" = "Dépassement facturé pour %@";
+"%@ is not the shape the app expects" = "%@ n'a pas la forme attendue par l'application";
 "%@ left rotation" = "%@ a quitté la rotation";
 "%@ needs a re-login" = "%@ doit se reconnecter";
 "%@ on GitHub" = "%@ sur GitHub";
@@ -47,6 +48,7 @@
 "Account %@ needs a re-login." = "Le compte %@ doit se reconnecter.";
 "Account needs a re-login" = "Un compte doit se reconnecter";
 "Accounts" = "Comptes";
+"Accounts unknown" = "Comptes inconnus";
 "Actions" = "Actions";
 "Add account…" = "Ajouter un compte…";
 "Added %@" = "%@ ajouté";
@@ -174,6 +176,7 @@
 "No rotation observed yet. Entries are recorded while the app runs (the proxy itself keeps no history)." = "Aucune rotation observée pour l'instant. Les entrées sont enregistrées tant que l'app tourne (le proxy lui-même ne garde aucun historique).";
 "Normal (2 s / 30 s)" = "Normal (2 s / 30 s)";
 "Not eligible: %@" = "Non éligible : %@";
+"Not saving — the config file could not be read. Fix the file first so the accounts in it are not lost." = "Non enregistré — le fichier de configuration n'a pas pu être lu. Corrigez d'abord le fichier pour ne pas perdre les comptes qu'il contient.";
 "Not valid JSON: %@" = "JSON non valide : %@";
 "Nothing recorded yet — samples start with the first successful poll." = "Rien d'enregistré pour l'instant — les échantillons commencent à la première interrogation réussie.";
 "Notifications" = "Notifications";
@@ -280,6 +283,9 @@
 "That does not look like an Anthropic API key" = "Cela ne ressemble pas à une clé d’API Anthropic";
 "The account is in an error state. Open Settings → Accounts." = "Le compte est en état d'erreur. Ouvrez Réglages → Comptes.";
 "The account leaves the config and rotation at once." = "Le compte quitte immédiatement la configuration et la rotation.";
+"The config file could not be read, so the accounts in it are not shown. Fix the file (Advanced → Config file → Reveal), then reload from disk." = "Le fichier de configuration n'a pas pu être lu, les comptes qu'il contient ne sont donc pas affichés. Corrigez le fichier (Avancé → Fichier de configuration → Afficher dans le Finder), puis rechargez depuis le disque.";
+"The editor stays closed while the file cannot be read: it would open on an empty document, and saving that would replace the accounts the file still holds. Reveal the file, fix it in a text editor, then reload." = "L'éditeur reste fermé tant que le fichier ne peut pas être lu : il s'ouvrirait sur un document vide, et l'enregistrer remplacerait les comptes que le fichier contient encore. Affichez le fichier dans le Finder, corrigez-le dans un éditeur de texte, puis rechargez.";
+"The file is not valid JSON" = "Le fichier n'est pas du JSON valide";
 "The icon turns orange when a bar runs ahead of its window (the same rule that colours the bars) and red at the switch threshold or when nothing can serve." = "L'icône passe à l'orange quand une barre devance sa fenêtre (la même règle qui colore les barres) et au rouge au seuil de bascule ou quand rien ne peut servir.";
 "The listener could not start. Change the port under Settings → Proxy, or quit the program holding it, then try again." = "Le proxy n’a pas pu démarrer l’écoute. Changez le port dans Réglages → Proxy ou quittez le programme qui l’occupe, puis réessayez.";
 "The listener is down — edits are saved and apply as soon as it starts." = "L’écoute est arrêtée ; les modifications sont enregistrées et s’appliquent dès le démarrage.";

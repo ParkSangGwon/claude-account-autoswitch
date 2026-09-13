@@ -217,9 +217,13 @@ struct AdvancedPane: View {
                     Text(store.configStore.path.path).font(.system(size: 12, design: .monospaced)).textSelection(.enabled)
                     Button(L("Reveal")) { NSWorkspace.shared.activateFileViewerSelecting([store.configStore.path]) }.controlSize(.small)
                     Button(L("Reload from disk")) { Task { await store.reloadConfig() } }.controlSize(.small)
-                    Button(L("Edit as JSON…")) { editingRaw = true }.controlSize(.small)
+                    Button(L("Edit as JSON…")) { editingRaw = true }.controlSize(.small).disabled(store.configuration == nil)
                 }
-                Text(L("Hand-editable JSON. The editor shows secrets as %@ and puts them back on save; the file is written atomically with 0600 permissions and applied at once.", Redaction.placeholder)).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                if store.configuration == nil {
+                    Text(L("The editor stays closed while the file cannot be read: it would open on an empty document, and saving that would replace the accounts the file still holds. Reveal the file, fix it in a text editor, then reload.")).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text(L("Hand-editable JSON. The editor shows secrets as %@ and puts them back on save; the file is written atomically with 0600 permissions and applied at once.", Redaction.placeholder)).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
             }
             .sheet(isPresented: $editingRaw) { RawConfigEditor { editingRaw = false } }
             Divider()

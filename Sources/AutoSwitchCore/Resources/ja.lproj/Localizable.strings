@@ -5,6 +5,7 @@
 "%@ for %@" = "%2$@ の %1$@";
 "%@ is back in rotation" = "%@ がローテーションに復帰";
 "%@ is billing overage" = "%@ は超過利用を課金中";
+"%@ is not the shape the app expects" = "%@ の形式がアプリの想定と異なります";
 "%@ left rotation" = "%@ がローテーションを離脱";
 "%@ needs a re-login" = "%@ は再ログインが必要";
 "%@ on GitHub" = "GitHub の %@";
@@ -47,6 +48,7 @@
 "Account %@ needs a re-login." = "アカウント %@ は再ログインが必要。";
 "Account needs a re-login" = "アカウントは再ログインが必要";
 "Accounts" = "アカウント";
+"Accounts unknown" = "アカウント不明";
 "Actions" = "アクション";
 "Add account…" = "アカウントを追加…";
 "Added %@" = "%@ を追加しました";
@@ -174,6 +176,7 @@
 "No rotation observed yet. Entries are recorded while the app runs (the proxy itself keeps no history)." = "ローテーションはまだ観測されていない。記録はアプリの実行中に行われる（プロキシ自体は履歴を持たない）。";
 "Normal (2 s / 30 s)" = "標準（2 s / 30 s）";
 "Not eligible: %@" = "対象外: %@";
+"Not saving — the config file could not be read. Fix the file first so the accounts in it are not lost." = "保存していません — 設定ファイルを読み取れませんでした。中のアカウントを失わないよう、先にファイルを修正してください。";
 "Not valid JSON: %@" = "有効な JSON ではない: %@";
 "Nothing recorded yet — samples start with the first successful poll." = "まだ記録なし — 最初のポーリング成功からサンプルが始まる。";
 "Notifications" = "通知";
@@ -280,6 +283,9 @@
 "That does not look like an Anthropic API key" = "Anthropic の API キーの形式ではありません";
 "The account is in an error state. Open Settings → Accounts." = "アカウントがエラー状態。設定 → アカウントを開く。";
 "The account leaves the config and rotation at once." = "アカウントは設定とローテーションから即座に外れます。";
+"The config file could not be read, so the accounts in it are not shown. Fix the file (Advanced → Config file → Reveal), then reload from disk." = "設定ファイルを読み取れないため、中のアカウントは表示していません。ファイルを修正してから(詳細 → 設定ファイル → Finder に表示)、ディスクから再読み込みしてください。";
+"The editor stays closed while the file cannot be read: it would open on an empty document, and saving that would replace the accounts the file still holds. Reveal the file, fix it in a text editor, then reload." = "ファイルを読み取れない間はエディタを開きません。空の文書が開き、それを保存するとファイルに残っているアカウントを上書きしてしまうためです。ファイルを Finder に表示してテキストエディタで修正し、再読み込みしてください。";
+"The file is not valid JSON" = "ファイルが有効な JSON ではありません";
 "The icon turns orange when a bar runs ahead of its window (the same rule that colours the bars) and red at the switch threshold or when nothing can serve." = "バーがウィンドウより先行するとアイコンはオレンジ（バーの色と同じ規則）、切り替えしきい値到達時や応答できるアカウントがないときは赤になる。";
 "The listener could not start. Change the port under Settings → Proxy, or quit the program holding it, then try again." = "待ち受けを開始できませんでした。設定 → プロキシでポートを変更するか、そのポートを使うプログラムを終了してから再試行してください。";
 "The listener is down — edits are saved and apply as soon as it starts." = "待ち受けが停止しています。変更は保存され、起動すると同時に適用されます。";

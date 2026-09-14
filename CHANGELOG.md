@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-15
+
 ### Fixed
 
 - Two healthy accounts could both drop out of rotation at once, leaving "no account can take this request" on screen while both still had most of their quota. A 429 that named no window — a burst, a busy upstream, anything the account's own windows knew nothing about — was treated exactly like a spent account and sidelined it for a full minute, and since whatever refused the first account refused its sibling a moment later, two accounts emptied the rotation in two hops. Such a 429 now moves the request on without taking the account out; only three in a row, which is the account's own problem rather than the moment's, earn a wait, and that wait is seconds rather than the minute a missing `retry-after` used to cost.

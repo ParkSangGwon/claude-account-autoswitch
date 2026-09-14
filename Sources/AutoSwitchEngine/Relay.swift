@@ -70,11 +70,12 @@ extension Engine {
             let verdict: Verdict
             switch reply.status {
             case 429:
-                let retry = Signals.retryAfter(reply.headers)
                 switch Signals.refusal(reply.headers) {
-                case .sharedWindow: runtime[j].coolDown(seconds: min(max(retry, 1), 3600))
+                case .sharedWindow: runtime[j].coolDown(seconds: min(max(Signals.retryAfter(reply.headers), 1), 3600))
                 case .fableWindow: runtime[j].windows.refusedAt = Date()
-                case .plain: runtime[j].coolDown(seconds: min(max(retry, 1), 60))   // step aside briefly, let a sibling take it
+                // No window named: step aside for this request only. A minute of exile on a burst
+                // costs both accounts at once, because whatever refused this one refuses its sibling.
+                case .plain: runtime[j].noteUnattributedRefusal(retryAfter: Signals.retryAfter(reply.headers, fallback: 5))
                 }
                 verdict = .retryElsewhere
             case 401:
@@ -107,6 +108,15 @@ extension Engine {
             case .retryElsewhere:
                 tried.insert(id)
                 if choose(model: model, session: nil, excluding: tried, now: Date()) != nil { continue }
+                // Nothing left to try. `waitWhenExhaustedSeconds` applies here too: the loop head
+                // only sees requests that arrive with every account already out, and a request
+                // refused on its way through deserves the same wait before it gives up.
+                let relief = earliestRelief(now: Date())
+                if Date().addingTimeInterval(min(relief, 60)) < deadline {
+                    try? await Task.sleep(for: .seconds(min(relief, 60)))
+                    tried.removeAll()
+                    continue
+                }
                 return deliver(reply, account: id)
             case .deliver:
                 return deliver(reply, account: id)

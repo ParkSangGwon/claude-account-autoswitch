@@ -162,6 +162,45 @@ final class ForwardingTests: XCTestCase {
         XCTAssertTrue(s.isExhausted)
     }
 
+    /// A 429 with no `anthropic-ratelimit-*` line at all: a burst, a busy upstream, something the
+    /// account's own windows know nothing about. Sidelining the account for it takes both accounts
+    /// down in turn, because whatever refused this one refuses its sibling a moment later.
+    static let unattributed: [(String, String)] = [("content-type", "application/json")]
+
+    func testA429NamingNoWindowLeavesTheAccountInRotation() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.unattributed, body: Data(#"{"type":"error"}"#.utf8)),
+                            .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"msg_5"}"#.utf8))]
+        let (status, _, _) = try await post()
+        XCTAssertEqual(status, 200, "the sibling serves it")
+        XCTAssertEqual(upstream.count, 2)
+        let s = await engine.state()
+        XCTAssertNil(s.account(alice)?.blocker, "nothing said alice's windows were closed")
+        XCTAssertEqual(s.account(alice)?.health, .ok)
+    }
+
+    func testUnattributed429sDoNotEmptyTheRotation() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.unattributed, body: Data()),
+                            .init(status: 429, headers: Self.unattributed, body: Data())]
+        let (status, _, _) = try await post()
+        XCTAssertEqual(status, 429, "the client still sees the refusal")
+        let s = await engine.state()
+        XCTAssertFalse(s.isExhausted, "both accounts stay in rotation — neither was told its quota was gone")
+        XCTAssertNotNil(s.next, "the next request has somewhere to go")
+    }
+
+    func testRepeatedUnattributed429sDoCoolTheAccountDown() async throws {
+        for _ in 0..<AccountRuntime.unattributedRefusalsBeforeCoolDown {
+            upstream.replies = [.init(status: 429, headers: Self.unattributed, body: Data()),
+                                .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"m"}"#.utf8))]
+            _ = try await post()
+        }
+        let s = await engine.state()
+        if case .coolingDown = s.account(alice)?.blocker {} else {
+            XCTFail("refusing every request in a row is alice's own problem: \(String(describing: s.account(alice)?.blocker))")
+        }
+        XCTAssertNil(s.account(bob)?.blocker, "bob served them all and stays clear")
+    }
+
     func testAServerErrorHopsOnce() async throws {
         upstream.replies = [.init(status: 503, headers: [], body: Data()), .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"msg_4"}"#.utf8))]
         let (status, _, _) = try await post()
@@ -229,6 +268,28 @@ final class ForwardingTests: XCTestCase {
         XCTAssertEqual(Signals.refusal(Self.rejected), .sharedWindow)
         XCTAssertEqual(Signals.refusal([]), .plain)
         XCTAssertEqual(Signals.retryAfter([("Retry-After", "30")]), 30)
+    }
+
+    /// `absorb` and `refusal` read the same headers; a rejection with no window line at all must
+    /// not hold the account out of rotation in one and read as noise in the other.
+    func testAnUnconfirmedRejectionIsNoiseToBothReadings() {
+        var w = Windows()
+        let headers = [("anthropic-ratelimit-unified-status", "rejected")]
+        Signals.absorb(headers, into: &w)
+        XCTAssertFalse(w.isRefused, "no window named, so nothing holds the account out")
+        XCTAssertEqual(Signals.refusal(headers), .plain, "and the refusal reads the same way")
+    }
+
+    func testTheWaitEndsWithACleanSlate() {
+        var r = AccountRuntime(record: oauthAccount("a"))
+        let t0 = Date()
+        for _ in 0..<AccountRuntime.unattributedRefusalsBeforeCoolDown { r.noteUnattributedRefusal(retryAfter: 5, now: t0) }
+        XCTAssertEqual(r.health, .coolingDown)
+        r.sweep(now: t0.addingTimeInterval(10))
+        XCTAssertEqual(r.health, .ok)
+        // Without the reset the tally would still be at the threshold and one refusal would sideline it again.
+        r.noteUnattributedRefusal(retryAfter: 5, now: t0.addingTimeInterval(10))
+        XCTAssertEqual(r.health, .ok, "the account gets its allowance back, not a hair trigger")
     }
 }
 

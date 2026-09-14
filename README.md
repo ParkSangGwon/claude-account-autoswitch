@@ -139,7 +139,7 @@ The proxy replaces the token on the way out and leaves everything else in the re
   - Every coming window reset, with `↑` on the ones that bring an account back.
 - **Rotation that handles the real cases.**
   - A 429 that names a closed window throttles the account for its retry-after.
-  - A plain 429 steps aside briefly.
+  - A 429 that names no window moves the request on but leaves the account in rotation; only repeats sideline it.
   - An expired token is refreshed once and retried.
   - 403 and 5xx fail over.
   - When every account is out, requests can hold for a configurable time instead of failing.

@@ -120,7 +120,7 @@ Windows whose reset passed while the app was closed are forgotten on the way in,
 | 2xx | The account is current; its windows are updated from the headers; the session is pinned. |
 | 429 naming a shared window | The account cools down for `retry-after` (1 s–1 h); the request moves on. |
 | 429 naming Fable's window only | The account is marked refused; the request moves on. |
-| plain 429 | The account steps aside for up to a minute; the request moves on. |
+| 429 naming no window | The request moves on, but the account stays in rotation: nothing said its quota was gone. Three in a row are its own problem and it cools down for `retry-after` (1–60 s, 5 s when the reply gives none). |
 | 401 | A subscription account refreshes its token once and retries; then the request moves on. |
 | 403 | The request moves on. |
 | 5xx | The request moves on once. |

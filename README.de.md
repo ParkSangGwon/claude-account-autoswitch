@@ -139,7 +139,7 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
   - Jede kommende Fenster-Zurücksetzung, mit `↑` bei denen, die ein Konto zurückbringen.
 - **Rotation, die die echten Fälle abdeckt.**
   - Ein 429, das ein geschlossenes Fenster nennt, drosselt das Konto für sein Retry-After.
-  - Ein einfaches 429 tritt kurz beiseite.
+  - Ein 429, das kein Fenster nennt, schickt nur die Anfrage weiter und lässt das Konto in der Rotation; erst Wiederholungen stellen es beiseite.
   - Ein abgelaufenes Token wird einmal aufgefrischt und erneut versucht.
   - Bei 403 und 5xx wird auf ein anderes Konto gewechselt.
   - Wenn jedes Konto erschöpft ist, können Anfragen für eine konfigurierbare Zeit gehalten werden, statt fehlzuschlagen.

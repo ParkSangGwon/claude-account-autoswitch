@@ -139,7 +139,7 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
   - Chaque prochaine réinitialisation de fenêtre, avec `↑` sur celles qui remettent un compte en rotation.
 - **Une rotation qui gère les cas réels.**
   - Un 429 qui nomme une fenêtre fermée bride le compte pour la durée de son retry-after.
-  - Un 429 simple s'écarte brièvement.
+  - Un 429 qui ne nomme aucune fenêtre transmet seulement la requête au compte suivant et laisse le compte dans la rotation ; seules les répétitions l'écartent.
   - Un jeton expiré est rafraîchi une fois puis la requête est rejouée.
   - 403 et 5xx basculent.
   - Quand tous les comptes sont épuisés, les requêtes peuvent être mises en attente pendant une durée configurable au lieu d'échouer.

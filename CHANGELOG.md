@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ### Fixed
 
+- Two healthy accounts could both drop out of rotation at once, leaving "no account can take this request" on screen while both still had most of their quota. A 429 that named no window — a burst, a busy upstream, anything the account's own windows knew nothing about — was treated exactly like a spent account and sidelined it for a full minute, and since whatever refused the first account refused its sibling a moment later, two accounts emptied the rotation in two hops. Such a 429 now moves the request on without taking the account out; only three in a row, which is the account's own problem rather than the moment's, earn a wait, and that wait is seconds rather than the minute a missing `retry-after` used to cost.
+- A rejection that no window confirmed held the account out for half an hour. The unified status line alone was read as proof, though the comment beside it said the opposite and the code that classifies the same reply for rotation read it as noise — so one reply could both leave the account in rotation and mark it refused. Both now want a window to say so.
+- `rotation.waitWhenExhaustedSeconds` did nothing for the request that emptied the rotation on its way through. The wait only ever applied to requests that arrived to find every account already out; one that was refused down to the last account returned 429 immediately, however long the setting was.
+
 - Opening Settings quit the app. The notifications section asks whether the Mac is set to show alerts at all, and that check reads `getNotificationSettings`, whose completion handler runs on the notification centre's own queue — a closure that inherited `@MainActor` traps there under Swift 6, taking the menu bar item down with it every time the gear was clicked. The call now sits outside the main actor, where the handler is free to answer on whichever queue the centre uses, and only the authorization status crosses back.
 
 ## [0.2.0] - 2026-09-13

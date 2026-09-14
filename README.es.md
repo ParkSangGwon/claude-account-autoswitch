@@ -139,7 +139,7 @@ El proxy sustituye el token al salir y deja intacto todo lo demás de la petici�
   - Cada reinicio de ventana que se acerca, con `↑` en los que devuelven una cuenta a la rotación.
 - **Rotación que cubre los casos reales.**
   - Un 429 que nombra una ventana cerrada limita la cuenta durante su retry-after.
-  - Un 429 sin más la aparta brevemente.
+  - Un 429 que no nombra ninguna ventana solo pasa la petición a la siguiente cuenta y deja la cuenta en la rotación; solo las repeticiones la apartan.
   - Un token caducado se refresca una vez y se reintenta.
   - 403 y 5xx hacen failover.
   - Cuando todas las cuentas están agotadas, las peticiones pueden esperar un tiempo configurable en lugar de fallar.

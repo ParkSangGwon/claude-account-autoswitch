@@ -38,8 +38,10 @@ enum Signals {
         }
         if let status = h["anthropic-ratelimit-unified-status"] {
             // A rejection that neither window confirms is noise: the reply says which window is closed.
+            // Absent window lines confirm nothing, so they leave the account in rotation — the same
+            // reading `refusal` gives the very same headers.
             let five = h["anthropic-ratelimit-unified-5h-status"], week = h["anthropic-ratelimit-unified-7d-status"]
-            let confirmed = (five == nil && week == nil) || five == "rejected" || week == "rejected"
+            let confirmed = five == "rejected" || week == "rejected"
             w.refusedAt = status == "rejected" && confirmed ? now : nil
         }
         if let limit = h.number("anthropic-ratelimit-tokens-limit"), let remaining = h.number("anthropic-ratelimit-tokens-remaining") {

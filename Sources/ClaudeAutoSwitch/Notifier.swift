@@ -26,12 +26,20 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    /// Whether the Mac will actually show what the alert switches promise. The async form for the
-    /// same reason `requestAuthorization` uses it: the completion-handler one calls back on the
-    /// centre's private queue, and a closure inferred @MainActor there takes the app down.
+    /// Whether the Mac will actually show what the alert switches promise.
     func isBlocked() async -> Bool {
         guard available else { return false }
-        return await UNUserNotificationCenter.current().notificationSettings().authorizationStatus == .denied
+        return await Notifier.authorizationStatus() == .denied
+    }
+
+    /// Off the main actor on purpose. The centre calls this handler back on its own queue, so a
+    /// closure that inherited @MainActor traps there; and the async form cannot be used at all,
+    /// because `UNNotificationSettings` is not Sendable and may not cross back. Only the status,
+    /// which is, leaves this closure.
+    private nonisolated static func authorizationStatus() async -> UNAuthorizationStatus {
+        await withCheckedContinuation { (continuation: CheckedContinuation<UNAuthorizationStatus, Never>) in
+            UNUserNotificationCenter.current().getNotificationSettings { continuation.resume(returning: $0.authorizationStatus) }
+        }
     }
 
     func post(_ alert: Alert) {

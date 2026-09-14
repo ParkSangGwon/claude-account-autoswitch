@@ -7,7 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ### Fixed
 
-- Opening Settings quit the app. The notifications section asks whether the Mac is set to show alerts at all, and that check used `getNotificationSettings`, whose completion handler runs on the notification centre's own queue — a closure inferred `@MainActor` there traps under Swift 6, taking the menu bar item down with it every time the gear was clicked. It now uses the async form, the same one `requestAuthorization` already had to switch to for this exact reason.
+- Opening Settings quit the app. The notifications section asks whether the Mac is set to show alerts at all, and that check reads `getNotificationSettings`, whose completion handler runs on the notification centre's own queue — a closure that inherited `@MainActor` traps there under Swift 6, taking the menu bar item down with it every time the gear was clicked. The call now sits outside the main actor, where the handler is free to answer on whichever queue the centre uses, and only the authorization status crosses back.
 
 ## [0.2.0] - 2026-09-13
 

@@ -13,6 +13,9 @@ enum Upstream {
         c.timeoutIntervalForRequest = 120
         c.timeoutIntervalForResource = 3600
         c.httpMaximumConnectionsPerHost = 64
+        // Never through a proxy, least of all our own: the app now tells Claude Code to set
+        // HTTPS_PROXY, and an upstream call that honoured it would dial straight back into us.
+        c.connectionProxyDictionary = [kCFNetworkProxiesHTTPEnable: 0, kCFNetworkProxiesHTTPSEnable: 0]
         return URLSession(configuration: c)
     }()
 

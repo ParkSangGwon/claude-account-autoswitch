@@ -100,6 +100,7 @@
 "Copy name" = "Namen kopieren";
 "Could not export diagnostics: %@" = "Diagnose konnte nicht exportiert werden: %@";
 "Could not listen: %@" = "Port konnte nicht geöffnet werden: %@";
+"Could not prepare the local certificate: %@" = "Lokales Zertifikat konnte nicht vorbereitet werden: %@";
 "Could not read the account's profile; give the account a name to add it anyway" = "Das Kontoprofil konnte nicht gelesen werden; mit einem Namen lässt sich das Konto trotzdem hinzufügen";
 "Could not read the config: %@" = "Konfiguration konnte nicht gelesen werden: %@";
 "Could not write the config: %@" = "Konfiguration konnte nicht geschrieben werden: %@";

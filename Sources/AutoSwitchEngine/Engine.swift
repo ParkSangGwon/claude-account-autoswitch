@@ -4,6 +4,7 @@ import AutoSwitchCore
 public enum EngineError: Error, Sendable, Equatable {
     case portInUse(Int)
     case listen(String)
+    case certificates(String)
     case config(String)
     case oauth(String)
     case oauthRejected(status: Int, body: String)
@@ -17,6 +18,7 @@ public enum EngineError: Error, Sendable, Equatable {
         switch self {
         case .portInUse(let p): return L("Port %d is already in use", p)
         case .listen(let why): return L("Could not listen: %@", why)
+        case .certificates(let why): return L("Could not prepare the local certificate: %@", why)
         case .config(let why): return L("Config error: %@", why)
         case .oauth(let why): return why
         case .oauthRejected(let status, _): return L("Anthropic answered HTTP %d", status)
@@ -41,7 +43,12 @@ public actor Engine {
     var cursor: AccountID?
     var affinity = Affinity()
     var startedAt: Date?
-    private var listener: HTTPServer?
+    private var listener: ProxyServer?
+    /// The chain the proxy presents when it terminates; the app shows where it lives and when it expires.
+    private(set) var certificates: LocalCA?
+    /// Requests that arrived in origin-form, which only a client still on ANTHROPIC_BASE_URL sends.
+    private var legacyRequests = 0
+    private var lastLegacyRequestAt: Date?
     public private(set) var lastError: EngineError?
     /// The document on disk could not be parsed. Every write is refused while this stands, so a file
     /// the app never read is not replaced by the empty defaults it fell back to.
@@ -158,9 +165,13 @@ public actor Engine {
     public func start() async throws {
         if !loaded { try load() }
         if listener != nil { return }
-        let l = HTTPServer(port: port) { [weak self] request in
+        let certificates = try LocalCA.ensure(in: store.path.deletingLastPathComponent(), hosts: [ConnectAuthority.terminatedHost])
+        self.certificates = certificates
+        let l = try ProxyServer(port: port, certificates: certificates) { [weak self] request in
             guard let self else { return HTTPResponse(status: 503, json: .object(["error": .string("engine stopped")])) }
             return await self.handle(request)
+        } onLegacyRequest: { [weak self] _ in
+            Task { await self?.noteLegacyRequest() }
         }
         do {
             try await l.start()
@@ -172,6 +183,26 @@ public actor Engine {
         startedAt = Date()
         lastError = nil
         if ProcessInfo.processInfo.environment["AUTOSWITCH_DEBUG_DEMO_QUOTA"] != nil { seedDemoWindows() } else { startProbeLoop() }
+    }
+
+    /// A request arrived in origin-form: that client is still on ANTHROPIC_BASE_URL and has Remote
+    /// Control switched off, which the app has no other way to notice.
+    func noteLegacyRequest() {
+        legacyRequests += 1
+        lastLegacyRequestAt = Date()
+    }
+
+    /// Throw the chain away and mint a fresh one. Sessions already running keep the old leaf until
+    /// they reconnect, so the listener is rebuilt rather than patched.
+    public func reissueCertificates() async throws {
+        LocalCA.discard(in: store.path.deletingLastPathComponent())
+        certificates = nil
+        if listener != nil {
+            await stop()
+            try await start()
+        } else {
+            certificates = try LocalCA.ensure(in: store.path.deletingLastPathComponent(), hosts: [ConnectAuthority.terminatedHost])
+        }
     }
 
     public func stop() async {
@@ -240,7 +271,12 @@ public actor Engine {
             familyTargets: targets,
             sessions: affinity.records(now: now),
             rotation: configuration.rotation,
-            listener: ListenerInfo(port: port, baseURL: baseURL, startedAt: startedAt, version: version),
+            listener: ListenerInfo(
+                port: port, baseURL: baseURL, startedAt: startedAt, version: version,
+                caPath: certificates?.caPath.path ?? "", caFingerprint: certificates?.fingerprint ?? "",
+                caNotAfter: certificates?.notAfter,
+                legacyRequests: legacyRequests, lastLegacyRequestAt: lastLegacyRequestAt
+            ),
             probe: ProbeInfo(enabled: configuration.quota.refreshEverySeconds > 0, intervalSeconds: configuration.quota.refreshEverySeconds, lastFinishedAt: lastProbeAt),
             observedAt: now
         )

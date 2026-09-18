@@ -100,6 +100,7 @@
 "Copy name" = "名前をコピー";
 "Could not export diagnostics: %@" = "診断情報を書き出せません: %@";
 "Could not listen: %@" = "待ち受けを開始できません: %@";
+"Could not prepare the local certificate: %@" = "ローカル証明書を準備できません: %@";
 "Could not read the account's profile; give the account a name to add it anyway" = "アカウントのプロファイルを読み取れませんでした。名前を付ければそのまま追加できます";
 "Could not read the config: %@" = "設定を読み込めません: %@";
 "Could not write the config: %@" = "設定を書き込めません: %@";

@@ -100,6 +100,7 @@
 "Copy name" = "拷贝名称";
 "Could not export diagnostics: %@" = "无法导出诊断信息：%@";
 "Could not listen: %@" = "无法监听：%@";
+"Could not prepare the local certificate: %@" = "无法准备本地证书：%@";
 "Could not read the account's profile; give the account a name to add it anyway" = "无法读取账户资料；指定一个名称即可仍然添加";
 "Could not read the config: %@" = "无法读取配置：%@";
 "Could not write the config: %@" = "无法写入配置：%@";

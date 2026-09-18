@@ -167,6 +167,7 @@ public actor Engine {
         if listener != nil { return }
         let certificates = try LocalCA.ensure(in: store.path.deletingLastPathComponent(), hosts: [ConnectAuthority.terminatedHost])
         self.certificates = certificates
+        writeEnvironmentScript(certificates)
         // Captured rather than read live: changing the base URL restarts the listener, so this
         // cannot go stale, and an upgrade is relayed from the event loop where an actor hop is not free.
         let upstream = baseURL
@@ -186,6 +187,22 @@ public actor Engine {
         startedAt = Date()
         lastError = nil
         if ProcessInfo.processInfo.environment["AUTOSWITCH_DEBUG_DEMO_QUOTA"] != nil { seedDemoWindows() } else { startProbeLoop() }
+    }
+
+    /// The file a shell profile sources. Written on every start so a port change or a reissued
+    /// certificate never leaves the profile pointing at stale values.
+    nonisolated var environmentScriptPath: URL { store.path.deletingLastPathComponent().appending(path: "env.sh") }
+
+    private func writeEnvironmentScript(_ certificates: LocalCA) {
+        let environment = ClaudeCodeEnvironment(
+            endpoint: ProxyEndpoint(port: port),
+            caPath: certificates.caPath.path,
+            scriptPath: environmentScriptPath.path
+        )
+        // No secret in here — the CA certificate is meant to be read — so it is world-readable
+        // like the certificate beside it.
+        try? environment.scriptContents.write(to: environmentScriptPath, atomically: true, encoding: .utf8)
+        chmod(environmentScriptPath.path, 0o644)
     }
 
     /// A request arrived in origin-form: that client is still on ANTHROPIC_BASE_URL and has Remote
@@ -276,7 +293,8 @@ public actor Engine {
             rotation: configuration.rotation,
             listener: ListenerInfo(
                 port: port, baseURL: baseURL, startedAt: startedAt, version: version,
-                caPath: certificates?.caPath.path ?? "", caFingerprint: certificates?.fingerprint ?? "",
+                caPath: certificates?.caPath.path ?? "", envScriptPath: environmentScriptPath.path,
+                caFingerprint: certificates?.fingerprint ?? "",
                 caNotAfter: certificates?.notAfter,
                 legacyRequests: legacyRequests, lastLegacyRequestAt: lastLegacyRequestAt
             ),

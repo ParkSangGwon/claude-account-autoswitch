@@ -163,7 +163,7 @@ final class AppStore {
             failureStreak = 0
             await loadConfiguration()
             await poll()
-            showToast(.ok, L("Now listening on port %d — update the line Claude Code uses.", port))
+            showToast(.ok, L("Now listening on port %d — open a new terminal, or source the setup file again.", port))
         } catch let e as EngineError {
             showToast(.error, e.message)
         } catch {
@@ -178,11 +178,24 @@ final class AppStore {
     }
 
     /// Listening, accounts configured, and not one request has arrived. Almost always the shell
-    /// never got `ANTHROPIC_BASE_URL`, which the app cannot see and so has to ask about.
+    /// running Claude Code never sourced the setup file, which the app cannot see and so has to ask about.
     var nothingHasArrivedYet: Bool {
         guard let s = state, s.listener.isRunning, let since = s.listener.startedAt, !s.accounts.isEmpty else { return false }
-        guard s.sessions.isEmpty, s.accounts.allSatisfy({ $0.traffic.requests == 0 }) else { return false }
+        guard s.sessions.isEmpty, s.accounts.allSatisfy({ $0.traffic.requests == 0 }), s.listener.legacyRequests == 0 else { return false }
         return Date().timeIntervalSince(since) > 300
+    }
+
+    /// Throw the local chain away and mint a fresh one, restarting the listener with it.
+    func reissueCertificates() async {
+        do {
+            try await engine.reissueCertificates()
+            await poll()
+            showToast(.ok, L("Certificate reissued"))
+        } catch let e as EngineError {
+            showToast(.error, e.message)
+        } catch {
+            showToast(.error, error.localizedDescription)
+        }
     }
 
     /// Bind again after a port change or a failed start.
@@ -191,8 +204,19 @@ final class AppStore {
         await startEngine()
     }
 
-    /// The one line a shell needs so Claude Code talks to this proxy.
-    var claudeCodeEnvLine: String { "export ANTHROPIC_BASE_URL=\(endpoint.baseURLString)" }
+    /// What a shell needs so Claude Code goes through this proxy. The app writes the script; the
+    /// profile only sources it, so a port change never leaves a stale line behind.
+    var claudeCodeEnvironment: ClaudeCodeEnvironment {
+        ClaudeCodeEnvironment(
+            endpoint: endpoint,
+            caPath: state?.listener.caPath ?? "",
+            scriptPath: state?.listener.envScriptPath ?? ""
+        )
+    }
+
+    /// A client is still pointed here with `ANTHROPIC_BASE_URL`, which keeps Remote Control, managed
+    /// settings and organization policy off for that session — the very thing the proxy mode fixes.
+    var legacyClientInUse: Bool { (state?.listener.legacyRequests ?? 0) > 0 }
 
     /// Restart the loop so the next sleep uses the current cadence; `pollNow` also polls first.
     private func rescheduleLoop(pollNow: Bool = false) {

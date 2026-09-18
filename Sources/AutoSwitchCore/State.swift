@@ -106,6 +106,7 @@ public struct ListenerInfo: Sendable, Equatable {
     public var version: String
     /// Where the local CA lives, what it looks like and when it stops working.
     public var caPath: String
+    public var envScriptPath: String
     public var caFingerprint: String
     public var caNotAfter: Date?
     /// Requests that came in origin-form: a client still pointed here by ANTHROPIC_BASE_URL, which
@@ -114,10 +115,11 @@ public struct ListenerInfo: Sendable, Equatable {
     public var lastLegacyRequestAt: Date?
 
     public init(port: Int, baseURL: String, startedAt: Date?, version: String,
-                caPath: String = "", caFingerprint: String = "", caNotAfter: Date? = nil,
+                caPath: String = "", envScriptPath: String = "", caFingerprint: String = "", caNotAfter: Date? = nil,
                 legacyRequests: Int = 0, lastLegacyRequestAt: Date? = nil) {
         self.port = port; self.baseURL = baseURL; self.startedAt = startedAt; self.version = version
-        self.caPath = caPath; self.caFingerprint = caFingerprint; self.caNotAfter = caNotAfter
+        self.caPath = caPath; self.envScriptPath = envScriptPath
+        self.caFingerprint = caFingerprint; self.caNotAfter = caNotAfter
         self.legacyRequests = legacyRequests; self.lastLegacyRequestAt = lastLegacyRequestAt
     }
 

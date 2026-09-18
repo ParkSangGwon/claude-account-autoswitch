@@ -151,10 +151,15 @@ struct PopoverView: View {
         if case .down(let since, let error) = store.connection {
             out.append(Banner(kind: .bad, text: L("%@ — showing data from %@ ago", error.message, Format.duration(Date().timeIntervalSince(since))), action: { store.refreshNow() }, actionTitle: L("Retry")))
         }
-        if store.nothingHasArrivedYet {
+        if store.legacyClientInUse {
+            // The worst outcome of the move to a proxy: everything keeps working, so only this says
+            // that the session lost Remote Control along the way.
+            out.append(Banner(kind: .warn, text: L("Claude Code is still pointed here with ANTHROPIC_BASE_URL. Remote Control, managed settings and organization policy stay off while that variable is set."),
+                              action: { Actions.copyPlainly(store.claudeCodeEnvironment.sourceLine) }, actionTitle: L("Copy setup line")))
+        } else if store.nothingHasArrivedYet {
             // Everything reads green in this state, so nothing else would ever mention it.
-            out.append(Banner(kind: .warn, text: L("Up, but nothing has come through yet — Claude Code needs the proxy's address in its shell."),
-                              action: { Actions.copySecret(store.claudeCodeEnvLine) }, actionTitle: L("Copy")))
+            out.append(Banner(kind: .warn, text: L("Up, but nothing has come through yet — the shell running Claude Code has to source the setup file."),
+                              action: { Actions.copyPlainly(store.claudeCodeEnvironment.sourceLine) }, actionTitle: L("Copy setup line")))
         }
         if let state = store.state {
             for n in Explain.notices(state) { out.append(Banner(kind: n.severity == .bad ? .bad : .warn, text: n.text)) }

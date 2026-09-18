@@ -9,7 +9,7 @@ struct ConnectAuthority: Equatable, Sendable {
     let port: Int
 
     /// The API host is the only one worth holding open: the rotation has to read the exchange.
-    static let terminatedHost = "api.anthropic.com"
+    static let terminatedHost = ClaudeAPI.host
     static let terminatedPort = 443
 
     var isTerminated: Bool { host == Self.terminatedHost && port == Self.terminatedPort }

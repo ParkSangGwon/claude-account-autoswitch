@@ -167,7 +167,10 @@ public actor Engine {
         if listener != nil { return }
         let certificates = try LocalCA.ensure(in: store.path.deletingLastPathComponent(), hosts: [ConnectAuthority.terminatedHost])
         self.certificates = certificates
-        let l = try ProxyServer(port: port, certificates: certificates) { [weak self] request in
+        // Captured rather than read live: changing the base URL restarts the listener, so this
+        // cannot go stale, and an upgrade is relayed from the event loop where an actor hop is not free.
+        let upstream = baseURL
+        let l = try ProxyServer(port: port, certificates: certificates, upstream: { upstream }) { [weak self] request in
             guard let self else { return HTTPResponse(status: 503, json: .object(["error": .string("engine stopped")])) }
             return await self.handle(request)
         } onLegacyRequest: { [weak self] _ in

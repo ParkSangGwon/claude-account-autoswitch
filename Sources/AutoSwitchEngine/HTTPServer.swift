@@ -107,7 +107,7 @@ final class ChannelBox: @unchecked Sendable {
 }
 
 /// Collects one request, runs the handler off the event loop, writes the response; keep-alive is left to NIO.
-final class RequestHandler: ChannelInboundHandler, @unchecked Sendable {
+final class RequestHandler: ChannelInboundHandler, RemovableChannelHandler, @unchecked Sendable {
     typealias InboundIn = HTTPServerRequestPart
     typealias OutboundOut = HTTPServerResponsePart
 

@@ -16,16 +16,20 @@ final class ProxyServer: Sendable {
     private let handler: HTTPServer.Handler
     private let onLegacyRequest: @Sendable (String) -> Void
     private let tls: NIOSSLContext
+    /// Used for the upstream leg of an upgraded connection; ordinary requests go through URLSession.
+    private let clientTLS: NIOSSLContext
     private let policy: TunnelPolicy
+    private let upstream: UpgradeGate.UpstreamProvider
     private let group: MultiThreadedEventLoopGroup
     private let channelBox = ChannelBox()
 
     /// `policy` is injected so tests can tunnel to a loopback stand-in; production never widens it.
-    init(port: Int, certificates: LocalCA, policy: TunnelPolicy? = nil, handler: @escaping HTTPServer.Handler, onLegacyRequest: @escaping @Sendable (String) -> Void) throws {
+    init(port: Int, certificates: LocalCA, policy: TunnelPolicy? = nil, upstream: @escaping UpgradeGate.UpstreamProvider, handler: @escaping HTTPServer.Handler, onLegacyRequest: @escaping @Sendable (String) -> Void) throws {
         self.port = port
         self.handler = handler
         self.onLegacyRequest = onLegacyRequest
         self.policy = policy ?? .production(listeningPort: port)
+        self.upstream = upstream
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: 2)
 
         do {
@@ -39,6 +43,7 @@ final class ProxyServer: Sendable {
             configuration.applicationProtocols = ["http/1.1"]
             configuration.minimumTLSVersion = .tlsv12
             self.tls = try NIOSSLContext(configuration: configuration)
+            self.clientTLS = try NIOSSLContext(configuration: .makeClientConfiguration())
         } catch {
             throw EngineError.certificates(String(describing: error))
         }
@@ -51,16 +56,18 @@ final class ProxyServer: Sendable {
         let tls = self.tls
         let onLegacy = self.onLegacyRequest
         let policy = self.policy
+        let clientTLS = self.clientTLS
+        let upstream = self.upstream
 
         let bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             .childChannelInitializer { channel in
                 let gate = ConnectGate(
                     terminator: { channel in
-                        Self.terminate(channel, tls: tls, handler: handler)
+                        Self.terminate(channel, tls: tls, clientTLS: clientTLS, upstream: upstream, handler: handler)
                     },
                     plaintext: { channel in
-                        Self.serveInTheClear(channel, handler: handler)
+                        Self.serveInTheClear(channel, clientTLS: clientTLS, upstream: upstream, handler: handler)
                     },
                     policy: policy,
                     onLegacyRequest: onLegacy
@@ -83,27 +90,27 @@ final class ProxyServer: Sendable {
     }
 
     /// TLS first, then the same HTTP/1.1 pipeline the plaintext path uses.
-    private static func terminate(_ channel: Channel, tls: NIOSSLContext, handler: @escaping HTTPServer.Handler) -> EventLoopFuture<Void> {
-        do {
-            let ssl = NIOSSLServerHandler(context: tls)
-            return channel.pipeline.addHandler(ssl).flatMap { httpPipeline(channel, handler: handler) }
-        }
+    private static func terminate(_ channel: Channel, tls: NIOSSLContext, clientTLS: NIOSSLContext, upstream: @escaping UpgradeGate.UpstreamProvider, handler: @escaping HTTPServer.Handler) -> EventLoopFuture<Void> {
+        let ssl = NIOSSLServerHandler(context: tls)
+        return channel.pipeline.addHandler(ssl).flatMap { httpPipeline(channel, clientTLS: clientTLS, upstream: upstream, handler: handler) }
     }
 
-    private static func serveInTheClear(_ channel: Channel, handler: @escaping HTTPServer.Handler) -> EventLoopFuture<Void> {
-        httpPipeline(channel, handler: handler)
+    private static func serveInTheClear(_ channel: Channel, clientTLS: NIOSSLContext, upstream: @escaping UpgradeGate.UpstreamProvider, handler: @escaping HTTPServer.Handler) -> EventLoopFuture<Void> {
+        httpPipeline(channel, clientTLS: clientTLS, upstream: upstream, handler: handler)
     }
 
     /// Assembled by hand rather than with `configureHTTPServerPipeline`, which does not let the
-    /// decoder forward the bytes it has already buffered.
-    private static func httpPipeline(_ channel: Channel, handler: @escaping HTTPServer.Handler) -> EventLoopFuture<Void> {
-        channel.pipeline.addHandlers([
-            ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes)),
-            HTTPResponseEncoder(),
-            HTTPServerPipelineHandler(),
-            HTTPServerProtocolErrorHandler(),
-            RequestHandler(handler: handler),
-        ])
+    /// decoder forward the bytes it has already buffered. The gate sits in front of the engine's
+    /// handler so an upgrade never reaches a path that would strip its headers.
+    private static func httpPipeline(_ channel: Channel, clientTLS: NIOSSLContext, upstream: @escaping UpgradeGate.UpstreamProvider, handler: @escaping HTTPServer.Handler) -> EventLoopFuture<Void> {
+        let decoder = ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes))
+        let encoder = HTTPResponseEncoder()
+        let pipelining = HTTPServerPipelineHandler()
+        let errors = HTTPServerProtocolErrorHandler()
+        let requests = RequestHandler(handler: handler)
+        let gate = UpgradeGate(upstream: upstream, clientTLS: clientTLS)
+        gate.httpHandlers = [decoder, encoder, pipelining, errors, requests]
+        return channel.pipeline.addHandlers([decoder, encoder, pipelining, errors, gate, requests])
     }
 
     deinit { try? group.syncShutdownGracefully() }

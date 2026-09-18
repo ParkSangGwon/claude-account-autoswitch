@@ -49,10 +49,20 @@ struct TunnelPolicy: Sendable {
 
 /// Byte-for-byte relay between the client and whatever it asked for, with back pressure kept.
 enum TunnelRelay {
+    /// A CONNECT tunnel: the gate already forwards client bytes, so only the return leg needs glue.
     static func glue(client: Channel, upstream: Channel, gate: ConnectGate) {
-        let toClient = GlueHandler(partner: client)
-        _ = upstream.pipeline.addHandler(toClient)
+        _ = upstream.pipeline.addHandler(GlueHandler(partner: client))
         upstream.closeFuture.whenComplete { _ in gate.upstreamClosed(client: client) }
+    }
+
+    /// An upgraded connection: nothing forwards either side any more, so both ends get glue.
+    /// `send` runs once both are in place, so nothing the upstream answers can outrun its own glue.
+    static func pipe(_ client: Channel, _ upstream: Channel, then send: @escaping @Sendable () -> Void) {
+        let both = [
+            client.pipeline.addHandler(GlueHandler(partner: upstream)),
+            upstream.pipeline.addHandler(GlueHandler(partner: client)),
+        ]
+        EventLoopFuture.andAllComplete(both, on: client.eventLoop).whenComplete { _ in send() }
     }
 }
 

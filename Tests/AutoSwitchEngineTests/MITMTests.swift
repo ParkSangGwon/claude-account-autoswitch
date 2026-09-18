@@ -166,7 +166,8 @@ final class MITMTests: XCTestCase {
         let ca = try LocalCA.ensure(in: URL(fileURLWithPath: NSTemporaryDirectory()).appending(path: "tunnel-\(UUID().uuidString)"),
                                     hosts: [ConnectAuthority.terminatedHost])
         let tunnelPort = Int.random(in: 20000..<40000)
-        let server = try ProxyServer(port: tunnelPort, certificates: ca, policy: .permissive(listeningPort: tunnelPort)) { _ in
+        let server = try ProxyServer(port: tunnelPort, certificates: ca, policy: .permissive(listeningPort: tunnelPort),
+                                     upstream: { echo.base }) { _ in
             HTTPResponse(status: 500, json: .object([:]))
         } onLegacyRequest: { _ in }
         try await server.start()
@@ -182,6 +183,47 @@ final class MITMTests: XCTestCase {
         let sent = try XCTUnwrap(echo.seen.last)
         XCTAssertEqual(String(decoding: sent.body, as: UTF8.self), #"{"tunnelled":true}"#, "the body arrives byte for byte")
         XCTAssertNil(sent.headers["authorization"], "a tunnel injects nothing of its own")
+    }
+
+    /// Remote Control's live channel. It must reach the upstream with its own headers intact and
+    /// must never touch `Relay.serve`, which would strip the three headers the handshake is made of.
+    func testAWebSocketUpgradeIsRelayedVerbatim() async throws {
+        let standIn = UpgradeStandIn()
+        try await standIn.start()
+        defer { Task { await standIn.stop() } }
+
+        let ca = try LocalCA.ensure(in: URL(fileURLWithPath: NSTemporaryDirectory()).appending(path: "upgrade-\(UUID().uuidString)"),
+                                    hosts: [ConnectAuthority.terminatedHost])
+        let proxyPort = Int.random(in: 20000..<40000)
+        let engineSawARequest = Locked(false)
+        let server = try ProxyServer(port: proxyPort, certificates: ca, upstream: { standIn.base }) { _ in
+            engineSawARequest.value = true
+            return HTTPResponse(status: 500, json: .object([:]))
+        } onLegacyRequest: { _ in }
+        try await server.start()
+        defer { Task { await server.stop() } }
+
+        let result = try curl(["--proxy", "http://127.0.0.1:\(proxyPort)", "--cacert", ca.caPath.path,
+                               "--max-time", "10", "-s", "-o", "/dev/null", "-w", "%{http_code}",
+                               "https://api.anthropic.com/v1/session_ingress/ws/abc",
+                               "-H", "connection: Upgrade",
+                               "-H", "upgrade: websocket",
+                               "-H", "sec-websocket-version: 13",
+                               "-H", "sec-websocket-key: dGhlIHNhbXBsZSBub25jZQ==",
+                               "-H", "authorization: Bearer client-token"])
+        // curl's exit code is not checked: it treats a 101 followed by a closed socket as an empty
+        // reply, because it speaks HTTP and not what comes after the switch. The status line is
+        // what matters, and it reaches the client.
+        XCTAssertEqual(result.output, "101", "the client gets the switch, not an answer we invented")
+
+        let seen = standIn.seenRequest.lowercased()
+        XCTAssertTrue(seen.contains("get /v1/session_ingress/ws/abc"), seen)
+        XCTAssertTrue(seen.contains("connection: upgrade"), "the header Relay.serve would have dropped")
+        XCTAssertTrue(seen.contains("upgrade: websocket"), "the header Relay.serve would have dropped")
+        XCTAssertTrue(seen.contains("authorization: bearer client-token"),
+                      "the session is paired to the client's own identity; a rotated token would be refused")
+        XCTAssertTrue(seen.contains("host: api.anthropic.com"), "the Host the client asked for is kept")
+        XCTAssertFalse(engineSawARequest.value, "an upgrade must not reach the rotation path at all")
     }
 
     func testTheCertificateCoversOnlyTheAPIHost() async throws {

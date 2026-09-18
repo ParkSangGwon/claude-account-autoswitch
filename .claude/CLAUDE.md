@@ -17,6 +17,15 @@
 - `VERSION` feeds local `make app`; in CI the tag wins. The release script keeps them equal — do not bump `VERSION` by hand ahead of it.
 - The bundle is ad-hoc signed; the README and the cask caveat carry the Gatekeeper note.
 
+## Never stop the installed app
+
+The Claude AutoSwitch running on this machine is very likely the proxy **this Claude Code session's own traffic goes through**. Killing it cuts the session off mid-task.
+
+- Never `pkill ClaudeAutoSwitch`, never quit it to install a build over it, never "restart it to pick up a change". That includes quitting it as a step towards relaunching it.
+- To try a build, run the bundle's binary directly with `CLAUDE_AUTOSWITCH_CONFIG=<scratch 0600 file>` whose `listen.port` is **not** the installed app's port (10912) — 19912 does. Clean up only that instance, by its own config path or port, never by process name.
+- `scripts/release.sh` kills it too: `scripts/screenshots.sh` runs `pkill -x ClaudeAutoSwitch` before shooting. Say so before cutting a release, and bring the app back afterwards.
+- Installing a new build over the running one is the user's call, not a step to take on the way to something else.
+
 ## Testing
 
 - Engine tests run against loopback stand-ins for the Claude API. Never read or write real credentials in tests, and never put a token in a fixture, a log or a commit.

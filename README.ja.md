@@ -116,6 +116,7 @@ make install          # builds dist/Claude AutoSwitch.app and copies it to /Appl
    [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    シェルプロファイルに入れるか、*ターミナルで Claude Code を開く* を使ってください。
+   バイナリを直接実行するエディタやランチャーでは、`claude` ではなく同じフォルダの `claude-autoswitch` を指定してください。
 3. **ログイン時に起動をオンにする**（設定 → 一般）と、Claude Code があるところにはいつでもプロキシがあります。
 
 セットアップはこれだけです。<br>

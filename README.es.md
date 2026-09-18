@@ -116,6 +116,7 @@ Abre **Ajustes del Sistema → Privacidad y seguridad** y pulsa **Abrir de todos
    [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    Ponla en tu perfil de shell o usa *Abrir Terminal con Claude Code*.
+   Para un editor o lanzador que ejecute el binario directamente, apúntalo a `claude-autoswitch` en la misma carpeta en lugar de a `claude`.
 3. **Activa Abrir al iniciar sesión** (Ajustes → General) para que el proxy esté ahí siempre que Claude Code lo esté.
 
 Eso es toda la configuración.<br>

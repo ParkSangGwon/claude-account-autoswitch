@@ -116,6 +116,7 @@ make install          # builds dist/Claude AutoSwitch.app and copies it to /Appl
    [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    셸 프로필에 넣거나 *터미널에서 Claude Code 열기*를 사용하세요.
+   바이너리를 직접 실행하는 에디터나 런처에서는 `claude` 대신 같은 폴더의 `claude-autoswitch`를 가리키세요.
 3. **로그인 시 실행을 켭니다** (설정 → 일반). Claude Code가 있는 곳에 프록시도 항상 있도록.
 
 설정은 이것이 전부입니다.<br>

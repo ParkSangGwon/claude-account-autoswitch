@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 ### Added
 
 - A local certificate authority, created on this Mac and trusted by nothing but the Claude Code processes the setup file points at. It is never added to the system keychain, and the CA's private key is never written to disk: renewal mints the whole chain again, so the only secret stored is a leaf key for one host. **Settings → Proxy → Certificate** shows what it covers, its fingerprint and its expiry, and reissues it.
+- `claude-autoswitch`, a wrapper beside the setup file that sources it and execs `claude`. A shell profile does not reach an editor or launcher that runs the binary directly, and those let you name which binary; this is the one to name.
 - Remote Control's WebSocket is relayed to the API untouched, with the client's own credential rather than a rotated one, since that session is paired to the identity that asked for it.
 
 ## [0.2.1] - 2026-09-15

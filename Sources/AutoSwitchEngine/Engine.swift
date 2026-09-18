@@ -193,16 +193,22 @@ public actor Engine {
     /// certificate never leaves the profile pointing at stale values.
     nonisolated var environmentScriptPath: URL { store.path.deletingLastPathComponent().appending(path: "env.sh") }
 
+    /// A `claude` to point at from anywhere the shell profile does not reach.
+    nonisolated var wrapperPath: URL { store.path.deletingLastPathComponent().appending(path: "claude-autoswitch") }
+
     private func writeEnvironmentScript(_ certificates: LocalCA) {
         let environment = ClaudeCodeEnvironment(
             endpoint: ProxyEndpoint(port: port),
             caPath: certificates.caPath.path,
-            scriptPath: environmentScriptPath.path
+            scriptPath: environmentScriptPath.path,
+            wrapperPath: wrapperPath.path
         )
         // No secret in here — the CA certificate is meant to be read — so it is world-readable
         // like the certificate beside it.
         try? environment.scriptContents.write(to: environmentScriptPath, atomically: true, encoding: .utf8)
         chmod(environmentScriptPath.path, 0o644)
+        try? environment.wrapperContents.write(to: wrapperPath, atomically: true, encoding: .utf8)
+        chmod(wrapperPath.path, 0o755)
     }
 
     /// A request arrived in origin-form: that client is still on ANTHROPIC_BASE_URL and has Remote
@@ -294,6 +300,7 @@ public actor Engine {
             listener: ListenerInfo(
                 port: port, baseURL: baseURL, startedAt: startedAt, version: version,
                 caPath: certificates?.caPath.path ?? "", envScriptPath: environmentScriptPath.path,
+                wrapperPath: wrapperPath.path,
                 caFingerprint: certificates?.fingerprint ?? "",
                 caNotAfter: certificates?.notAfter,
                 legacyRequests: legacyRequests, lastLegacyRequestAt: lastLegacyRequestAt

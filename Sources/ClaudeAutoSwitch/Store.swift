@@ -210,7 +210,8 @@ final class AppStore {
         ClaudeCodeEnvironment(
             endpoint: endpoint,
             caPath: state?.listener.caPath ?? "",
-            scriptPath: state?.listener.envScriptPath ?? ""
+            scriptPath: state?.listener.envScriptPath ?? "",
+            wrapperPath: state?.listener.wrapperPath ?? ""
         )
     }
 

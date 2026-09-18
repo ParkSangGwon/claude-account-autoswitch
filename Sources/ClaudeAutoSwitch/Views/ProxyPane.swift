@@ -51,6 +51,14 @@ struct ProxyPane: View {
                     }.padding(.top, 4)
                 }.font(.system(size: 11))
                 Text(L("Claude Code keeps talking to api.anthropic.com, so Remote Control and managed settings keep working. It also keeps its own login; the proxy swaps in the rotating account's token on the way out.")).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                if !store.claudeCodeEnvironment.wrapperPath.isEmpty {
+                    Divider()
+                    Text(L("For anything that runs the binary directly and lets you name it — an editor, a launcher — point it at this instead of `claude`.")).font(.system(size: 11)).fixedSize(horizontal: false, vertical: true)
+                    HStack {
+                        Text(store.claudeCodeEnvironment.wrapperPath).font(.system(size: 10, design: .monospaced)).textSelection(.enabled).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                        Button(L("Copy")) { Actions.copyPlainly(store.claudeCodeEnvironment.wrapperPath) }.controlSize(.small)
+                    }
+                }
                 if store.legacyClientInUse {
                     Banner(kind: .warn, text: L("Claude Code is still pointed here with ANTHROPIC_BASE_URL. Remove that export from your shell profile, add the line above, and open a new terminal."))
                     HStack {

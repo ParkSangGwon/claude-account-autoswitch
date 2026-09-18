@@ -13,11 +13,13 @@ public struct ClaudeCodeEnvironment: Sendable, Equatable {
     public let endpoint: ProxyEndpoint
     public let caPath: String
     public let scriptPath: String
+    public let wrapperPath: String
 
-    public init(endpoint: ProxyEndpoint, caPath: String, scriptPath: String) {
+    public init(endpoint: ProxyEndpoint, caPath: String, scriptPath: String, wrapperPath: String = "") {
         self.endpoint = endpoint
         self.caPath = caPath
         self.scriptPath = scriptPath
+        self.wrapperPath = wrapperPath
     }
 
     /// The variables in the order they are written, for a settings pane that lists them.
@@ -53,6 +55,16 @@ public struct ClaudeCodeEnvironment: Sendable, Equatable {
     /// quiet if the app is ever removed.
     public var sourceLine: String {
         "[ -f \(Self.quoted(scriptPath)) ] && source \(Self.quoted(scriptPath))"
+    }
+
+    /// A `claude` that brings the proxy with it, for the places a shell profile does not reach: an
+    /// editor or launcher that runs the binary directly and lets you name which one.
+    /// `command` skips any alias, and the file is named differently so it cannot call itself.
+    public var wrapperContents: String {
+        "#!/bin/zsh\n"
+            + "# Written by Claude AutoSwitch. Edited by hand, it will be overwritten.\n"
+            + "source \(Self.quoted(scriptPath))\n"
+            + "exec command claude \"$@\"\n"
     }
 
     /// Reads any shell profile without changing it, for someone who has an old export to find.

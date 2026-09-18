@@ -161,6 +161,7 @@ Importing reads the Keychain item Claude Code writes (`Claude Code-credentials`,
 | Preferences, alert state, rotation journal | `defaults` domain `com.parksanggwon.claudeautoswitch` |
 | Terminal launcher | `~/Library/Application Support/Claude AutoSwitch/claude.command` |
 | Shell setup file | `~/Library/Application Support/Claude AutoSwitch/env.sh`, rewritten on every start; a shell profile sources it |
+| Wrapper | `~/Library/Application Support/Claude AutoSwitch/claude-autoswitch` (`0755`), sources the setup file and execs `claude`, for launchers that run the binary directly |
 | Local CA and leaf | `ca.pem` and `leaf.pem` (`0644`), `leaf.key` (`0600`), beside the config. The CA private key is never written; renewal mints the whole chain again |
 
 Debug hooks for screenshots and UI work: `AUTOSWITCH_DEBUG_DEMO_QUOTA=1` seeds plausible windows without a login, `AUTOSWITCH_DEBUG_WINDOW=<section>` opens a settings pane and the popover, `AUTOSWITCH_DEBUG_APPEARANCE=light|dark` pins the appearance.

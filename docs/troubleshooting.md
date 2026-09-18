@@ -26,6 +26,7 @@ Claude Code is not talking to the proxy.
 - `echo $ANTHROPIC_BASE_URL` must now print nothing. If it prints anything, see the next section.
 - The source line belongs in the shell profile that terminal reads (`~/.zshrc` for zsh); open a new terminal after adding it.
 - A `claude` alias or wrapper that sets its own environment wins over the profile; check `type claude`.
+- Something that runs the binary directly never reads the profile at all. Point it at `claude-autoswitch` beside the setup file, which sources the variables and then execs `claude`.
 - **Settings → Proxy → Open Terminal with Claude Code** opens a terminal with everything already set.
 
 ## Remote Control is off, or managed settings are not fetched
@@ -86,7 +87,7 @@ The refresh token was rejected, so the app cannot get new access tokens for it.
 | --- | --- |
 | Config with tokens | `~/Library/Application Support/Claude AutoSwitch/config.json` |
 | History | `~/Library/Application Support/Claude AutoSwitch/history.json` |
-| Shell setup file | `~/Library/Application Support/Claude AutoSwitch/env.sh` |
+| Shell setup file | `~/Library/Application Support/Claude AutoSwitch/env.sh` and `claude-autoswitch` |
 | Local certificate | `ca.pem`, `leaf.pem` and `leaf.key` in the same folder. Nothing was added to the system keychain, so deleting the folder is all it takes for Claude Code to stop trusting it |
 | Preferences | `defaults` domain `com.parksanggwon.claudeautoswitch` |
 

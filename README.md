@@ -116,6 +116,7 @@ Open **System Settings → Privacy & Security** and click **Open Anyway**, or ri
    [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    Put it in your shell profile, or use *Open Terminal with Claude Code*.
+   For an editor or launcher that runs the binary directly, point it at `claude-autoswitch` in the same folder instead of `claude`.
 3. **Turn on Launch at login** (Settings → General) so the proxy is there whenever Claude Code is.
 
 That is the whole setup.<br>

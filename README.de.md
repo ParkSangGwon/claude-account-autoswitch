@@ -116,6 +116,7 @@ Beim ersten Start meldet macOS möglicherweise, dass der Entwickler nicht verifi
    [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    Tragen Sie sie in Ihr Shell-Profil ein, oder nutzen Sie *Terminal mit Claude Code öffnen*.
+   Für einen Editor oder Launcher, der die Binary direkt startet, geben Sie `claude-autoswitch` aus demselben Ordner an statt `claude`.
 3. **Bei der Anmeldung öffnen einschalten** (Einstellungen → Allgemein), damit der Proxy immer da ist, wenn Claude Code es ist.
 
 Das ist die ganze Einrichtung.<br>

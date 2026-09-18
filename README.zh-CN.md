@@ -116,6 +116,7 @@ make install          # builds dist/Claude AutoSwitch.app and copies it to /Appl
    [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    把它放进 shell 配置，或使用*在终端中打开 Claude Code*。
+   对于直接运行二进制的编辑器或启动器，请指向同一文件夹中的 `claude-autoswitch` 而不是 `claude`。
 3. **打开“登录时启动”**（设置 → 通用），这样只要 Claude Code 在，代理就在。
 
 设置就这么多。<br>

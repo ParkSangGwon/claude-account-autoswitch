@@ -477,3 +477,4 @@
 "The proxy holds the TLS to api.anthropic.com, so it needs a certificate Claude Code accepts. The app makes one on this Mac and points only Claude Code at it, through NODE_EXTRA_CA_CERTS. It is not added to the system keychain, and no other program trusts it." = "代理终结到 api.anthropic.com 的 TLS，因此需要一份 Claude Code 接受的证书。应用会在这台 Mac 上生成一份，并通过 NODE_EXTRA_CA_CERTS 只让 Claude Code 指向它。它不会加入系统钥匙串，其他程序都不信任它。";
 "Up, but nothing has come through yet — the shell running Claude Code has to source the setup file." = "已启动，但还没有任何请求 — 运行 Claude Code 的 shell 需要 source 设置文件。";
 "Valid until" = "有效期至";
+"For anything that runs the binary directly and lets you name it — an editor, a launcher — point it at this instead of `claude`." = "对于直接运行二进制且可以指定路径的地方 — 编辑器、启动器 — 请指向它而不是 `claude`。";

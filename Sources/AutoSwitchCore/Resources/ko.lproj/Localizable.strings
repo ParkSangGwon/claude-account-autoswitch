@@ -478,3 +478,4 @@
 "The proxy holds the TLS to api.anthropic.com, so it needs a certificate Claude Code accepts. The app makes one on this Mac and points only Claude Code at it, through NODE_EXTRA_CA_CERTS. It is not added to the system keychain, and no other program trusts it." = "프록시가 api.anthropic.com으로 가는 TLS를 종단하므로 Claude Code가 받아들일 인증서가 필요합니다. 앱이 이 Mac에서 하나를 만들고 NODE_EXTRA_CA_CERTS를 통해 Claude Code만 그것을 가리키게 합니다. 시스템 키체인에는 추가하지 않으며, 다른 어떤 프로그램도 이것을 신뢰하지 않습니다.";
 "Up, but nothing has come through yet — the shell running Claude Code has to source the setup file." = "떠 있지만 아직 아무것도 오지 않았습니다 — Claude Code를 실행하는 셸이 설정 파일을 source 해야 합니다.";
 "Valid until" = "만료";
+"For anything that runs the binary directly and lets you name it — an editor, a launcher — point it at this instead of `claude`." = "바이너리를 직접 실행하면서 그 경로를 지정할 수 있는 곳 — 에디터, 런처 — 에서는 `claude` 대신 이것을 가리키세요.";

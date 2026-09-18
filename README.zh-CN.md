@@ -66,7 +66,7 @@
 ## 解决方案
 
 Claude AutoSwitch 是一个带菜单栏的本地代理。<br>
-登录两个或更多 Claude 账户，把 Claude Code 指向 `http://127.0.0.1:10912`。<br>
+登录两个或更多 Claude 账户，把代理放在 Claude Code 前面。<br>
 之后每个请求都会带着仍有余量的账户的令牌发出。<br>
 当某个账户达到 5 小时或每周限额时，下一个请求就直接换用另一个账户。<br>
 Claude Code 不会登出、不会重启，也毫无察觉。<br>
@@ -111,16 +111,25 @@ make install          # builds dist/Claude AutoSwitch.app and copies it to /Appl
    - 通过浏览器登录。
    - 在浏览器无法访问此 Mac 时粘贴代码。
    - 导入 Claude Code 已有的登录（钥匙串）。
-2. **让 Claude Code 使用代理。** 只需一行，显示在设置 → 代理下，旁边有拷贝按钮：
+2. **把代理放在 Claude Code 前面。** 只需一行，显示在设置 → 代理下，旁边有拷贝按钮：
    ```sh
-   export ANTHROPIC_BASE_URL=http://127.0.0.1:10912
+   [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    把它放进 shell 配置，或使用*在终端中打开 Claude Code*。
 3. **打开“登录时启动”**（设置 → 通用），这样只要 Claude Code 在，代理就在。
 
 设置就这么多。<br>
-Claude Code 保留自己的登录。<br>
+Claude Code 保留自己的登录，并且继续与 `api.anthropic.com` 通信，因此远程控制、托管设置和组织政策照常工作。<br>
 代理只在请求发出时替换令牌，请求中的其他一切保持不变。
+
+## 证书
+
+代理站在 `api.anthropic.com` 前面，就意味着它要终结该主机的 TLS，也就意味着它需要一份 Claude Code 接受的证书。<br>
+应用会在这台 Mac 上创建一个证书颁发机构，并通过设置文件中的 `NODE_EXTRA_CA_CERTS` 变量只让 Claude Code 指向它。<br>
+它**不会**加入系统钥匙串：浏览器、其他应用、其他工具都不信任它，而且默认没有任何东西指向它。<br>
+在 Claude Code 信任它期间，代理会解密并重新加密该进程的 Claude API 流量 — 这正是替换令牌的机制，而使用 `ANTHROPIC_BASE_URL` 的旧版本同样以明文看到这些请求。<br>
+任何持有该 CA **私钥**的东西都能签发 Claude Code 会接受的证书，因此该私钥从不写入磁盘；续期采用重建整条链的方式，存盘的唯一秘密是一份只对应一个主机的 leaf 私钥。<br>
+删除应用的文件夹，信任也随之消失，系统钥匙串中不会留下任何东西。
 
 ## 你能得到什么
 
@@ -200,8 +209,8 @@ Claude Code 保留自己的登录。<br>
 
 ## 工作原理
 
-- 应用在 `127.0.0.1` 上运行一个 HTTP/1.1 监听（SwiftNIO）。
-- 发往自身控制平面以外任何路径的请求都会转发到 `https://api.anthropic.com`，并用所选账户的 `Authorization` 替换客户端的。
+- 应用在 `127.0.0.1` 上运行一个代理（SwiftNIO），Claude Code 通过 `HTTPS_PROXY` 到达它。
+- `CONNECT api.anthropic.com:443` 由应用自己终结，并用所选账户的 `Authorization` 替换客户端的再转发到上游；其他主机则原样隧道传输。
 - 其他所有请求头原样透传，`metadata.user_id` 标明令牌所属的账户。
 - 响应到达时即流式返回。
 - 账户先按优先级选择，再按最早重置的每周窗口选择。
@@ -217,6 +226,7 @@ Claude Code 保留自己的登录。<br>
 ## 隐私
 
 只会联系两个主机：Claude API（你的请求、用量探测、令牌刷新），以及登录期间的 claude.ai / platform.claude.com。<br>
+发往其他主机的流量不经解密，直接穿过代理。<br>
 没有遥测，没有更新检查。<br>
 导出诊断信息时会在写入前替换所有机密。
 

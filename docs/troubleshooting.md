@@ -15,17 +15,45 @@ The listener is not running, almost always because the port is taken.
 
 - **Settings → Proxy** names the program holding the port and offers **Use a free port**, which moves the listener and writes the new port down.
 - Or quit that program and press **Try again**. To find it yourself: `lsof -nP -iTCP:10912 -sTCP:LISTEN`.
-- After a port change, update the `ANTHROPIC_BASE_URL` line in your shell profile.
+- After a port change nothing in the profile needs editing: the setup file is rewritten with the new port. Open a new terminal, or source it again.
 
 ## Claude Code still uses one account
 
 Claude Code is not talking to the proxy.
 
 - The popover says so on its own once the proxy has been up a while with nothing arriving.
-- In the terminal you use, run `echo $ANTHROPIC_BASE_URL`; it must print `http://127.0.0.1:10912` (or your port).
-- The line belongs in the shell profile that terminal reads (`~/.zshrc` for zsh); open a new terminal after adding it.
-- A `claude` alias or wrapper that sets its own base URL wins over the profile; check `type claude`.
-- **Settings → Proxy → Open Terminal with Claude Code** opens a terminal with the variable already set.
+- In the terminal you use, run `echo $HTTPS_PROXY`; it must print `http://127.0.0.1:10912` (or your port).
+- `echo $ANTHROPIC_BASE_URL` must now print nothing. If it prints anything, see the next section.
+- The source line belongs in the shell profile that terminal reads (`~/.zshrc` for zsh); open a new terminal after adding it.
+- A `claude` alias or wrapper that sets its own environment wins over the profile; check `type claude`.
+- **Settings → Proxy → Open Terminal with Claude Code** opens a terminal with everything already set.
+
+## Remote Control is off, or managed settings are not fetched
+
+Something in that shell still sets `ANTHROPIC_BASE_URL`.
+
+Claude Code turns Remote Control, server-managed settings and organization policy off whenever that variable points anywhere other than `api.anthropic.com`, so a profile line left over from an earlier version keeps them off even though rotation still works. `claude doctor` says so in as many words.
+
+- Find it without changing anything: `grep -rn ANTHROPIC_BASE_URL ~/.zshrc ~/.zprofile ~/.bash_profile ~/.profile`.
+- Remove that export, make sure the setup line from **Settings → Proxy** is there instead, and open a new terminal.
+- The app notices this by itself: once a request arrives in the old form, the popover and the Proxy pane say which shell is still on it.
+- It can also come from a `claude` wrapper or from `~/.claude/settings.json`; `claude doctor` reports the value it ended up with.
+
+## Claude Code cannot reach the API, or reports a certificate error
+
+`NODE_EXTRA_CA_CERTS` is missing, or points at a certificate that no longer exists.
+
+- Check it in the terminal you use: the path it prints must be the one **Settings → Proxy → Certificate** shows.
+- Reissuing the certificate replaces that file. Terminals opened before the reissue keep the old path until they source the setup file again.
+- If you keep the setup in `~/.claude/settings.json` instead of a shell profile, its `env` block needs the same update — the app only writes its own file.
+
+## Setting it up without touching a shell profile
+
+The app writes the variables to its own file and never edits yours, but nothing stops you putting them somewhere else.
+
+- **Settings → Proxy → Show all variables** lists them; **Copy all variables** gives the whole block.
+- Claude Code also reads an `env` block in `~/.claude/settings.json`, which suits fish, nushell or a profile you would rather leave alone. The app will not write there.
+- Remember `ANTHROPIC_BASE_URL` has to be unset wherever you put the rest.
 
 ## An account says "needs a new sign-in"
 
@@ -58,6 +86,8 @@ The refresh token was rejected, so the app cannot get new access tokens for it.
 | --- | --- |
 | Config with tokens | `~/Library/Application Support/Claude AutoSwitch/config.json` |
 | History | `~/Library/Application Support/Claude AutoSwitch/history.json` |
+| Shell setup file | `~/Library/Application Support/Claude AutoSwitch/env.sh` |
+| Local certificate | `ca.pem`, `leaf.pem` and `leaf.key` in the same folder. Nothing was added to the system keychain, so deleting the folder is all it takes for Claude Code to stop trusting it |
 | Preferences | `defaults` domain `com.parksanggwon.claudeautoswitch` |
 
 Homebrew: `brew uninstall --cask claude-autoswitch` removes the app; add `--zap` to remove the folder and the preferences too.

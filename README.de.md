@@ -66,7 +66,7 @@ Drei oder mehr, und der nächste Abschnitt ist für Sie.
 ## Die Lösung
 
 Claude AutoSwitch ist ein lokaler Proxy mit Menüleiste.<br>
-Melden Sie sich mit zwei oder mehr Claude-Konten an und richten Sie Claude Code auf `http://127.0.0.1:10912`.<br>
+Melden Sie sich mit zwei oder mehr Claude-Konten an und setzen Sie den Proxy vor Claude Code.<br>
 Jede Anfrage geht mit dem Token eines Kontos hinaus, das noch Platz hat.<br>
 Erreicht ein Konto sein 5-Stunden- oder Wochenlimit, nutzt die nächste Anfrage einfach ein anderes.<br>
 Claude Code meldet sich nie ab, startet nie neu und bekommt nichts davon mit.<br>
@@ -111,16 +111,25 @@ Beim ersten Start meldet macOS möglicherweise, dass der Entwickler nicht verifi
    - Melden Sie sich über den Browser an.
    - Fügen Sie einen Code ein, wenn der Browser diesen Mac nicht erreicht.
    - Importieren Sie die Anmeldung, die Claude Code bereits hat (Schlüsselbund).
-2. **Claude Code auf den Proxy richten.** Eine Zeile, mit Kopieren-Button angezeigt unter Einstellungen → Proxy:
+2. **Den Proxy vor Claude Code setzen.** Eine Zeile, mit Kopieren-Button angezeigt unter Einstellungen → Proxy:
    ```sh
-   export ANTHROPIC_BASE_URL=http://127.0.0.1:10912
+   [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    Tragen Sie sie in Ihr Shell-Profil ein, oder nutzen Sie *Terminal mit Claude Code öffnen*.
 3. **Bei der Anmeldung öffnen einschalten** (Einstellungen → Allgemein), damit der Proxy immer da ist, wenn Claude Code es ist.
 
 Das ist die ganze Einrichtung.<br>
-Claude Code behält seine eigene Anmeldung.<br>
+Claude Code behält seine eigene Anmeldung und spricht weiterhin mit `api.anthropic.com`, sodass Remote Control, verwaltete Einstellungen und Organisationsrichtlinien weiter funktionieren.<br>
 Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage unangetastet.
+
+## Das Zertifikat
+
+Der Proxy steht vor `api.anthropic.com`, muss also das TLS für diesen Host terminieren und braucht damit ein Zertifikat, das Claude Code akzeptiert.<br>
+Die App erzeugt auf diesem Mac eine Zertifizierungsstelle und richtet über die Variable `NODE_EXTRA_CA_CERTS` in der Setup-Datei allein Claude Code darauf aus.<br>
+Sie wird **nicht** in den Systemschlüsselbund aufgenommen: kein Browser, keine andere App und kein anderes Werkzeug vertraut ihr, und standardmäßig ist überhaupt nichts auf sie ausgerichtet.<br>
+Solange Claude Code ihr vertraut, entschlüsselt und verschlüsselt der Proxy den Claude-API-Verkehr dieses Prozesses erneut — genau dadurch tauscht er das Token aus, und die Versionen mit `ANTHROPIC_BASE_URL` sahen dieselben Anfragen ebenfalls im Klartext.<br>
+Wer den **privaten Schlüssel** der CA besitzt, könnte Zertifikate ausstellen, die Claude Code akzeptiert; deshalb wird dieser Schlüssel nie auf die Festplatte geschrieben. Erneuert wird, indem die ganze Kette neu erzeugt wird, und das einzige gespeicherte Geheimnis ist ein Leaf-Schlüssel für einen Host.<br>
+Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im Systemschlüsselbund bleibt nichts zurück.
 
 ## Was Sie bekommen
 
@@ -200,8 +209,8 @@ Der Proxy ersetzt beim Senden das Token und lässt alles andere in der Anfrage u
 
 ## So funktioniert es
 
-- Die App betreibt einen HTTP/1.1-Listener auf `127.0.0.1` (SwiftNIO).
-- Anfragen an jeden Pfad außer ihrer eigenen Control Plane werden an `https://api.anthropic.com` weitergeleitet, mit der `Authorization` des gewählten Kontos anstelle der des Clients.
+- Die App betreibt einen Proxy auf `127.0.0.1` (SwiftNIO), den Claude Code über `HTTPS_PROXY` erreicht.
+- `CONNECT api.anthropic.com:443` terminiert sie selbst und leitet jede Anfrage mit der `Authorization` des gewählten Kontos anstelle der des Clients nach oben weiter; jeder andere Host wird unangetastet getunnelt.
 - Jeder andere Header geht durch, und `metadata.user_id` nennt das Konto, dessen Token hinausging.
 - Antworten werden gestreamt, sobald sie eintreffen.
 - Konten werden nach Priorität gewählt, dann nach dem Wochenfenster, das am frühesten zurückgesetzt wird.
@@ -217,6 +226,7 @@ Die Referenz zur Konfigurationsdatei, zum Health-Endpunkt und zu den Rotationsre
 ## Datenschutz
 
 Es werden überhaupt nur zwei Hosts kontaktiert: die Claude API (Ihre Anfragen, die Kontingentabfrage, Token-Refresh) und, während der Anmeldung, claude.ai / platform.claude.com.<br>
+Verkehr zu jedem anderen Host läuft unentschlüsselt durch den Proxy.<br>
 Keine Telemetrie, keine Update-Prüfungen.<br>
 Der Diagnose-Export ersetzt jedes Geheimnis vor dem Schreiben.
 

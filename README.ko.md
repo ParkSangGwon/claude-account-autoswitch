@@ -66,7 +66,7 @@
 ## 해결책
 
 Claude AutoSwitch는 메뉴 막대가 달린 로컬 프록시입니다.<br>
-두 개 이상의 Claude 계정으로 로그인하고 Claude Code를 `http://127.0.0.1:10912`로 향하게 합니다.<br>
+두 개 이상의 Claude 계정으로 로그인하고 Claude Code 앞에 프록시를 둡니다.<br>
 모든 요청은 아직 여유가 있는 계정의 토큰으로 나갑니다.<br>
 한 계정이 5시간 또는 주간 한도에 도달하면 다음 요청은 그냥 다른 계정을 씁니다.<br>
 Claude Code는 로그아웃되지도, 재시작되지도, 알아채지도 않습니다.<br>
@@ -111,16 +111,25 @@ make install          # builds dist/Claude AutoSwitch.app and copies it to /Appl
    - 브라우저로 로그인합니다.
    - 브라우저가 이 Mac에 접근할 수 없을 때는 코드를 붙여 넣습니다.
    - Claude Code에 이미 있는 로그인을 가져옵니다(키체인).
-2. **Claude Code를 프록시로 향하게 합니다.** 설정 → 프록시 아래에 복사 버튼과 함께 표시되는 한 줄입니다:
+2. **Claude Code 앞에 프록시를 둡니다.** 설정 → 프록시 아래에 복사 버튼과 함께 표시되는 한 줄입니다:
    ```sh
-   export ANTHROPIC_BASE_URL=http://127.0.0.1:10912
+   [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    셸 프로필에 넣거나 *터미널에서 Claude Code 열기*를 사용하세요.
 3. **로그인 시 실행을 켭니다** (설정 → 일반). Claude Code가 있는 곳에 프록시도 항상 있도록.
 
 설정은 이것이 전부입니다.<br>
-Claude Code는 자기 로그인을 그대로 유지합니다.<br>
+Claude Code는 자기 로그인을 그대로 유지하고, 계속 `api.anthropic.com`과 통신하므로 Remote Control·관리 설정·조직 정책이 그대로 동작합니다.<br>
 프록시는 나가는 길에 토큰만 바꿔 끼우며 요청의 나머지는 손대지 않습니다.
+
+## 인증서
+
+프록시가 `api.anthropic.com` 앞에 서므로 그 호스트의 TLS를 종단해야 하고, 그러려면 Claude Code가 받아들일 인증서가 필요합니다.<br>
+앱은 이 Mac에서 인증 기관을 하나 만들고, 설정 파일의 `NODE_EXTRA_CA_CERTS` 변수를 통해 Claude Code만 그것을 가리키게 합니다.<br>
+시스템 키체인에는 **넣지 않습니다**. 브라우저도, 다른 앱도, 다른 도구도 이것을 신뢰하지 않으며 기본적으로는 아무것도 이것을 가리키지 않습니다.<br>
+Claude Code가 이것을 신뢰하는 동안 프록시는 그 프로세스의 Claude API 트래픽을 복호화했다가 다시 암호화합니다 — 그것이 토큰을 바꿔 끼우는 메커니즘이며, `ANTHROPIC_BASE_URL`을 쓰던 이전 버전도 같은 요청을 평문으로 보고 있었습니다.<br>
+CA의 **개인 키**를 가진 것은 무엇이든 Claude Code가 받아들일 인증서를 발급할 수 있으므로, 그 키는 디스크에 쓰지 않습니다. 갱신은 체인 전체를 다시 만드는 방식이고, 저장되는 비밀은 호스트 하나짜리 leaf 키뿐입니다.<br>
+앱 폴더를 지우면 신뢰도 함께 사라지며 시스템 키체인에는 아무것도 남지 않습니다.
 
 ## 제공 기능
 
@@ -200,8 +209,8 @@ Claude Code는 자기 로그인을 그대로 유지합니다.<br>
 
 ## 동작 방식
 
-- 앱은 `127.0.0.1`에서 HTTP/1.1 리스너를 실행합니다(SwiftNIO).
-- 자체 컨트롤 플레인 이외의 경로로 온 요청은 클라이언트의 `Authorization` 대신 선택된 계정의 것을 담아 `https://api.anthropic.com`으로 전달됩니다.
+- 앱은 `127.0.0.1`에서 프록시를 실행하고(SwiftNIO) Claude Code는 `HTTPS_PROXY`를 통해 그것에 닿습니다.
+- `CONNECT api.anthropic.com:443`은 앱이 직접 종단해 클라이언트의 `Authorization` 대신 선택된 계정의 것을 담아 업스트림으로 전달하고, 그 외 호스트는 손대지 않고 터널로 넘깁니다.
 - 다른 모든 헤더는 그대로 통과하고, `metadata.user_id`는 토큰이 나간 계정을 가리킵니다.
 - 응답은 도착하는 대로 스트리밍됩니다.
 - 계정은 우선순위, 그다음 가장 빨리 리셋되는 주간 윈도우 순으로 선택됩니다.
@@ -217,6 +226,7 @@ Claude Code는 자기 로그인을 그대로 유지합니다.<br>
 ## 개인정보 보호
 
 접속하는 호스트는 단 둘뿐입니다: Claude API(요청, 사용량 프로브, 토큰 갱신)와 로그인 중의 claude.ai / platform.claude.com.<br>
+그 밖의 호스트로 가는 트래픽은 복호화되지 않은 채 프록시를 지나갑니다.<br>
 텔레메트리도, 업데이트 확인도 없습니다.<br>
 진단 정보 내보내기는 기록 전에 모든 비밀 값을 치환합니다.
 

@@ -130,13 +130,15 @@ When every account is out and the wait is over, the last upstream reply is relay
 
 ## The listener
 
-The listener speaks HTTP/1.1 on `127.0.0.1` only.
-Every path is forwarded to `api.baseURL` with the chosen account's credential in place of the client's, except:
+The listener is an HTTP proxy on `127.0.0.1` only, reached through `HTTPS_PROXY`.
+It reads each connection's request line as raw bytes and takes one of three routes:
 
 When the configured port is taken the listener does not start, and the Proxy pane names what holds it and offers a free port nearby.
 
-- `GET /_autoswitch/health` answers `{"ok":true,"version":"…","port":10912,"accounts":2,"startedAt":"…"}` and is the only endpoint the app itself serves.
-- Paths under `/v1/code/` and `/api/oauth/` go through with the client's own credential.
+- `CONNECT api.anthropic.com:443` is terminated locally with the app's own leaf, and what comes out of the tunnel is forwarded to `api.baseURL` with the chosen account's credential in place of the client's. ALPN offers `http/1.1` alone: Remote Control's channel is a WebSocket, and over HTTP/2 that would need RFC 8441 extended CONNECT.
+- Any other `CONNECT` is a blind TCP tunnel — the MCP servers, telemetry and npm all inherit the proxy and arrive here. Names that resolve back to this listener, to loopback or to link-local are refused with 403; a dial that fails answers 502.
+- An origin-form request is served directly. `GET /_autoswitch/health` answers `{"ok":true,"version":"…","port":10912,"accounts":2,"startedAt":"…"}` and is the only endpoint the app itself serves; anything else in that form is a client still pointed here with `ANTHROPIC_BASE_URL`, which is served as before and counted so the app can say that session has Remote Control switched off. An absolute-form request is refused with 501.
+- Paths under `/v1/code/` and `/api/oauth/` go through with the client's own credential, and so does a request that asks to upgrade the protocol: a WebSocket handshake is relayed to `api.baseURL` byte for byte, headers untouched, and never reaches the rotation path.
 
 Hop-by-hop headers, `authorization`, `x-api-key`, `accept-encoding` and `content-length` are rebuilt on the way out; connection headers and `content-encoding` are dropped on the way back.
 `metadata.user_id` in the request body is rewritten to name the account whose token went out.
@@ -158,5 +160,7 @@ Importing reads the Keychain item Claude Code writes (`Claude Code-credentials`,
 | History | `~/Library/Application Support/Claude AutoSwitch/history.json`, seven days, one sample a minute |
 | Preferences, alert state, rotation journal | `defaults` domain `com.parksanggwon.claudeautoswitch` |
 | Terminal launcher | `~/Library/Application Support/Claude AutoSwitch/claude.command` |
+| Shell setup file | `~/Library/Application Support/Claude AutoSwitch/env.sh`, rewritten on every start; a shell profile sources it |
+| Local CA and leaf | `ca.pem` and `leaf.pem` (`0644`), `leaf.key` (`0600`), beside the config. The CA private key is never written; renewal mints the whole chain again |
 
 Debug hooks for screenshots and UI work: `AUTOSWITCH_DEBUG_DEMO_QUOTA=1` seeds plausible windows without a login, `AUTOSWITCH_DEBUG_WINDOW=<section>` opens a settings pane and the popover, `AUTOSWITCH_DEBUG_APPEARANCE=light|dark` pins the appearance.

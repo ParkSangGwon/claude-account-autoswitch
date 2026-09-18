@@ -5,6 +5,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-19
+
+### Changed
+
+- **The proxy now sits in front of Claude Code instead of replacing its endpoint, and the setup line changes with it.** Since 2.1.196 Claude Code switches off Remote Control, server-managed settings and organization policy whenever `ANTHROPIC_BASE_URL` points anywhere other than `api.anthropic.com` — which is exactly what the old one-line setup did, so every session through this app lost all three while rotation itself kept working. The app now asks for `HTTPS_PROXY` and a local certificate instead: Claude Code keeps dialling `api.anthropic.com`, the proxy terminates that connection on loopback, and the three features come back. Replace `export ANTHROPIC_BASE_URL=…` in your shell profile with the line under **Settings → Proxy** — it sources a file the app writes, so a port change never leaves it stale — and open a new terminal. Leaving the old export in place keeps Remote Control off even after updating; the app now notices such a session and says so in the popover and the Proxy pane.
+- Everything Claude Code reaches other than the API host is tunnelled without being decrypted — the MCP servers, telemetry and npm all inherit the proxy and pass straight through.
+
+### Added
+
+- A local certificate authority, created on this Mac and trusted by nothing but the Claude Code processes the setup file points at. It is never added to the system keychain, and the CA's private key is never written to disk: renewal mints the whole chain again, so the only secret stored is a leaf key for one host. **Settings → Proxy → Certificate** shows what it covers, its fingerprint and its expiry, and reissues it.
+- Remote Control's WebSocket is relayed to the API untouched, with the client's own credential rather than a rotated one, since that session is paired to the identity that asked for it.
+
 ## [0.2.1] - 2026-09-15
 
 ### Fixed

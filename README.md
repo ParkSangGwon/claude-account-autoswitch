@@ -66,7 +66,7 @@ Three or more, and the next section is for you.
 ## The fix
 
 Claude AutoSwitch is a local proxy with a menu bar.<br>
-Sign in with two or more Claude accounts and point Claude Code at `http://127.0.0.1:10912`.<br>
+Sign in with two or more Claude accounts and put the proxy in front of Claude Code.<br>
 Every request goes out with the token of an account that still has room.<br>
 When one account reaches its 5-hour or weekly limit, the next request simply uses another one.<br>
 Claude Code never logs out, never restarts, and never knows.<br>
@@ -111,16 +111,26 @@ Open **System Settings → Privacy & Security** and click **Open Anyway**, or ri
    - Sign in through the browser.
    - Paste a code when the browser cannot reach this Mac.
    - Import the login Claude Code already has (Keychain).
-2. **Point Claude Code at the proxy.** One line, shown with a Copy button under Settings → Proxy:
+2. **Put the proxy in front of Claude Code.** One line, shown with a Copy button under Settings → Proxy:
    ```sh
-   export ANTHROPIC_BASE_URL=http://127.0.0.1:10912
+   [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    Put it in your shell profile, or use *Open Terminal with Claude Code*.
+   For an editor or launcher that runs the binary directly, point it at `claude-autoswitch` in the same folder instead of `claude`.
 3. **Turn on Launch at login** (Settings → General) so the proxy is there whenever Claude Code is.
 
 That is the whole setup.<br>
-Claude Code keeps its own login.<br>
+Claude Code keeps its own login, and it keeps talking to `api.anthropic.com`, so Remote Control, managed settings and organization policy keep working.<br>
 The proxy replaces the token on the way out and leaves everything else in the request untouched.
+
+## The certificate
+
+The proxy sits in front of `api.anthropic.com`, which means it has to hold the TLS for that host, which means it needs a certificate Claude Code accepts.<br>
+The app creates a certificate authority on this Mac and points only Claude Code at it, through the `NODE_EXTRA_CA_CERTS` variable in the setup file.<br>
+It is **not** added to the system keychain: no browser, no other app and no other tool trusts it, and by default nothing at all is pointed at it.<br>
+While Claude Code does trust it, the proxy decrypts and re-encrypts that process's Claude API traffic — that is the mechanism by which it swaps the token, and the `ANTHROPIC_BASE_URL` releases before it saw the same requests in the clear.<br>
+Anything holding the CA's **private key** could issue certificates that Claude Code would accept, so that key is never written to disk; the chain is regenerated instead, and the only secret stored is a leaf key for one host.<br>
+Delete the app's folder and the trust is gone with it, leaving nothing behind in the system keychain.
 
 ## What you get
 
@@ -200,8 +210,8 @@ The proxy replaces the token on the way out and leaves everything else in the re
 
 ## How it works
 
-- The app runs an HTTP/1.1 listener on `127.0.0.1` (SwiftNIO).
-- Requests to any path other than its own control plane are forwarded to `https://api.anthropic.com` with the chosen account's `Authorization` in place of the client's.
+- The app runs a proxy on `127.0.0.1` (SwiftNIO) and Claude Code reaches it through `HTTPS_PROXY`.
+- It terminates `CONNECT api.anthropic.com:443` itself and forwards each request upstream with the chosen account's `Authorization` in place of the client's; every other host is tunnelled untouched.
 - Every other header passes through, and `metadata.user_id` names the account whose token went out.
 - Replies stream back as they arrive.
 - Accounts are chosen by priority, then by the weekly window that resets soonest.
@@ -217,6 +227,7 @@ The reference for the config file, the health endpoint and the rotation rules is
 ## Privacy
 
 Only two hosts are ever contacted: the Claude API (your requests, the usage probe, token refresh) and, during sign-in, claude.ai / platform.claude.com.<br>
+Traffic to any other host passes through the proxy without being decrypted.<br>
 No telemetry, no update checks.<br>
 Diagnostics export replaces every secret before writing.
 

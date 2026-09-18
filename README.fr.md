@@ -66,7 +66,7 @@ Trois cases cochées ou plus, et la section suivante est pour vous.
 ## La solution
 
 Claude AutoSwitch est un proxy local doté d'une barre des menus.<br>
-Connectez deux comptes Claude ou plus et dirigez Claude Code vers `http://127.0.0.1:10912`.<br>
+Connectez deux comptes Claude ou plus et placez le proxy devant Claude Code.<br>
 Chaque requête part avec le jeton d'un compte qui a encore de la marge.<br>
 Quand un compte atteint sa limite 5 heures ou hebdomadaire, la requête suivante utilise simplement un autre compte.<br>
 Claude Code ne se déconnecte jamais, ne redémarre jamais, et n'en sait jamais rien.<br>
@@ -111,16 +111,26 @@ Ouvrez **Réglages Système → Confidentialité et sécurité** et cliquez sur 
    - Connectez-vous via le navigateur.
    - Collez un code quand le navigateur ne peut pas joindre ce Mac.
    - Importez la connexion que Claude Code a déjà (trousseau).
-2. **Dirigez Claude Code vers le proxy.** Une seule ligne, affichée avec un bouton Copier sous Réglages → Proxy :
+2. **Placez le proxy devant Claude Code.** Une seule ligne, affichée avec un bouton Copier sous Réglages → Proxy :
    ```sh
-   export ANTHROPIC_BASE_URL=http://127.0.0.1:10912
+   [ -f "$HOME/Library/Application Support/Claude AutoSwitch/env.sh" ] && source "$HOME/Library/Application Support/Claude AutoSwitch/env.sh"
    ```
    Ajoutez-la à votre profil de shell, ou utilisez *Ouvrir le Terminal avec Claude Code*.
+   Pour un éditeur ou un lanceur qui exécute le binaire directement, pointez-le sur `claude-autoswitch` dans le même dossier plutôt que sur `claude`.
 3. **Activez Ouvrir à l'ouverture de session** (Réglages → Général) pour que le proxy soit là dès que Claude Code l'est.
 
 C'est toute la configuration.<br>
-Claude Code garde sa propre connexion.<br>
+Claude Code garde sa propre connexion et continue de parler à `api.anthropic.com`, si bien que le contrôle à distance, les réglages gérés et la politique d’organisation continuent de fonctionner.<br>
 Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête intact.
+
+## Le certificat
+
+Le proxy se place devant `api.anthropic.com`, ce qui veut dire qu’il doit terminer le TLS de cet hôte, et donc qu’il lui faut un certificat que Claude Code accepte.<br>
+L’app crée une autorité de certification sur ce Mac et n’y dirige que Claude Code, via la variable `NODE_EXTRA_CA_CERTS` du fichier de configuration.<br>
+Elle n’est **pas** ajoutée au trousseau système : aucun navigateur, aucune autre app et aucun autre outil ne lui fait confiance, et par défaut rien n’y est dirigé.<br>
+Tant que Claude Code lui fait confiance, le proxy déchiffre puis rechiffre le trafic de l’API Claude de ce processus — c’est précisément le mécanisme qui remplace le jeton, et les versions utilisant `ANTHROPIC_BASE_URL` voyaient déjà ces mêmes requêtes en clair.<br>
+Quiconque détient la **clé privée** de la CA pourrait émettre des certificats que Claude Code accepterait : cette clé n’est donc jamais écrite sur le disque ; le renouvellement régénère toute la chaîne, et le seul secret stocké est une clé leaf pour un seul hôte.<br>
+Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien laisser dans le trousseau système.
 
 ## Ce que vous obtenez
 
@@ -200,8 +210,8 @@ Le proxy remplace le jeton à la sortie et laisse tout le reste de la requête i
 
 ## Fonctionnement
 
-- L'app fait tourner un serveur HTTP/1.1 à l'écoute sur `127.0.0.1` (SwiftNIO).
-- Les requêtes vers tout chemin autre que son propre plan de contrôle sont transmises à `https://api.anthropic.com` avec l'`Authorization` du compte choisi à la place de celle du client.
+- L'app fait tourner un proxy sur `127.0.0.1` (SwiftNIO), que Claude Code atteint via `HTTPS_PROXY`.
+- Elle termine elle-même `CONNECT api.anthropic.com:443` et transmet chaque requête en amont avec l'`Authorization` du compte choisi à la place de celle du client ; tout autre hôte est tunnelisé sans y toucher.
 - Tous les autres en-têtes passent tels quels, et `metadata.user_id` nomme le compte dont le jeton est parti.
 - Les réponses sont renvoyées en flux au fur et à mesure qu'elles arrivent.
 - Les comptes sont choisis par priorité, puis par la fenêtre hebdomadaire qui se réinitialise le plus tôt.
@@ -217,6 +227,7 @@ La référence du fichier de configuration, de l'endpoint de santé et des règl
 ## Confidentialité
 
 Seuls deux hôtes sont jamais contactés : l'API Claude (vos requêtes, la sonde d'usage, le rafraîchissement des jetons) et, pendant la connexion, claude.ai / platform.claude.com.<br>
+Le trafic vers tout autre hôte traverse le proxy sans être déchiffré.<br>
 Pas de télémétrie, pas de vérification de mise à jour.<br>
 L'export des diagnostics remplace chaque secret avant d'écrire.
 

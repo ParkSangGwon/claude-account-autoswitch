@@ -221,6 +221,13 @@ final class PopoverContainerController: NSViewController {
 }
 
 enum Actions {
+    /// Ordinary copy. `copySecret` marks the pasteboard concealed, which is right for a token and
+    /// wrong for a setup line someone wants to keep in their clipboard manager.
+    static func copyPlainly(_ value: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(value, forType: .string)
+    }
+
     static func copySecret(_ value: String) {
         let pb = NSPasteboard.general
         pb.clearContents()
@@ -234,7 +241,9 @@ enum Actions {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appending(path: "Claude AutoSwitch")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let file = dir.appending(path: "claude.command")
-        let cmd = "#!/bin/zsh -l\n\(store.claudeCodeEnvLine)\nexec claude\n"
+        // `-l` reads the profile first, so an old `export ANTHROPIC_BASE_URL` may still be in the
+        // environment; the setup file's closing `unset` runs after it and clears it.
+        let cmd = "#!/bin/zsh -l\n\(store.claudeCodeEnvironment.sourceLine)\nexec claude\n"
         try? cmd.write(to: file, atomically: true, encoding: .utf8)
         chmod(file.path, 0o755)
         NSWorkspace.shared.open(file)

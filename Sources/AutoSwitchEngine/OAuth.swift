@@ -98,13 +98,13 @@ enum OAuth {
         return (text, expectedState)
     }
 
-    static func exchange(code: String, state: String, verifier: String, redirectURI: String, session: URLSession = .shared) async throws -> TokenPair {
+    static func exchange(code: String, state: String, verifier: String, redirectURI: String, session: URLSession = Upstream.session) async throws -> TokenPair {
         let body: JSON = .object(["code": .string(code), "state": .string(state), "grant_type": .string("authorization_code"),
                                   "client_id": .string(clientID), "redirect_uri": .string(redirectURI), "code_verifier": .string(verifier)])
         return try await token(body: body, previousRefresh: nil, session: session)
     }
 
-    static func refresh(refreshToken: String, session: URLSession = .shared) async throws -> TokenPair {
+    static func refresh(refreshToken: String, session: URLSession = Upstream.session) async throws -> TokenPair {
         let body: JSON = .object(["grant_type": .string("refresh_token"), "refresh_token": .string(refreshToken), "client_id": .string(clientID)])
         return try await token(body: body, previousRefresh: refreshToken, session: session)
     }
@@ -142,7 +142,7 @@ enum OAuth {
         return expiresAt.timeIntervalSince(now) < refreshMargin
     }
 
-    static func profile(accessToken: String, session: URLSession = .shared) async throws -> Profile {
+    static func profile(accessToken: String, session: URLSession = Upstream.session) async throws -> Profile {
         var req = URLRequest(url: profileURL)
         req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "authorization")
         req.setValue("application/json", forHTTPHeaderField: "accept")
@@ -156,7 +156,7 @@ enum OAuth {
                        rateLimitTier: j["organization"]["rate_limit_tier"].string, seatTier: j["organization"]["seat_tier"].string)
     }
 
-    static func usage(accessToken: String, session: URLSession = .shared) async throws -> Usage {
+    static func usage(accessToken: String, session: URLSession = Upstream.session) async throws -> Usage {
         var req = URLRequest(url: usageURL)
         req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "authorization")
         req.setValue(betaHeader, forHTTPHeaderField: "anthropic-beta")

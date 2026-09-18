@@ -98,7 +98,7 @@ final class HTTPServer: Sendable {
 }
 
 /// The listening channel, shared between start and stop without making the server an actor.
-private final class ChannelBox: @unchecked Sendable {
+final class ChannelBox: @unchecked Sendable {
     private let lock = NSLock()
     private var channel: Channel?
     private(set) var port = 0
@@ -107,7 +107,7 @@ private final class ChannelBox: @unchecked Sendable {
 }
 
 /// Collects one request, runs the handler off the event loop, writes the response; keep-alive is left to NIO.
-private final class RequestHandler: ChannelInboundHandler, @unchecked Sendable {
+final class RequestHandler: ChannelInboundHandler, RemovableChannelHandler, @unchecked Sendable {
     typealias InboundIn = HTTPServerRequestPart
     typealias OutboundOut = HTTPServerResponsePart
 
@@ -190,7 +190,7 @@ private final class RequestHandler: ChannelInboundHandler, @unchecked Sendable {
 }
 
 /// NIO's context is not Sendable; it is only ever touched from its own event loop, which every use above guarantees.
-private struct UnsafeContext: @unchecked Sendable {
+struct UnsafeContext: @unchecked Sendable {
     let context: ChannelHandlerContext
     init(_ c: ChannelHandlerContext) { context = c }
 }

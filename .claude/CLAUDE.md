@@ -24,6 +24,7 @@ The Claude AutoSwitch running on this machine is very likely the proxy **this Cl
 - Never `pkill ClaudeAutoSwitch`, never quit it to install a build over it, never "restart it to pick up a change". That includes quitting it as a step towards relaunching it.
 - To try a build, run the bundle's binary directly with `CLAUDE_AUTOSWITCH_CONFIG=<scratch 0600 file>` whose `listen.port` is **not** the installed app's port (10912) — 19912 does. Clean up only that instance, by its own config path or port, never by process name.
 - `scripts/release.sh` kills it too: `scripts/screenshots.sh` runs `pkill -x ClaudeAutoSwitch` before shooting. Say so before cutting a release, and bring the app back afterwards.
+  The release script unsets the proxy variables for its own run, because the `git push` after the screenshots would otherwise dial the port it just killed.
 - Installing a new build over the running one is the user's call, not a step to take on the way to something else.
 
 ## Testing

@@ -91,6 +91,7 @@ public struct Windows: Codable, Sendable, Equatable {
     public var metersResetAt: Date?
     /// The upstream flagged the account's unified status as rejected; forgotten after half an hour.
     public var refusedAt: Date?
+    public static let refusalTTL: TimeInterval = 1800
 
     public init() {}
 
@@ -107,7 +108,7 @@ public struct Windows: Codable, Sendable, Equatable {
     public mutating func sweep(now: Date) {
         for (kind, r) in readings where r.resetsAt.map({ $0 <= now }) ?? false { readings.removeValue(forKey: kind) }
         if readings[.session] == nil { refusedAt = nil }
-        if let at = refusedAt, now.timeIntervalSince(at) > 1800 { refusedAt = nil }
+        if let at = refusedAt, now.timeIntervalSince(at) > Windows.refusalTTL { refusedAt = nil }
         if let at = metersResetAt, at <= now { tokens = nil; requests = nil; metersResetAt = nil }
     }
 }

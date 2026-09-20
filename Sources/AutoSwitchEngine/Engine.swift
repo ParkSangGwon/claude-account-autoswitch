@@ -310,10 +310,12 @@ public actor Engine {
         )
     }
 
-    /// Make an account the one new requests start from, whether or not rotation would pick it.
+    /// Make an account the one requests go to, whether or not rotation would pick it. The
+    /// sessions already running move with it: their pins would otherwise outlast the cursor.
     public func switchTo(_ id: AccountID) -> SwitchOutcome {
         guard let r = runtime.first(where: { $0.id == id }) else { return .failed(L("No such account")) }
         cursor = id
+        affinity.repin(to: id)
         saveObservations()
         let now = Date()
         let blocked = blocker(of: r, now: now)

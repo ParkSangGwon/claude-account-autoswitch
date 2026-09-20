@@ -227,9 +227,10 @@ extension Engine {
                 continue
             }
             do {
+                let asked = Date()
                 let usage = try await OAuth.usage(accessToken: token)
                 guard let j = runtimeIndex(id) else { continue }
-                absorb(usage, into: j)
+                absorb(usage, into: j, asked: asked)
                 runtime[j].probe = ProbeResult(at: Date(), error: nil)
                 if runtime[j].record.plan == .unknown, let p = try? await OAuth.profile(accessToken: token), let k = runtimeIndex(id) {
                     runtime[k].record.plan = Plan(tierText: p.rateLimitTier, seatText: p.seatTier)
@@ -251,12 +252,20 @@ extension Engine {
         saveObservations()
     }
 
-    func absorb(_ usage: OAuth.Usage, into i: Int, now: Date = Date()) {
-        if let u = usage.fiveHour.utilization { runtime[i].windows[.session] = WindowReading(used: u, resetsAt: usage.fiveHour.resetAt, seenAt: now) }
-        if let u = usage.sevenDay.utilization { runtime[i].windows[.weekly] = WindowReading(used: u, resetsAt: usage.sevenDay.resetAt, seenAt: now) }
-        for (name, b) in usage.scopedWeekly {
-            guard let family = Family(rawValue: name), let u = b.utilization else { continue }
-            runtime[i].windows[family.window] = WindowReading(used: u, resetsAt: b.resetAt, seenAt: now)
+    /// `asked` is when the probe left. A reply that came back while it was in flight carries the
+    /// newer reading of the two, and this one would put the account back where it was a moment ago —
+    /// back in rotation on numbers it has already spent past.
+    func absorb(_ usage: OAuth.Usage, into i: Int, asked: Date = .distantPast, now: Date = Date()) {
+        func put(_ kind: WindowKind, _ bucket: (utilization: Double?, resetAt: Date?)) {
+            guard let u = bucket.utilization else { return }
+            if let seen = runtime[i].windows[kind]?.seenAt, seen > asked { return }
+            runtime[i].windows[kind] = WindowReading(used: u, resetsAt: bucket.resetAt, seenAt: now)
+        }
+        put(.session, usage.fiveHour)
+        put(.weekly, usage.sevenDay)
+        for (name, bucket) in usage.scopedWeekly {
+            guard let family = Family(rawValue: name) else { continue }
+            put(family.window, bucket)
         }
     }
 }

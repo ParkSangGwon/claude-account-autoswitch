@@ -109,6 +109,10 @@ Among the accounts that can serve, the choice is:
 4. the best-ranked account, ties broken by the weekly window that resets soonest, then config order
 
 A successful reply makes its account the current one and pins the session to it for that weekly window.
+A request on a window the session has no pin for follows the account that served it last.
+Every check above is made against readings the request refreshes itself, so a window that rolled over is back in rotation on the next request rather than on the app's next poll.
+
+**Make current** and **Next available account** move the sessions already running as well as the cursor: a pin outlives the cursor, so a switch that left them alone would reach new sessions only.
 
 A restart picks up where the last run left off: the current account and every account's last known windows come back from `observed`, so the first request is not sent to an account that was already spent when the app quit.
 Windows whose reset passed while the app was closed are forgotten on the way in, so an account that rolled over is preferred again straight away.
@@ -124,9 +128,14 @@ Windows whose reset passed while the app was closed are forgotten on the way in,
 | 401 | A subscription account refreshes its token once and retries; then the request moves on. |
 | 403 | The request moves on. |
 | 5xx | The request moves on once. |
+| nothing at all | The request moves on; with nowhere left to move it answers 502, not 429 — nobody refused it, it never arrived. |
 | nothing left | The request waits up to `waitWhenExhaustedSeconds`, then answers 429 with a `retry-after`. |
 
 When every account is out and the wait is over, the last upstream reply is relayed as it came.
+
+The `retry-after` is when an account actually comes back: the soonest account for which every hold on it has lifted, which is the *last* of its own holds to go.
+A five-hour rollover on an account whose week is what is spent brings nothing back, and is not what the client is told to wait for.
+A minute stands in when no account comes back on its own — when what is left needs a new sign-in or a person.
 
 ## What the client reads
 

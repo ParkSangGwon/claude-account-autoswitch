@@ -5,7 +5,7 @@
 - `README.md` and its six translations (`README.ko.md`, `README.ja.md`, `README.zh-CN.md`, `README.de.md`, `README.es.md`, `README.fr.md`) describe the current UI and features. Change all seven in the same commit. `scripts/check-readmes.sh` runs in CI and fails when a translation's headings, code fences, images, table rows or bullets drift from `README.md`.
 - README style: the pain points come first ("The problem"), then "The fix". Inside a paragraph every sentence is its own line ending in `<br>`; a blank line only where the topic changes. Multi-sentence bullets become a bold lead plus nested bullets. UI terms in a translation come from that language's `Localizable.strings`.
 - The screenshots in `docs/assets/menubar/` (`menubar-item`, `popover-dark`, `settings-accounts`, `settings-rotation`, `settings-proxy`, `settings-general`) show the released app, not the working tree. **Do not re-shoot them when you change the menu bar item, the popover or a settings pane** — a picture of an unreleased build in the README claims a version nobody can download yet. `scripts/release.sh` re-shoots all six from the build the tag publishes, so they move with the version and never between. Leave `docs/assets/menubar/` alone in a feature commit; README wording still changes with the feature.
-- `scripts/screenshots.sh` is what the release script calls. Run it by hand only to check a UI change on screen, and throw the result away: it uses example accounts and demo quota, parks the app's preferences and restores them, never real accounts.
+- `scripts/screenshots.sh` is what the release script calls. Run it by hand only to check a UI change on screen, and throw the result away: it uses example accounts and demo quota, never real accounts. It runs a second instance beside the installed app — its own bind port, preference suite and menu bar slot — so nothing it does reaches the installed app. `SHOTS_OUT=<dir>` sends the six files somewhere other than `docs/assets/menubar/`, which is how to check a change without dirtying the tree.
 - `docs/reference.md` documents the config document, the health endpoint (`/_autoswitch/health`) and the rotation rules. Change it together with the engine.
 - Every user-facing string needs a row in all six `Sources/AutoSwitchCore/Resources/<lang>.lproj/Localizable.strings` tables; `testEverySourceStringHasATranslation` fails otherwise.
 
@@ -23,8 +23,8 @@ The Claude AutoSwitch running on this machine is very likely the proxy **this Cl
 
 - Never `pkill ClaudeAutoSwitch`, never quit it to install a build over it, never "restart it to pick up a change". That includes quitting it as a step towards relaunching it.
 - To try a build, run the bundle's binary directly with `CLAUDE_AUTOSWITCH_CONFIG=<scratch 0600 file>` whose `listen.port` is **not** the installed app's port (10912) — 19912 does. Clean up only that instance, by its own config path or port, never by process name.
-- `scripts/release.sh` kills it too: `scripts/screenshots.sh` runs `pkill -x ClaudeAutoSwitch` before shooting. Say so before cutting a release, and bring the app back afterwards.
-  The release script unsets the proxy variables for its own run, because the `git push` after the screenshots would otherwise dial the port it just killed.
+- `scripts/screenshots.sh`, and so `scripts/release.sh`, leaves it running: the instance it shoots binds 19912 and keeps its preferences in a scratch suite. Keep it that way — a release must not be a reason to stop the proxy.
+  The release script still unsets the proxy variables for its own run, so its `git push` does not depend on the proxy being healthy at that moment.
 - Installing a new build over the running one is the user's call, not a step to take on the way to something else.
 
 ## Testing

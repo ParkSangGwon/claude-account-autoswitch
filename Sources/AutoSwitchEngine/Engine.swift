@@ -156,6 +156,9 @@ public actor Engine {
     }
 
     public var port: Int { configuration.effectivePort }
+    /// `AUTOSWITCH_DEBUG_BIND_PORT`: listen somewhere else while every pane and the health endpoint
+    /// keep reporting `port`, so a screenshot run can sit beside an installed app that holds it.
+    var bindPort: Int { ProcessInfo.processInfo.environment["AUTOSWITCH_DEBUG_BIND_PORT"].flatMap(Int.init) ?? port }
     public var baseURL: String { configuration.api.baseURL }
 
     // MARK: - lifecycle
@@ -171,7 +174,7 @@ public actor Engine {
         // Captured rather than read live: changing the base URL restarts the listener, so this
         // cannot go stale, and an upgrade is relayed from the event loop where an actor hop is not free.
         let upstream = baseURL
-        let l = try ProxyServer(port: port, certificates: certificates, upstream: { upstream }) { [weak self] request in
+        let l = try ProxyServer(port: bindPort, certificates: certificates, upstream: { upstream }) { [weak self] request in
             guard let self else { return HTTPResponse(status: 503, json: .object(["error": .string("engine stopped")])) }
             return await self.handle(request)
         } onLegacyRequest: { [weak self] _ in
@@ -257,7 +260,7 @@ public actor Engine {
 
     /// Bind to a new port when the config moved it.
     public func restartIfPortChanged() async throws {
-        guard let l = listener, l.port != port else { return }
+        guard let l = listener, l.port != bindPort else { return }
         await stop()
         try await start()
     }

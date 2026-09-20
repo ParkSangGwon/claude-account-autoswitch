@@ -55,7 +55,15 @@ final class Preferences {
     var pollOpen: TimeInterval { refresh.intervals.open }
     var pollClosed: TimeInterval { refresh.intervals.closed }
 
-    private let d = UserDefaults.standard
+    /// `AUTOSWITCH_DEBUG_SIDECAR=<tag>` moves every write to `<bundle id>.<tag>`, so a second
+    /// instance shot for the documentation leaves the installed app's preferences untouched.
+    static let domain: String = {
+        let bundle = Bundle.main.bundleIdentifier ?? "com.parksanggwon.claudeautoswitch"
+        guard let tag = ProcessInfo.processInfo.environment["AUTOSWITCH_DEBUG_SIDECAR"], !tag.isEmpty else { return bundle }
+        return "\(bundle).\(tag)"
+    }()
+
+    private let d = UserDefaults(suiteName: Preferences.domain) ?? .standard
 
     private init() {
         refresh = Refresh(rawValue: d.string(forKey: "refreshProfile") ?? "") ?? .normal
@@ -73,7 +81,7 @@ final class Preferences {
         latestSeenVersion = d.string(forKey: "latestSeenVersion")
         updateCheckedAt = d.object(forKey: "updateCheckedAt") as? Date
         // A code from a build that shipped more languages must not leave the picker on an invalid selection.
-        let persisted = (d.persistentDomain(forName: Bundle.main.bundleIdentifier ?? "com.parksanggwon.claudeautoswitch")?["language"] as? String)
+        let persisted = (d.persistentDomain(forName: Preferences.domain)?["language"] as? String)
             .flatMap { code in L10n.supported.contains { $0.code == code } ? code : nil }
         language = persisted
         // `-language en` on the command line (screenshots) applies for this run only and is never written back.

@@ -11,6 +11,6 @@
 
 - `README.md` and its six translations change together, in the same commit. `scripts/check-readmes.sh` runs in CI and fails when a translation's headings, code fences, images, table rows or bullets drift from the English.
 - The pages under `docs/` are English only.
-- Screenshots under `assets/menubar/` come from `scripts/screenshots.sh` (example accounts, demo quota, the app's own preferences parked and restored). They are re-shot once per version, by `scripts/release.sh`, from the build the tag publishes — so the pictures always show the release you can download, never a change still waiting for one.
+- Screenshots under `assets/menubar/` come from `scripts/screenshots.sh` (example accounts, demo quota, a second instance beside any installed app rather than in place of it). They are re-shot once per version, by `scripts/release.sh`, from the build the tag publishes — so the pictures always show the release you can download, never a change still waiting for one.
 - Every release has a section in `CHANGELOG.md`; the release workflow uses it as the release notes and refuses a tag without one.
 - Wording: one sentence per line; inside a paragraph the lines end in `<br>`; UI terms exactly as the app shows them.

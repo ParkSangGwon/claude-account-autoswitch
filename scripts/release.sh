@@ -7,6 +7,8 @@
 # version you can download — never an unreleased build.
 set -eu
 cd "$(dirname "$0")/.."
+# The screenshot step kills the proxy this shell is pointed at — this app is it — so git goes direct.
+unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
 V=${1:-}
 case "$V" in
   [0-9]*.[0-9]*.[0-9]*) ;;

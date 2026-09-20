@@ -70,6 +70,7 @@ Melden Sie sich mit zwei oder mehr Claude-Konten an und setzen Sie den Proxy vor
 Jede Anfrage geht mit dem Token eines Kontos hinaus, das noch Platz hat.<br>
 Erreicht ein Konto sein 5-Stunden- oder Wochenlimit, nutzt die nächste Anfrage einfach ein anderes.<br>
 Claude Code meldet sich nie ab, startet nie neu und bekommt nichts davon mit.<br>
+Das Limit, das es liest, ist das der Rotation und nicht das eines einzelnen Kontos — solange ein anderes Konto noch Luft hat, erscheint kein Limit-Hinweis.<br>
 Das Kontingent jedes Kontos sitzt in der Menüleiste, sodass Sie nie ein Terminal öffnen, nur um nachzusehen.
 
 Es ist kein Konto-*Umschalter*: Im Schlüsselbund wird nichts ausgetauscht, und keine Sitzung wird unterbrochen.<br>

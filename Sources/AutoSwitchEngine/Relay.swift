@@ -117,9 +117,9 @@ extension Engine {
                     tried.removeAll()
                     continue
                 }
-                return deliver(reply, account: id)
+                return deliver(reply, account: id, model: model)
             case .deliver:
-                return deliver(reply, account: id)
+                return deliver(reply, account: id, model: model)
             }
         }
     }
@@ -138,9 +138,11 @@ extension Engine {
         return req
     }
 
-    /// Stream the upstream reply to the client, counting tokens as the events go by.
-    private func deliver(_ reply: UpstreamReply, account: AccountID) -> HTTPResponse {
-        let headers = reply.headers.filter { !Engine.droppedInbound.contains($0.0.lowercased()) }
+    /// Stream the upstream reply to the client, counting tokens as the events go by, with the
+    /// allowance headers restated for the rotation rather than for the account that answered.
+    private func deliver(_ reply: UpstreamReply, account: AccountID, model: String?) -> HTTPResponse {
+        let kept = reply.headers.filter { !Engine.droppedInbound.contains($0.0.lowercased()) }
+        let headers = Signals.rewrite(kept, as: fleetAllowance(model: model, now: Date()))
         let isSSE = reply.headers.contains { $0.0.caseInsensitiveCompare("content-type") == .orderedSame && $0.1.contains("text/event-stream") }
         let engine = self
         let stream = AsyncStream<Data> { continuation in

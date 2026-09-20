@@ -70,6 +70,7 @@ Connectez deux comptes Claude ou plus et placez le proxy devant Claude Code.<br>
 Chaque requête part avec le jeton d'un compte qui a encore de la marge.<br>
 Quand un compte atteint sa limite 5 heures ou hebdomadaire, la requête suivante utilise simplement un autre compte.<br>
 Claude Code ne se déconnecte jamais, ne redémarre jamais, et n'en sait jamais rien.<br>
+La limite qu'il lit est celle de la rotation, pas celle d'un seul compte : tant qu'un autre compte a de la marge, aucun message de limite n'apparaît.<br>
 Le quota de chaque compte s'affiche dans la barre des menus, si bien que vous n'ouvrez plus jamais un terminal juste pour y jeter un œil.
 
 Ce n'est pas un *commutateur* de comptes : rien n'est échangé dans le trousseau et aucune session n'est interrompue.<br>

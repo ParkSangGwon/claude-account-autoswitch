@@ -128,6 +128,16 @@ Windows whose reset passed while the app was closed are forgotten on the way in,
 
 When every account is out and the wait is over, the last upstream reply is relayed as it came.
 
+## What the client reads
+
+Claude Code draws its own limit banner from the `anthropic-ratelimit-unified-*` headers on every reply.
+Relayed untouched those headers describe the one account that answered, so the account rotation is about to leave announces a limit the client is never going to hit, and the next reply takes it back.
+
+On the way out the allowance headers are restated for the rotation: `-utilization` and `-reset` on the `5h`, `7d` and `7d_oi` windows carry the reading of whichever account that can take the next request has spent least of that window, `-status` reads `allowed` and `-surpassed-threshold` reads `false`.
+Each value keeps the shape the upstream wrote it in — a percentage stays a percentage, an epoch stays an epoch — and a header the upstream did not send is not invented.
+With nothing left in rotation there is nothing to restate, and the refusal reaches the client exactly as it came.
+What the engine itself learned from those headers is the account's own reading, untouched by this.
+
 ## The listener
 
 The listener is an HTTP proxy on `127.0.0.1` only, reached through `HTTPS_PROXY`.

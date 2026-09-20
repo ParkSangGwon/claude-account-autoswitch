@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+### Fixed
+
+- Claude Code announced a full limit for a moment every time rotation moved on. It draws its own limit banner from the `anthropic-ratelimit-unified-*` headers on each reply, and those were relayed exactly as the account that answered wrote them — so the account rotation was about to leave reported 98%, then 100%, to a client that was never going to spend it, and only the next reply, from the account that took over, took the message back. The allowance headers are now restated for the rotation before they reach the client: each metered window carries the reading of whichever account can take the next request and has spent least of it, and the status lines read `allowed` while anything can still serve. With nothing left in rotation the refusal reaches the client exactly as it came, limit and all. What the engine learns about each account from the same headers is unchanged.
+
 ## [0.3.0] - 2026-09-19
 
 ### Changed

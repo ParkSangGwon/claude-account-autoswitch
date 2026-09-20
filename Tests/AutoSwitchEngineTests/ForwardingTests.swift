@@ -122,6 +122,57 @@ final class ForwardingTests: XCTestCase {
         XCTAssertEqual(a.traffic.outputTokens, 9)
     }
 
+    /// The reply that hands the rotation over must not carry the leaving account's allowance:
+    /// the client draws its own limit banner from these headers, and one at 100% is a limit
+    /// the client is never going to hit.
+    func testAllowanceHeadersDescribeTheRotationNotTheAccountThatAnswered() async throws {
+        let spent: [(String, String)] = [("content-type", "application/json"), ("anthropic-ratelimit-unified-status", "rejected"),
+                                         ("anthropic-ratelimit-unified-5h-status", "rejected"), ("anthropic-ratelimit-unified-5h-utilization", "100"),
+                                         ("anthropic-ratelimit-unified-5h-surpassed-threshold", "true"),
+                                         ("anthropic-ratelimit-unified-7d-utilization", "97")]
+        // Bob answers first so the rotation knows he has room; then alice replies at her limit.
+        upstream.replies = [.init(status: 200, headers: Self.quotaHeaders, body: Data("{}".utf8))]
+        try await engine.update { c in c.accounts[1].rank = -1 }
+        _ = try await post()
+        try await engine.update { c in c.accounts[1].rank = 1 }
+        upstream.replies = [.init(status: 200, headers: spent, body: Data(#"{"id":"msg_6"}"#.utf8))]
+        let (status, _, headers) = try await post()
+        XCTAssertEqual(status, 200)
+        func header(_ name: String) -> String? { headers.first { ($0.key as? String)?.caseInsensitiveCompare(name) == .orderedSame }?.value as? String }
+        XCTAssertEqual(header("anthropic-ratelimit-unified-5h-utilization"), "42", "bob's room is what the client can still spend")
+        XCTAssertEqual(header("anthropic-ratelimit-unified-7d-utilization"), "61")
+        XCTAssertEqual(header("anthropic-ratelimit-unified-status"), "allowed")
+        XCTAssertEqual(header("anthropic-ratelimit-unified-5h-status"), "allowed")
+        XCTAssertEqual(header("anthropic-ratelimit-unified-5h-surpassed-threshold"), "false")
+        // The engine still learned the truth about alice from the same headers.
+        let s = await engine.state()
+        XCTAssertEqual(try XCTUnwrap(s.account(alice)?.windows[.session]?.used), 1, accuracy: 1e-9)
+    }
+
+    func testARefusalWithNothingLeftReachesTheClientUnchanged() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.rejected, body: Data()), .init(status: 429, headers: Self.rejected, body: Data())]
+        let (status, _, headers) = try await post()
+        XCTAssertEqual(status, 429)
+        func header(_ name: String) -> String? { headers.first { ($0.key as? String)?.caseInsensitiveCompare(name) == .orderedSame }?.value as? String }
+        XCTAssertEqual(header("anthropic-ratelimit-unified-5h-utilization"), "100", "with nothing left to serve, the client is told the truth")
+        XCTAssertEqual(header("anthropic-ratelimit-unified-5h-status"), "rejected")
+    }
+
+    func testRewriteKeepsTheShapeOfEachValue() {
+        let reset = Date(timeIntervalSince1970: 1_800_000_000)
+        let allowance: [WindowKind: WindowReading] = [.session: WindowReading(used: 0.07, resetsAt: reset)]
+        let out = Signals.rewrite([("anthropic-ratelimit-unified-5h-utilization", "99"), ("anthropic-ratelimit-unified-5h-reset", "1700000000"),
+                                   ("anthropic-ratelimit-unified-7d-utilization", "88"), ("retry-after", "120")], as: allowance)
+        let map = Dictionary(uniqueKeysWithValues: out)
+        XCTAssertEqual(map["anthropic-ratelimit-unified-5h-utilization"], "7", "a percentage stays a percentage")
+        XCTAssertEqual(map["anthropic-ratelimit-unified-5h-reset"], "1800000000", "an epoch stays an epoch")
+        XCTAssertEqual(map["anthropic-ratelimit-unified-7d-utilization"], "88", "a window the rotation has no reading for is left alone")
+        XCTAssertEqual(map["retry-after"], "120")
+        let decimal = Signals.rewrite([("anthropic-ratelimit-unified-5h-utilization", "0.99")], as: allowance)
+        XCTAssertEqual(decimal.first?.1, "0.070", "a fraction stays a fraction")
+        XCTAssertEqual(Signals.rewrite([("anthropic-ratelimit-unified-5h-utilization", "99")], as: [:]).first?.1, "99", "nothing to say, nothing rewritten")
+    }
+
     func testAQuotaRejectionRotatesToTheNextAccount() async throws {
         upstream.replies = [.init(status: 429, headers: Self.rejected, body: Data(#"{"type":"error"}"#.utf8)),
                             .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"msg_2"}"#.utf8))]
@@ -136,6 +187,37 @@ final class ForwardingTests: XCTestCase {
         XCTAssertEqual(s.next, bob)
         if case .coolingDown = s.account(alice)?.blocker {} else { XCTFail("alice should be cooling down: \(String(describing: s.account(alice)?.blocker))") }
         XCTAssertEqual(s.account(alice)?.health, .coolingDown)
+    }
+
+    /// The handover as the client sees it: every request answers 200, the allowance it reads never
+    /// jumps to a limit, and once alice is out the rotation stops offering her the first attempt.
+    func testTheHandoverIsInvisibleToTheClient() async throws {
+        func header(_ headers: [AnyHashable: Any], _ name: String) -> String? {
+            headers.first { ($0.key as? String)?.caseInsensitiveCompare(name) == .orderedSame }?.value as? String
+        }
+        let nearlySpent: [(String, String)] = [("content-type", "application/json"), ("anthropic-ratelimit-unified-status", "allowed_warning"),
+                                               ("anthropic-ratelimit-unified-5h-utilization", "97"), ("anthropic-ratelimit-unified-5h-surpassed-threshold", "true")]
+        upstream.replies = [.init(status: 200, headers: nearlySpent, body: Data("{}".utf8))]
+        let (first, _, h1) = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(first, 200)
+        XCTAssertEqual(header(h1, "anthropic-ratelimit-unified-5h-utilization"), "0", "bob has spent nothing, so nothing is spent")
+        XCTAssertEqual(header(h1, "anthropic-ratelimit-unified-5h-surpassed-threshold"), "false")
+
+        upstream.replies = [.init(status: 429, headers: Self.rejected, body: Data()),
+                            .init(status: 200, headers: Self.quotaHeaders, body: Data("{}".utf8))]
+        let (second, _, h2) = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(second, 200, "the refusal is absorbed, not relayed")
+        XCTAssertEqual(header(h2, "anthropic-ratelimit-unified-5h-utilization"), "42", "and the client reads bob's allowance, not alice's 100")
+        XCTAssertEqual(header(h2, "anthropic-ratelimit-unified-status"), "allowed")
+
+        let before = upstream.count
+        upstream.replies = [.init(status: 200, headers: Self.quotaHeaders, body: Data("{}".utf8))]
+        let (third, _, _) = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(third, 200)
+        XCTAssertEqual(upstream.count - before, 1, "alice is out, so the next request does not bounce off her first")
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-bob")
+        let s = await engine.state()
+        XCTAssertEqual(s.sessions.first?.pins[.weeklySonnet], bob, "the session moved with the rotation")
     }
 
     func testA401RefreshesOnceAndRetriesTheSameAccount() async throws {

@@ -88,20 +88,50 @@ extension Engine {
         return out
     }
 
-    /// How long until any account can serve again: the earliest cool-down or reset, or a minute.
-    func earliestRelief(now: Date) -> Double {
-        var dates: [Date] = []
-        for r in runtime {
-            if let until = r.coolingUntil { dates.append(until) }
-            if let at = r.windows[.session]?.resetsAt { dates.append(at) }
-            if let at = r.windows.metersResetAt { dates.append(at) }
+    /// When an account comes back by itself: the last of the holds on it to lift, `now` when
+    /// nothing holds it. Nil when a hold needs a person or has no end the engine can name — a
+    /// five-hour rollover says nothing about an account whose week is the thing that is spent.
+    func reliefDate(of r: AccountRuntime, model: String?, now: Date) -> Date? {
+        guard blocker(of: r, model: model, now: now) != nil else { return now }
+        guard r.record.enabled, r.health != .drained, r.health != .needsLogin else { return nil }
+        var ends: [Date] = []
+        if let until = r.record.skipUntil, until > now { ends.append(until) }
+        if r.health == .coolingDown, let until = r.coolingUntil, until > now { ends.append(until) }
+        if let at = r.windows.refusedAt { ends.append(at.addingTimeInterval(Windows.refusalTTL)) }
+        let rotation = configuration.rotation
+        // The shared windows hold every request; a family's own week holds only its own models.
+        var held: [WindowKind] = [.session, .weekly]
+        if let family = Family.of(model: model) { held.append(family.window) }
+        for kind in WindowKind.allCases {
+            guard let w = r.windows[kind] else { continue }
+            let overCap = r.record.cap?.limit(for: kind).map { w.used >= $0 } ?? false
+            guard overCap || (held.contains(kind) && w.used >= rotation.switchAt(kind)) else { continue }
+            guard let at = w.resetsAt, at > now else { return nil }
+            ends.append(at)
         }
-        guard let soonest = dates.filter({ $0 > now }).min() else { return 60 }
+        if let used = r.windows.tokens?.used ?? r.windows.requests?.used, used >= rotation.switchAt {
+            guard let at = r.windows.metersResetAt, at > now else { return nil }
+            ends.append(at)
+        }
+        return ends.max()
+    }
+
+    /// How long until any account can serve again, or a minute when none of them comes back on its own.
+    func earliestRelief(model: String? = nil, now: Date) -> Double {
+        guard let soonest = runtime.compactMap({ reliefDate(of: $0, model: model, now: now) }).min() else { return 60 }
         return max(1, soonest.timeIntervalSince(now).rounded(.up))
     }
 
-    func sweep(now: Date) {
+    /// Cool-downs that have run out and readings whose window has rolled over, forgotten.
+    /// Cheap enough for the head of every request, which is where it has to happen: a rolled-over
+    /// window that only the app's polling clears would hold an account out for as long as nobody
+    /// is looking, and with the display asleep that is five minutes at a time.
+    func sweepAccounts(now: Date) {
         for i in runtime.indices { runtime[i].sweep(now: now) }
+    }
+
+    func sweep(now: Date) {
+        sweepAccounts(now: now)
         affinity.expire(now: now)
     }
 }

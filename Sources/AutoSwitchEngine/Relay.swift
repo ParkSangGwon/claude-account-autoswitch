@@ -30,6 +30,8 @@ extension Engine {
         var tried: Set<AccountID> = []
         var refreshed: Set<AccountID> = []
         var hopped = false
+        /// Why the last account dropped out without an answer, when nothing could be reached.
+        var unreachable: String?
         let deadline = Date().addingTimeInterval(Double(configuration.rotation.waitWhenExhaustedSeconds))
         var lastStatus = 0
 
@@ -37,14 +39,19 @@ extension Engine {
 
         while true {
             let now = Date()
+            sweepAccounts(now: now)
             guard let id = choose(model: model, session: session, excluding: tried, now: now) else {
                 // Nothing can serve: wait while the config allows, then answer the way Anthropic would.
-                let relief = earliestRelief(now: now)
+                let relief = earliestRelief(model: model, now: now)
                 if now.addingTimeInterval(min(relief, 60)) < deadline {
                     try? await Task.sleep(for: .seconds(min(relief, 60)))
                     tried.removeAll()
+                    unreachable = nil
                     continue
                 }
+                // Nobody refused this request — it never arrived. Calling that a rate limit sends
+                // the client, and whoever reads its logs, after a quota that is not the problem.
+                if let why = unreachable { lastStatus = 502; return apiError(502, L("Upstream unreachable: %@", why)) }
                 lastStatus = 429
                 return apiError(429, L("every account is out of rotation"), headers: [("retry-after", String(Int(relief)))], type: "rate_limit_error")
             }
@@ -60,7 +67,7 @@ extension Engine {
             } catch {
                 // A network failure is this account's problem only if the next one fares better; try once more elsewhere.
                 tried.insert(id)
-                if tried.count >= runtime.count { lastStatus = 502; return apiError(502, L("Upstream unreachable: %@", error.localizedDescription)) }
+                unreachable = error.localizedDescription
                 continue
             }
             guard let j = runtimeIndex(id) else { lastStatus = 502; return apiError(502, "account list changed") }
@@ -111,10 +118,11 @@ extension Engine {
                 // Nothing left to try. `waitWhenExhaustedSeconds` applies here too: the loop head
                 // only sees requests that arrive with every account already out, and a request
                 // refused on its way through deserves the same wait before it gives up.
-                let relief = earliestRelief(now: Date())
+                let relief = earliestRelief(model: model, now: Date())
                 if Date().addingTimeInterval(min(relief, 60)) < deadline {
                     try? await Task.sleep(for: .seconds(min(relief, 60)))
                     tried.removeAll()
+                    unreachable = nil
                     continue
                 }
                 return deliver(reply, account: id, model: model)

@@ -325,6 +325,96 @@ final class ForwardingTests: XCTestCase {
         XCTAssertNil(s.account(alice)?.blocker, "a spent family window is not a blocker for other models")
     }
 
+    // MARK: - handing traffic over
+
+    func testAManualSwitchTakesTheRunningSessionsWithIt() async throws {
+        try await engine.update { c in c.accounts[1].rank = 0 }
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-alice")
+        let outcome = await engine.switchTo(bob)
+        XCTAssertEqual(outcome.kind, .ok)
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-bob",
+                       "the terminal the switch was made for moves too, rather than carrying on where it was")
+        let s = await engine.state()
+        XCTAssertEqual(s.sessions.first?.pins[.weeklySonnet], bob)
+    }
+
+    func testASessionFollowsWhereItWasLastServed() async throws {
+        try await engine.update { c in c.accounts[1].rank = 0 }
+        _ = try await post(body: #"{"model":"claude-sonnet-4-6"}"#, headers: ["x-claude-code-session-id": "s"])
+        _ = await engine.switchTo(bob)
+        _ = try await post(body: #"{"model":"claude-fable-5-1"}"#, headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-bob")
+        // A model on a window this session has no pin for follows the account that served it last,
+        // not whichever pin the dictionary happens to hand over first.
+        _ = try await post(body: #"{"model":"claude-opus-5"}"#, headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-bob")
+    }
+
+    func testRetryAfterNamesWhenAnAccountActuallyComesBack() async throws {
+        // Both accounts are out on the week; their five-hour windows roll over long before that.
+        let week = Date().addingTimeInterval(4 * 86_400)
+        let fiveHours = Date().addingTimeInterval(900)
+        let spent: [(String, String)] = [("content-type", "application/json"),
+                                         ("anthropic-ratelimit-unified-7d-utilization", "100"),
+                                         ("anthropic-ratelimit-unified-7d-reset", String(Int(week.timeIntervalSince1970))),
+                                         ("anthropic-ratelimit-unified-5h-utilization", "10"),
+                                         ("anthropic-ratelimit-unified-5h-reset", String(Int(fiveHours.timeIntervalSince1970)))]
+        upstream.replies = [.init(status: 200, headers: spent, body: Data("{}".utf8))]
+        try await engine.update { c in c.accounts[1].rank = -1 }
+        _ = try await post()
+        try await engine.update { c in c.accounts[1].rank = 1 }
+        upstream.replies = [.init(status: 200, headers: spent, body: Data("{}".utf8))]
+        _ = try await post()
+        let (status, _, headers) = try await post()
+        XCTAssertEqual(status, 429)
+        let retryAfter = Double((headers.first { ($0.key as? String)?.caseInsensitiveCompare("retry-after") == .orderedSame }?.value as? String) ?? "0") ?? 0
+        XCTAssertGreaterThan(retryAfter, fiveHours.timeIntervalSinceNow + 60,
+                             "a five-hour rollover brings nothing back to an account whose week is what is spent")
+        XCTAssertLessThanOrEqual(retryAfter, week.timeIntervalSinceNow + 1)
+    }
+
+    func testAnUnreachableUpstreamIsNotReportedAsARateLimit() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.rejected, body: Data()),
+                            .init(status: 200, headers: Self.quotaHeaders, body: Data("{}".utf8))]
+        _ = try await post()
+        try await engine.update { c in c.api.baseURL = "http://127.0.0.1:\(Int.random(in: 40000..<50000))" }
+        let (status, data, _) = try await post()
+        XCTAssertEqual(status, 502, "nobody refused this request — it never arrived")
+        XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("rate_limit_error"))
+    }
+
+    func testARolledOverWindowDoesNotWaitForTheAppToNotice() async throws {
+        // Alice's five hours are spent and roll over a second from now. Nothing reads `state()` in
+        // between: with the display asleep the app polls every five minutes.
+        let rollover = Date().addingTimeInterval(1)
+        upstream.replies = [.init(status: 200, headers: [("content-type", "application/json"),
+                                                         ("anthropic-ratelimit-unified-5h-utilization", "100"),
+                                                         ("anthropic-ratelimit-unified-5h-reset", String(Int(rollover.timeIntervalSince1970)))],
+                                  body: Data("{}".utf8))]
+        _ = try await post()
+        try await Task.sleep(for: .milliseconds(1200))
+        _ = try await post()
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-alice",
+                       "alice's window rolled over; nothing but a stale reading was holding her out")
+    }
+
+    func testAProbeDoesNotUndoWhatAReplyJustLearned() async throws {
+        let asked = Date()
+        try await Task.sleep(for: .milliseconds(20))
+        upstream.replies = [.init(status: 200, headers: [("content-type", "application/json"), ("anthropic-ratelimit-unified-5h-utilization", "99")], body: Data("{}".utf8))]
+        _ = try await post()
+        // The probe left before that reply came back, so its numbers are the older pair.
+        let stale = OAuth.Usage(fiveHour: (utilization: 0.1, resetAt: nil), sevenDay: (utilization: 0.2, resetAt: nil), scopedWeekly: [:])
+        await engine.absorb(stale, into: 0, asked: asked)
+        let s = await engine.state()
+        XCTAssertEqual(try XCTUnwrap(s.account(alice)?.windows[.session]?.used), 0.99, accuracy: 1e-9,
+                       "the reply that arrived mid-probe is the newer reading of the two")
+        XCTAssertEqual(try XCTUnwrap(s.account(alice)?.windows[.weekly]?.used), 0.2, accuracy: 1e-9,
+                       "a window the reply said nothing about still takes the probe's number")
+    }
+
     func testAccountIDRewriteLeavesOtherBodiesAlone() {
         let body = Data(#"{"metadata":{"user_id":"{\"account_uuid\":\"11111111-1111-4111-8111-111111111111\"}"}}"#.utf8)
         let out = String(decoding: Engine.rename(claudeAccountIDIn: body, to: "22222222-2222-4222-8222-222222222222"), as: UTF8.self)

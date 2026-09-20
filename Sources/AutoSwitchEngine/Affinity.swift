@@ -10,6 +10,8 @@ struct Affinity: Sendable {
 
     struct Session: Sendable {
         var pins: [WindowKind: AccountID] = [:]
+        /// The account that served this session last, which a window it has no pin on yet follows.
+        var last: AccountID?
         var firstSeen: Date
         var lastSeen: Date
         var requests = 0
@@ -44,15 +46,34 @@ struct Affinity: Sendable {
         sessions[id] = s
     }
 
-    mutating func pin(_ id: String, window: WindowKind, to account: AccountID) { sessions[id]?.pins[window] = account }
+    mutating func pin(_ id: String, window: WindowKind, to account: AccountID) {
+        sessions[id]?.pins[window] = account
+        sessions[id]?.last = account
+    }
 
     func pin(_ id: String?, window: WindowKind) -> AccountID? { id.flatMap { sessions[$0]?.pins[window] } }
-    func anyPin(_ id: String?) -> AccountID? { id.flatMap { sessions[$0]?.pins.values.first } }
+
+    /// A window this session has not been pinned on follows wherever it was last served. Reading
+    /// any of its pins instead would pick whichever the dictionary happened to hand over first,
+    /// so the same session could be routed somewhere else on a request that changed nothing.
+    func anyPin(_ id: String?) -> AccountID? { id.flatMap { sessions[$0]?.last } }
+
+    /// Every session already running follows a switch made by hand. A pin outlives the cursor,
+    /// so without this the account the person picked would take new sessions only, and the
+    /// terminal they made the switch for would carry on where it was.
+    mutating func repin(to account: AccountID) {
+        for (id, var s) in sessions where !s.pins.isEmpty || s.last != nil {
+            s.pins = s.pins.mapValues { _ in account }
+            s.last = account
+            sessions[id] = s
+        }
+    }
 
     /// Accounts that left the config take their pins with them.
     mutating func retain(_ ids: Set<AccountID>) {
         for (id, var s) in sessions {
             s.pins = s.pins.filter { ids.contains($0.value) }
+            if let last = s.last, !ids.contains(last) { s.last = nil }
             sessions[id] = s
         }
     }

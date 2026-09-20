@@ -70,6 +70,7 @@ Sign in with two or more Claude accounts and put the proxy in front of Claude Co
 Every request goes out with the token of an account that still has room.<br>
 When one account reaches its 5-hour or weekly limit, the next request simply uses another one.<br>
 Claude Code never logs out, never restarts, and never knows.<br>
+The limit it reads is the rotation's, not one account's, so no limit banner appears while another account still has room.<br>
 Every account's quota sits in the menu bar, so you never open a terminal just to look.
 
 It is not an account *switcher*: nothing is swapped in the Keychain and no session is interrupted.<br>

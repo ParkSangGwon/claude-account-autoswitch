@@ -70,6 +70,7 @@ Inicia sesión con dos o más cuentas de Claude y pon el proxy delante de Claude
 Cada petición sale con el token de una cuenta que todavía tiene margen.<br>
 Cuando una cuenta alcanza su límite de 5 horas o semanal, la siguiente petición simplemente usa otra.<br>
 Claude Code nunca cierra sesión, nunca se reinicia y nunca se entera.<br>
+El límite que lee es el de la rotación, no el de una cuenta, así que mientras otra cuenta tenga margen no aparece ningún aviso de límite.<br>
 La cuota de cada cuenta está en la barra de menús, así que nunca abres una terminal solo para mirar.
 
 No es un *conmutador* de cuentas: no se intercambia nada en el llavero y no se interrumpe ninguna sesión.<br>

@@ -74,6 +74,20 @@ extension Engine {
     /// Where the next unrouted request lands: the cursor while it can serve and nothing outranks it, else the best candidate.
     func nextTarget(now: Date) -> AccountID? { choose(model: nil, session: nil, excluding: [], now: now) }
 
+    /// The most room the rotation still has on each metered window: the reading of whichever
+    /// account that can take the next request has spent least of it. This is what the client's
+    /// allowance actually is behind the proxy, and what the reply's headers are rewritten to say.
+    /// Empty when nothing can serve — then the client is out, and the reply should say so.
+    func fleetAllowance(model: String?, now: Date) -> [WindowKind: WindowReading] {
+        let usable = runtime.filter { blocker(of: $0, model: model, now: now) == nil }
+        var out: [WindowKind: WindowReading] = [:]
+        for (kind, _) in Signals.stems {
+            guard let freest = usable.min(by: { ($0.windows[kind]?.used ?? 0) < ($1.windows[kind]?.used ?? 0) }) else { continue }
+            out[kind] = freest.windows[kind] ?? WindowReading(used: 0, resetsAt: nil)
+        }
+        return out
+    }
+
     /// How long until any account can serve again: the earliest cool-down or reset, or a minute.
     func earliestRelief(now: Date) -> Double {
         var dates: [Date] = []

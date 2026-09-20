@@ -66,6 +66,44 @@ enum Signals {
     static func retryAfter(_ raw: [(String, String)], fallback: Double = 60) -> Double {
         raw.first { $0.0.caseInsensitiveCompare("retry-after") == .orderedSame }.flatMap { Double($0.1) } ?? fallback
     }
+
+    /// The client draws its own limit banner from these headers. Relayed as they arrive they
+    /// describe the one account that answered, so the account rotation is about to leave
+    /// announces a limit the client will never hit — and the next reply, from the account that
+    /// took over, takes it back. Rewritten to what the rotation can still serve, the banner
+    /// tracks the fleet. With nothing left to serve, `allowance` is empty and the refusal
+    /// reaches the client exactly as the upstream wrote it.
+    static func rewrite(_ raw: [(String, String)], as allowance: [WindowKind: WindowReading]) -> [(String, String)] {
+        guard !allowance.isEmpty else { return raw }
+        let prefixes = stems.compactMap { kind, stem in allowance[kind].map { ("anthropic-ratelimit-unified-\(stem)", $0) } }
+        let soonest = allowance.values.compactMap(\.resetsAt).min()
+        return raw.map { key, value in
+            let k = key.lowercased()
+            guard k.hasPrefix("anthropic-ratelimit-unified-") else { return (key, value) }
+            if k == "anthropic-ratelimit-unified-status" { return (key, "allowed") }
+            if k == "anthropic-ratelimit-unified-reset" { return (key, soonest.map { format($0, like: value) } ?? value) }
+            for (prefix, reading) in prefixes {
+                switch k {
+                case prefix + "-utilization": return (key, format(reading.used, like: value))
+                case prefix + "-reset": return (key, reading.resetsAt.map { format($0, like: value) } ?? value)
+                case prefix + "-status": return (key, "allowed")
+                case prefix + "-surpassed-threshold": return (key, "false")
+                default: continue
+                }
+            }
+            return (key, value)
+        }
+    }
+
+    /// A rewritten value keeps the shape the upstream used, so a client that parses one parses the other.
+    private static func format(_ ratio: Double, like original: String) -> String {
+        original.contains(".") ? String(format: "%.3f", ratio) : String(Int((ratio * 100).rounded()))
+    }
+
+    private static func format(_ date: Date, like original: String) -> String {
+        guard let n = Double(original) else { return ISO8601DateFormatter().string(from: date) }
+        return String(Int(n > 1e12 ? date.timeIntervalSince1970 * 1000 : date.timeIntervalSince1970))
+    }
 }
 
 /// Reads `message_start` / `message_delta` usage out of an SSE stream as it passes, or out of a whole JSON body.

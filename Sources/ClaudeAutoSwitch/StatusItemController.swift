@@ -19,7 +19,13 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     private var lastStyle: Preferences.IconStyle?
     private var lastMono: Bool?
 
-    static let autosaveName = "claudeAutoSwitch.main"
+    /// AppKit keeps the slot under this name in the standard domain, whatever domain `Preferences`
+    /// uses, so `AUTOSWITCH_DEBUG_SIDECAR=<tag>` needs its own name too: a second instance shot for
+    /// the documentation must not move the item the user dragged into place.
+    static let autosaveName: String = {
+        guard let tag = ProcessInfo.processInfo.environment["AUTOSWITCH_DEBUG_SIDECAR"], !tag.isEmpty else { return "claudeAutoSwitch.main" }
+        return "claudeAutoSwitch.\(tag)"
+    }()
 
     /// macOS remembers a status item's slot under this key (distance from the
     /// right edge, in points). A new item otherwise lands at the far left of the

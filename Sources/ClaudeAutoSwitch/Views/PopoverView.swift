@@ -214,11 +214,16 @@ struct PopoverView: View {
                             .foregroundStyle(state.keepAlive.lastError == nil ? Color.secondary : Color.red).lineLimit(2)
                     }
                     Spacer(minLength: 0)
-                    Toggle("", isOn: Binding(
-                        get: { store.configuration?.quota.keepSessionOpen ?? false },
-                        set: { on in Task { await store.apply(field, value: .bool(on)) } }
-                    ))
-                    .labelsHidden().toggleStyle(.switch).controlSize(.mini).disabled(snapshotMode)
+                    // ImageRenderer draws an AppKit-backed switch as a placeholder; the PNGs say the value instead.
+                    if snapshotMode {
+                        Text(state.keepAlive.enabled ? L("on") : L("off")).font(.system(size: 11, design: .monospaced))
+                    } else {
+                        Toggle("", isOn: Binding(
+                            get: { store.configuration?.quota.keepSessionOpen ?? false },
+                            set: { on in Task { await store.apply(field, value: .bool(on)) } }
+                        ))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.mini)
+                    }
                 }
                 .help(L(field.help))
             }

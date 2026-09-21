@@ -158,6 +158,7 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
   - Un jeton expiré est rafraîchi une fois puis la requête est rejouée.
   - 403 et 5xx basculent.
   - Quand tous les comptes sont épuisés, les requêtes peuvent être mises en attente pendant une durée configurable au lieu d'échouer.
+  - Le refus qui suit nomme la fenêtre fermée et l'heure de sa réouverture, si bien que Claude Code patiente et reprend la tâche de lui-même au lieu de s'arrêter sur une erreur.
   - Un redémarrage reprend là où la rotation s'était arrêtée, au lieu d'envoyer la première requête à un compte déjà épuisé.
 - **Sessions.**
   - Chaque session Claude Code reste sur son compte par compartiment hebdomadaire.

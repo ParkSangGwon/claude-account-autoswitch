@@ -145,12 +145,13 @@ Windows whose reset passed while the app was closed are forgotten on the way in,
 | 403 | The request moves on. |
 | 5xx | The request moves on once. |
 | nothing at all | The request moves on; with nowhere left to move it answers 502, not 429 — nobody refused it, it never arrived. |
-| nothing left | The request waits up to `waitWhenExhaustedSeconds`, then answers 429 with a `retry-after`. |
+| nothing left | The request waits up to `waitWhenExhaustedSeconds`, then answers 429 with a `retry-after` and, when a window reset is what it is waiting for, the limit headers that name it. |
 
 When every account is out and the wait is over, the last upstream reply is relayed as it came.
 
 The `retry-after` is when an account actually comes back: the soonest account for which every hold on it has lifted, which is the *last* of its own holds to go.
 A five-hour rollover on an account whose week is what is spent brings nothing back, and is not what the client is told to wait for.
+The half-hour a refusal is remembered for is bounded by the five-hour reading that carries it, since the sweep drops the two together.
 A minute stands in when no account comes back on its own — when what is left needs a new sign-in or a person.
 
 ## What the client reads
@@ -162,6 +163,10 @@ On the way out the allowance headers are restated for the rotation: `-utilizatio
 Each value keeps the shape the upstream wrote it in — a percentage stays a percentage, an epoch stays an epoch — and a header the upstream did not send is not invented.
 With nothing left in rotation there is nothing to restate, and the refusal reaches the client exactly as it came.
 What the engine itself learned from those headers is the account's own reading, untouched by this.
+
+A request that arrives with the rotation already empty is refused by the proxy itself, and that refusal carries the same three lines the API's own does: `-status: rejected`, `-representative-claim` naming the window (`five_hour`, `seven_day`, `seven_day_overage_included`, `seven_day_sonnet`) and `-reset` as the epoch second it reopens.
+Claude Code reads exactly these, so it shows its own limit banner and continues the task by itself at the reset rather than stopping at an error.
+The three go out together or not at all, and only when a window reset is what the `retry-after` is waiting for: a cool-down, a hold or a sign-in has no window to claim, and a claim with nothing behind it is the same noise a rejection naming no window is on the way in.
 
 ## The listener
 

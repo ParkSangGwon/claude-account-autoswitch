@@ -158,6 +158,7 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
   - Ein abgelaufenes Token wird einmal aufgefrischt und erneut versucht.
   - Bei 403 und 5xx wird auf ein anderes Konto gewechselt.
   - Wenn jedes Konto erschöpft ist, können Anfragen für eine konfigurierbare Zeit gehalten werden, statt fehlzuschlagen.
+  - Die darauf folgende Ablehnung nennt das geschlossene Fenster und wann es wieder öffnet, sodass Claude Code wartet und die Aufgabe von selbst wieder aufnimmt, statt bei einem Fehler stehen zu bleiben.
   - Ein Neustart setzt dort an, wo die Rotation aufgehört hat, statt die erste Anfrage an ein bereits erschöpftes Konto zu schicken.
 - **Sitzungen.**
   - Jede Claude-Code-Sitzung bleibt pro Wochen-Bucket auf ihrem Konto.

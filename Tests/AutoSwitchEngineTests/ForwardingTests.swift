@@ -244,6 +244,64 @@ final class ForwardingTests: XCTestCase {
         XCTAssertTrue(s.isExhausted)
     }
 
+    /// The same refusal, with the reset the API sends alongside it.
+    static func rejected(reopeningIn seconds: Int) -> [(String, String)] {
+        rejected + [("anthropic-ratelimit-unified-5h-reset", String(Int(Date().timeIntervalSince1970) + seconds))]
+    }
+
+    /// A request that arrives with the rotation already empty is refused by the proxy itself, and
+    /// that refusal has to carry what the API's own carries — a client reading only `retry-after`
+    /// is the one client Claude Code is not.
+    func testTheProxysOwn429NamesTheWindowAndWhenItReopens() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.rejected(reopeningIn: 3600), body: Data()),
+                            .init(status: 429, headers: Self.rejected(reopeningIn: 3600), body: Data())]
+        _ = try await post()
+        let sentAt = Date()
+        let (status, _, raw) = try await post()
+        XCTAssertEqual(status, 429)
+        XCTAssertEqual(upstream.count, 2, "the second request never left the proxy")
+        let headers = Self.lowercased(raw)
+        XCTAssertEqual(headers["anthropic-ratelimit-unified-status"], "rejected")
+        XCTAssertEqual(headers["anthropic-ratelimit-unified-representative-claim"], "five_hour", "the five-hour window is what reopens first")
+        let reset = try XCTUnwrap(headers["anthropic-ratelimit-unified-reset"].flatMap(Double.init))
+        XCTAssertEqual(reset - sentAt.timeIntervalSince1970, 3600, accuracy: 30, "epoch seconds, the shape the client parses")
+        XCTAssertEqual(try XCTUnwrap(headers["retry-after"].flatMap(Double.init)), 3600, accuracy: 30, "and the same wait, for a client that reads only this")
+    }
+
+    func testTheProxysOwn429ClaimsNoWindowWhenNoneIsKnownToReopen() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.rejected, body: Data()),
+                            .init(status: 429, headers: Self.rejected, body: Data())]
+        _ = try await post()
+        let (status, _, raw) = try await post()
+        XCTAssertEqual(status, 429)
+        let headers = Self.lowercased(raw)
+        XCTAssertNil(headers["anthropic-ratelimit-unified-status"], "no reply said when the window reopens; a claim would be invented")
+        XCTAssertNil(headers["anthropic-ratelimit-unified-representative-claim"])
+        XCTAssertNil(headers["anthropic-ratelimit-unified-reset"])
+        XCTAssertEqual(headers["retry-after"], "60", "the minute that stands in for an unknown relief")
+    }
+
+    /// A refusal is remembered for half an hour, but the sweep drops it with the five-hour reading
+    /// that carries it — so a window reopening sooner than that is when the account really returns,
+    /// and telling the client to wait the full half hour sends it back later than it had to.
+    func testAWindowReopeningBeforeTheRefusalIsForgottenIsWhatTheClientWaitsFor() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.rejected(reopeningIn: 600), body: Data()),
+                            .init(status: 429, headers: Self.rejected(reopeningIn: 600), body: Data())]
+        _ = try await post()
+        let sentAt = Date()
+        let (status, _, raw) = try await post()
+        XCTAssertEqual(status, 429)
+        let headers = Self.lowercased(raw)
+        XCTAssertEqual(try XCTUnwrap(headers["retry-after"].flatMap(Double.init)), 600, accuracy: 30, "not the 1800 the refusal alone would ask for")
+        XCTAssertEqual(headers["anthropic-ratelimit-unified-representative-claim"], "five_hour")
+        let reset = try XCTUnwrap(headers["anthropic-ratelimit-unified-reset"].flatMap(Double.init))
+        XCTAssertEqual(reset - sentAt.timeIntervalSince1970, 600, accuracy: 30, "and the same moment, said the API's way")
+    }
+
+    private static func lowercased(_ raw: [AnyHashable: Any]) -> [String: String] {
+        Dictionary(uniqueKeysWithValues: raw.compactMap { k, v in (k as? String).map { ($0.lowercased(), "\(v)") } })
+    }
+
     /// A 429 with no `anthropic-ratelimit-*` line at all: a burst, a busy upstream, something the
     /// account's own windows know nothing about. Sidelining the account for it takes both accounts
     /// down in turn, because whatever refused this one refuses its sibling a moment later.

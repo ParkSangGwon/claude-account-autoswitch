@@ -67,6 +67,27 @@ enum Signals {
         raw.first { $0.0.caseInsensitiveCompare("retry-after") == .orderedSame }.flatMap { Double($0.1) } ?? fallback
     }
 
+    /// What the API calls each window in `anthropic-ratelimit-unified-representative-claim`.
+    static func claim(_ kind: WindowKind) -> String {
+        switch kind {
+        case .session: return "five_hour"
+        case .weekly: return "seven_day"
+        case .weeklyFable: return "seven_day_overage_included"
+        case .weeklySonnet: return "seven_day_sonnet"
+        }
+    }
+
+    /// A refusal the proxy writes itself, worded the way the API words its own: the status, the
+    /// window that claims it, and the epoch second that window reopens. A client reading these
+    /// waits for the window rather than stopping at an error — and a client that reads them at
+    /// all wants all three, since a rejection naming no window is the same noise `absorb`
+    /// refuses to believe on the way in.
+    static func refusal(window: WindowKind, resetsAt: Date) -> [(String, String)] {
+        [("anthropic-ratelimit-unified-status", "rejected"),
+         ("anthropic-ratelimit-unified-representative-claim", claim(window)),
+         ("anthropic-ratelimit-unified-reset", String(Int(resetsAt.timeIntervalSince1970)))]
+    }
+
     /// The client draws its own limit banner from these headers. Relayed as they arrive they
     /// describe the one account that answered, so the account rotation is about to leave
     /// announces a limit the client will never hit — and the next reply, from the account that

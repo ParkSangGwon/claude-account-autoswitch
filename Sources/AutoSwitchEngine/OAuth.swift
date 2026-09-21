@@ -11,6 +11,7 @@ enum OAuth {
         var token = URL(string: "https://platform.claude.com/v1/oauth/token")!
         var profile = URL(string: "https://api.anthropic.com/api/oauth/profile")!
         var usage = URL(string: "https://api.anthropic.com/api/oauth/usage")!
+        var messages = URL(string: "https://api.anthropic.com/v1/messages")!
     }
     private static let endpointsLock = NSLock()
     nonisolated(unsafe) private static var _endpoints = Endpoints()
@@ -22,10 +23,14 @@ enum OAuth {
     static var tokenURL: URL { endpoints.token }
     static var profileURL: URL { endpoints.profile }
     static var usageURL: URL { endpoints.usage }
+    static var messagesURL: URL { endpoints.messages }
     static let scopes = "org:create_api_key user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload"
     /// The paste-the-code flow lands on Anthropic's own page, which shows `code#state`.
     static let manualRedirectURI = "https://console.anthropic.com/oauth/code/callback"
     static let betaHeader = "oauth-2025-04-20"
+    static let apiVersion = "2023-06-01"
+    /// The cheapest model that still counts against the shared five-hour window.
+    static let pingModel = "claude-haiku-4-5"
     /// A token is refreshed this long before it expires.
     static let refreshMargin: TimeInterval = 300
 
@@ -166,6 +171,32 @@ enum OAuth {
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard (200..<300).contains(status) else { throw EngineError.oauthRejected(status: status, body: "usage") }
         return parseUsage(try JSON.parse(data))
+    }
+
+    /// The smallest inference request there is, sent only to start an account's five-hour window.
+    /// The reply's `anthropic-ratelimit-*` headers are what the caller wants: they say the window is
+    /// open and when it rolls over. A subscription token is accepted here with nothing beyond the
+    /// OAuth beta header — no Claude Code user-agent and no system prompt — measured against the
+    /// live API, and the reply's `representative-claim: five_hour` confirms which window it charged.
+    static func ping(accessToken: String, session: URLSession = Upstream.session) async throws -> [(String, String)] {
+        var req = URLRequest(url: messagesURL)
+        req.httpMethod = "POST"
+        req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "authorization")
+        req.setValue(betaHeader, forHTTPHeaderField: "anthropic-beta")
+        req.setValue(apiVersion, forHTTPHeaderField: "anthropic-version")
+        req.setValue("application/json", forHTTPHeaderField: "content-type")
+        req.setValue("application/json", forHTTPHeaderField: "accept")
+        let body: JSON = .object(["model": .string(pingModel), "max_tokens": .number(1),
+                                  "messages": .array([.object(["role": .string("user"), "content": .string(".")])])])
+        req.httpBody = Data(body.pretty().utf8)
+        req.timeoutInterval = 30
+        let (data, response) = try await session.data(for: req)
+        let http = response as? HTTPURLResponse
+        let status = http?.statusCode ?? 0
+        guard (200..<300).contains(status) else { throw EngineError.oauthRejected(status: status, body: String(decoding: data.prefix(200), as: UTF8.self)) }
+        var headers: [(String, String)] = []
+        for (k, v) in http?.allHeaderFields ?? [:] { if let k = k as? String, let v = v as? String { headers.append((k, v)) } }
+        return headers
     }
 
     /// `utilization` arrives in whole percents; resets as RFC 3339 or epoch (seconds or ms).

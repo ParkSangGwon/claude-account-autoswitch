@@ -27,6 +27,7 @@ struct PopoverView: View {
                         accounts(state, now: now)
                         // One account: the fleet is that account, already in the row above.
                         if state.accounts.count > 1 { fleetCard(state, now: now) }
+                        keepAliveCard(state, now: now)
                         let rows = Explain.targets(state)
                         if !rows.isEmpty { targets(rows, state: state) }
                         sessions(state, now: now)
@@ -197,6 +198,44 @@ struct PopoverView: View {
                 resetStrip(state, now: now)
             }
         }
+    }
+
+    /// The switch for the windows the strip above counts down to: whether the app opens the next one
+    /// itself the moment it resets. It sends on the user's account, so it is off until asked for, and
+    /// it sits here rather than only in Settings because this is where the resets are.
+    @ViewBuilder
+    private func keepAliveCard(_ state: EngineState, now: Date) -> some View {
+        if let field = SettingsCatalog.field("quota.keepSessionOpen") {
+            Card {
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L(field.label)).font(.system(size: 11, weight: .medium))
+                        Text(keepAliveNote(state, now: now)).font(.system(size: 10))
+                            .foregroundStyle(state.keepAlive.lastError == nil ? Color.secondary : Color.red).lineLimit(2)
+                    }
+                    Spacer(minLength: 0)
+                    // ImageRenderer draws an AppKit-backed switch as a placeholder; the PNGs say the value instead.
+                    if snapshotMode {
+                        Text(state.keepAlive.enabled ? L("on") : L("off")).font(.system(size: 11, design: .monospaced))
+                    } else {
+                        Toggle("", isOn: Binding(
+                            get: { store.configuration?.quota.keepSessionOpen ?? false },
+                            set: { on in Task { await store.apply(field, value: .bool(on)) } }
+                        ))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.mini)
+                    }
+                }
+                .help(L(field.help))
+            }
+        }
+    }
+
+    private func keepAliveNote(_ state: EngineState, now: Date) -> String {
+        let keepAlive = state.keepAlive
+        if let why = keepAlive.lastError { return L("Could not open a window: %@", why) }
+        guard keepAlive.enabled else { return L("Off — a window starts when you send your first request.") }
+        guard let last = keepAlive.lastOpenedAt else { return L("On — the next window opens the moment this one resets.") }
+        return L("On — opened a window %@ ago.", Format.duration(now.timeIntervalSince(last)))
     }
 
     /// The fleet bar coloured by the same pace rule as an account bar.

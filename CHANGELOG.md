@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+### Added
+
+- **Keep the 5-hour window open.** Claude starts an account's five-hour window at its first request, so a window first touched at 16:30 runs to 21:30 and a day that could hold 4.8 back-to-back windows holds fewer the later each one starts. Switch this on and the app opens each account's next window itself, the moment the last one resets, by sending a single one-token request on that account — the windows then run on the clock whether or not anyone is at the Mac. The switch is in the popover under the reset timeline and under **Settings → Quota**, and it is off until you ask for it, since the request goes out on your own account. Accounts that could not take a request anyway are left alone, including one whose week is spent: a fresh five hours behind a spent week is five hours nobody can use. A sleeping Mac cannot send anything, so a reset that passes overnight is opened within a minute of waking rather than on time.
+
 ## [0.3.1] - 2026-09-20
 
 ### Fixed

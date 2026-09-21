@@ -22,6 +22,7 @@ final class ConfigurationTests: XCTestCase {
         XCTAssertFalse(c.rotation.spreadSessions)
         XCTAssertEqual(c.rotation.waitWhenExhaustedSeconds, 0)
         XCTAssertEqual(c.quota.refreshEverySeconds, 300)
+        XCTAssertFalse(c.quota.keepSessionOpen)
         XCTAssertEqual(c.accounts, [])
         XCTAssertEqual(c.rotation.switchAt(.weeklyFable), 0.98)
     }
@@ -49,6 +50,11 @@ final class ConfigurationTests: XCTestCase {
         XCTAssertEqual(c.rotation.switchAt, 0.98)
         XCTAssertEqual(c.quota.refreshEverySeconds, 300)
         XCTAssertEqual(c.version, 1)
+
+        // A quota section written before keep-alive existed keeps its probe and takes the new default.
+        let old = try Configuration.decoder().decode(Configuration.self, from: Data(#"{"quota":{"refreshEverySeconds":60}}"#.utf8))
+        XCTAssertEqual(old.quota.refreshEverySeconds, 60)
+        XCTAssertFalse(old.quota.keepSessionOpen)
     }
 
     func testOutOfRangePortFallsBack() {

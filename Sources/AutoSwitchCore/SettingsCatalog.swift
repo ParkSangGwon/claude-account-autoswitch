@@ -61,6 +61,7 @@ public enum SettingsCatalog {
         SettingField("rotation.spreadSessions", .rotation, "Session distribution", "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones.", .picker(["off", "on"])),
         SettingField("rotation.waitWhenExhaustedSeconds", .rotation, "Hold on exhaustion", "Hold the request open until an account can serve instead of answering 429 when every account is spent. 0 returns 429 at once.", .int(min: 0, max: 3600, step: 30, unit: "s")),
         SettingField("quota.refreshEverySeconds", .quota, "Quota probe", "Background refresh of idle accounts from the usage endpoint (spends no quota). 0 turns it off; minimum 30 s.", .int(min: 0, max: 604_800, step: 60, unit: "s")),
+        SettingField("quota.keepSessionOpen", .quota, "Keep the 5-hour window open", "Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking.", .toggle),
         SettingField("listen.port", .proxy, "Port", "Local port the proxy listens on. The listener moves at once.", .int(min: 1, max: 65535, step: 1, unit: nil)),
         SettingField("api.baseURL", .proxy, "Upstream", "API base URL for Anthropic accounts.", .text(placeholder: "https://api.anthropic.com")),
     ]
@@ -88,6 +89,7 @@ public enum SettingsCatalog {
         case "rotation.spreadSessions": return .string(c.rotation.spreadSessions ? "on" : "off")
         case "rotation.waitWhenExhaustedSeconds": return .number(Double(c.rotation.waitWhenExhaustedSeconds))
         case "quota.refreshEverySeconds": return .number(Double(c.quota.refreshEverySeconds))
+        case "quota.keepSessionOpen": return .bool(c.quota.keepSessionOpen)
         case "listen.port": return .number(Double(c.listen.port))
         case "api.baseURL": return .string(c.api.baseURL)
         default: return nil
@@ -131,6 +133,8 @@ public enum SettingsCatalog {
             c.rotation.waitWhenExhaustedSeconds = max(0, Format.safeInt(value?.double ?? 0))
         case "quota.refreshEverySeconds":
             c.quota.refreshEverySeconds = max(0, Format.safeInt(value?.double ?? 0))
+        case "quota.keepSessionOpen":
+            c.quota.keepSessionOpen = value?.bool == true
         case "listen.port":
             let p = Format.safeInt(value?.double ?? 0)
             guard (1...65535).contains(p) else { throw SettingsError.invalid(L("Port must be between 1 and 65535")) }

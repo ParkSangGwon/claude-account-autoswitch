@@ -148,6 +148,10 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
 - **Fleet totals and the reset timeline.**
   - Tier-weighted aggregates that count only the accounts still able to spend the window.
   - Every coming window reset, with `↑` on the ones that bring an account back.
+- **Windows that run on the clock, not on when you sit down.**
+  - Claude starts a 5-hour window at your first request, so one entered at 16:30 runs to 21:30 and the day holds fewer of them than it could.
+  - *Keep the 5-hour window open*, in the popover under the reset timeline, opens each account's next window the moment the last one resets.
+  - It is off until you ask for it, because the request goes out on your account, and a Mac that was asleep opens a reset it slept through within a minute of waking.
 - **Rotation that handles the real cases.**
   - A 429 that names a closed window throttles the account for its retry-after.
   - A 429 that names no window moves the request on but leaves the account in rotation; only repeats sideline it.

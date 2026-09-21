@@ -9,6 +9,11 @@ final class FakeAnthropic: @unchecked Sendable {
     var tokenRequests: [JSON] = []
     var refreshStatus = 200
     var usageStatus = 200
+    /// The bearer token of every `/v1/messages` call, in order: what keep-alive sent and on whose behalf.
+    var pings: [String] = []
+    var pingStatus = 200
+    /// How far ahead of the reply the five-hour window is said to roll over.
+    var pingResetsIn: TimeInterval = 5 * 3600
 
     init() {
         let box = Box()
@@ -34,6 +39,17 @@ final class FakeAnthropic: @unchecked Sendable {
             return HTTPResponse(status: 200, json: .object(["five_hour": .object(["utilization": .number(42), "resets_at": .string("2030-01-01T00:00:00Z")]),
                                                            "seven_day": .object(["utilization": .number(61), "resets_at": .string("2030-01-03T00:00:00Z")]),
                                                            "limits": .array([.object(["group": .string("weekly"), "percent": .number(88), "resets_at": .string("2030-01-03T00:00:00Z"), "scope": .object(["model": .object(["display_name": .string("Fable")])])])])]))
+        case "/v1/messages":
+            lock.lock()
+            pings.append(req.header("authorization") ?? "")
+            let status = pingStatus, resetsIn = pingResetsIn
+            lock.unlock()
+            if status != 200 { return HTTPResponse(status: status, json: .object(["error": .string("refused")])) }
+            let reset = String(Int(Date().addingTimeInterval(resetsIn).timeIntervalSince1970))
+            return HTTPResponse(status: 200, headers: [("content-type", "application/json"),
+                                                       ("anthropic-ratelimit-unified-5h-utilization", "0.01"),
+                                                       ("anthropic-ratelimit-unified-5h-reset", reset)],
+                                body: .data(Data(#"{"type":"message"}"#.utf8)))
         default:
             return HTTPResponse(status: 404, json: .null)
         }
@@ -42,7 +58,8 @@ final class FakeAnthropic: @unchecked Sendable {
     func start() async throws {
         try await server.start()
         let base = "http://127.0.0.1:\(server.boundPort)"
-        OAuth.endpoints = OAuth.Endpoints(token: URL(string: base + "/v1/oauth/token")!, profile: URL(string: base + "/api/oauth/profile")!, usage: URL(string: base + "/api/oauth/usage")!)
+        OAuth.endpoints = OAuth.Endpoints(token: URL(string: base + "/v1/oauth/token")!, profile: URL(string: base + "/api/oauth/profile")!,
+                                          usage: URL(string: base + "/api/oauth/usage")!, messages: URL(string: base + "/v1/messages")!)
     }
 
     func stop() async { await server.stop(); OAuth.endpoints = OAuth.Endpoints() }

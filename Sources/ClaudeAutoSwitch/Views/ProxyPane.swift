@@ -127,9 +127,31 @@ struct QuotaPane: View {
         VStack(alignment: .leading, spacing: 12) {
             if let state = store.state {
                 ProbeStatusView(state: state)
+                KeepAliveStatusView(state: state)
                 Divider()
             }
             SchemaPane(section: .quota)
+        }
+    }
+}
+
+/// What the keep-alive pass has actually been doing: the toggle below says it is on, this says
+/// whether it worked.
+struct KeepAliveStatusView: View {
+    var state: EngineState
+
+    var summary: String {
+        let keepAlive = state.keepAlive
+        if let why = keepAlive.lastError { return L("Could not open a window: %@", why) }
+        guard keepAlive.enabled else { return L("Off — a window starts when you send your first request.") }
+        guard let last = keepAlive.lastOpenedAt else { return L("On — the next window opens the moment this one resets.") }
+        return L("On — opened a window %@ ago.", Format.duration(Date().timeIntervalSince(last)))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(L("Window keep-alive")).font(.system(size: 13, weight: .semibold))
+            Text(summary).font(.system(size: 12)).foregroundStyle(state.keepAlive.lastError == nil ? Color.secondary : Color.red)
         }
     }
 }

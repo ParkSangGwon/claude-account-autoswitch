@@ -148,6 +148,10 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
 - **Summen aller Konten und die Zeitleiste der Zurücksetzungen.**
   - Nach Stufe gewichtete Aggregate, die nur Konten zählen, die das Fenster noch nutzen können.
   - Jede kommende Fenster-Zurücksetzung, mit `↑` bei denen, die ein Konto zurückbringen.
+- **Fenster, die nach der Uhr laufen und nicht danach, wann Sie sich hinsetzen.**
+  - Claude startet ein 5-Stunden-Fenster mit Ihrer ersten Anfrage, ein um 16:30 angefasstes läuft also bis 21:30 und der Tag fasst weniger davon, als er könnte.
+  - *5-Stunden-Fenster offen halten* im Popover unter der Zeitleiste der Zurücksetzungen öffnet das nächste Fenster jedes Kontos, sobald das letzte zurückgesetzt wird.
+  - Es ist aus, bis Sie es verlangen, denn die Anfrage geht über Ihr Konto raus, und ein Mac, der geschlafen hat, öffnet ein verschlafenes Zurücksetzen binnen einer Minute nach dem Aufwachen.
 - **Rotation, die die echten Fälle abdeckt.**
   - Ein 429, das ein geschlossenes Fenster nennt, drosselt das Konto für sein Retry-After.
   - Ein 429, das kein Fenster nennt, schickt nur die Anfrage weiter und lässt das Konto in der Rotation; erst Wiederholungen stellen es beiseite.

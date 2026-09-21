@@ -16,6 +16,9 @@ struct AccountRuntime: Sendable {
     var traffic = Traffic()
     var probe: ProbeResult?
     var overage: Overage?
+    /// When keep-alive last tried to open this account's five-hour window, successfully or not.
+    /// A try that opened nothing must not be repeated every tick.
+    var lastKeepAliveAt: Date?
 
     init(record: AccountRecord) { self.record = record }
 
@@ -27,6 +30,7 @@ struct AccountRuntime: Sendable {
         windows = old.windows; health = old.health; coolingUntil = old.coolingUntil
         unattributedRefusals = old.unattributedRefusals
         traffic = old.traffic; probe = old.probe; overage = old.overage
+        lastKeepAliveAt = old.lastKeepAliveAt
     }
 
     /// What goes on the wire: the bearer token or the API key.

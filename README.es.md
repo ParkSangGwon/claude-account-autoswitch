@@ -158,6 +158,7 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
   - Un token caducado se refresca una vez y se reintenta.
   - 403 y 5xx hacen failover.
   - Cuando todas las cuentas están agotadas, las peticiones pueden esperar un tiempo configurable en lugar de fallar.
+  - El rechazo que sigue nombra la ventana cerrada y cuándo vuelve a abrirse, así que Claude Code espera y retoma la tarea por su cuenta en lugar de detenerse en un error.
   - Un reinicio retoma donde la rotación lo dejó, en vez de mandar la primera petición a una cuenta ya agotada.
 - **Sesiones.**
   - Cada sesión de Claude Code se queda en su cuenta por bucket semanal.

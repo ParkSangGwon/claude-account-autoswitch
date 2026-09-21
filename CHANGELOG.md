@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 - **Keep the 5-hour window open.** Claude starts an account's five-hour window at its first request, so a window first touched at 16:30 runs to 21:30 and a day that could hold 4.8 back-to-back windows holds fewer the later each one starts. Switch this on and the app opens each account's next window itself, the moment the last one resets, by sending a single one-token request on that account — the windows then run on the clock whether or not anyone is at the Mac. The switch is in the popover under the reset timeline and under **Settings → Quota**, and it is off until you ask for it, since the request goes out on your own account. Accounts that could not take a request anyway are left alone, including one whose week is spent: a fresh five hours behind a spent week is five hours nobody can use. A sleeping Mac cannot send anything, so a reset that passes overnight is opened within a minute of waking rather than on time.
 
+### Fixed
+
+- A session that ran out of accounts stopped at `API Error: 429 · every account is out of rotation` and stayed there until somebody typed into it again — one terminal at a time, for as many terminals as were running. The refusal the proxy writes when nothing is left now carries the three lines the API's own refusal carries — the rejected status, the window claiming it, and the epoch second it reopens — so Claude Code shows its own limit banner and continues the task by itself at the reset, with no extra setting and nothing watching the terminals. The lines go out together or not at all, and only when a window reset is what the wait is actually for: a cool-down, a hold or a sign-in has no window to name, and naming one with nothing behind it is the noise the engine refuses to believe when a reply sends it the other way.
+- The wait on that refusal could run half an hour past the moment the accounts came back. A 429 that names a closed window is remembered for thirty minutes, but the app forgets it along with the five-hour reading that carries it — so an account whose window reopened in ten minutes was back in ten, while the client had been told to wait thirty. The wait now ends when the window reopens.
+
 ## [0.3.1] - 2026-09-20
 
 ### Fixed

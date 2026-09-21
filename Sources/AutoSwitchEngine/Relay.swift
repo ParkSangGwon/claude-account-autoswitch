@@ -53,7 +53,11 @@ extension Engine {
                 // the client, and whoever reads its logs, after a quota that is not the problem.
                 if let why = unreachable { lastStatus = 502; return apiError(502, L("Upstream unreachable: %@", why)) }
                 lastStatus = 429
-                return apiError(429, L("every account is out of rotation"), headers: [("retry-after", String(Int(relief)))], type: "rate_limit_error")
+                var headers: [(String, String)] = [("retry-after", String(Int(relief)))]
+                // Said the way the API says it, the client waits the window out on its own instead
+                // of stopping at an error — but only when a window reset is what the wait is for.
+                if let claim = exhaustionClaim(model: model, now: now) { headers += Signals.refusal(window: claim.window, resetsAt: claim.resetsAt) }
+                return apiError(429, L("every account is out of rotation"), headers: headers, type: "rate_limit_error")
             }
             guard await ensureFreshToken(id), let i = runtimeIndex(id), let secret = runtime[i].secret else {
                 tried.insert(id); continue

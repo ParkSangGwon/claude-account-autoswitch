@@ -158,6 +158,7 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
   - An expired token is refreshed once and retried.
   - 403 and 5xx fail over.
   - When every account is out, requests can hold for a configurable time instead of failing.
+  - The refusal that follows names the window that is closed and when it reopens, so Claude Code waits it out and picks the task up itself instead of stopping at an error.
   - A restart resumes where rotation left off, rather than sending the first request to an account that was already spent.
 - **Sessions.**
   - Each Claude Code session stays on its account per weekly bucket.

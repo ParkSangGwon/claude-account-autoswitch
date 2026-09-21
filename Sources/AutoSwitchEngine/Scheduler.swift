@@ -97,7 +97,13 @@ extension Engine {
         var ends: [Date] = []
         if let until = r.record.skipUntil, until > now { ends.append(until) }
         if r.health == .coolingDown, let until = r.coolingUntil, until > now { ends.append(until) }
-        if let at = r.windows.refusedAt { ends.append(at.addingTimeInterval(Windows.refusalTTL)) }
+        // The sweep forgets a refusal along with the five-hour reading that carries it, so the hold
+        // ends at that window's reset when the reset comes first — and a refusal with no reading
+        // left to carry it is gone on the next sweep, which is the head of the next request.
+        if let at = r.windows.refusedAt, let session = r.windows[.session] {
+            let ttl = at.addingTimeInterval(Windows.refusalTTL)
+            ends.append(session.resetsAt.map { min(ttl, $0) } ?? ttl)
+        }
         let rotation = configuration.rotation
         // The shared windows hold every request; a family's own week holds only its own models.
         var held: [WindowKind] = [.session, .weekly]
@@ -116,10 +122,24 @@ extension Engine {
         return ends.max()
     }
 
+    /// The first account to come back on its own, and when.
+    private func soonestRelief(model: String?, now: Date) -> (account: AccountRuntime, at: Date)? {
+        runtime.compactMap { r in reliefDate(of: r, model: model, now: now).map { (account: r, at: $0) } }.min { $0.at < $1.at }
+    }
+
     /// How long until any account can serve again, or a minute when none of them comes back on its own.
     func earliestRelief(model: String? = nil, now: Date) -> Double {
-        guard let soonest = runtime.compactMap({ reliefDate(of: $0, model: model, now: now) }).min() else { return 60 }
-        return max(1, soonest.timeIntervalSince(now).rounded(.up))
+        guard let soonest = soonestRelief(model: model, now: now) else { return 60 }
+        return max(1, soonest.at.timeIntervalSince(now).rounded(.up))
+    }
+
+    /// The window whose reset ends the exhaustion, for the refusal that has to name one. Nil
+    /// unless a window reset is exactly what the wait is for: a cool-down, a hold or a sign-in
+    /// has no window to claim, and a minute stood in for nothing claims nothing.
+    func exhaustionClaim(model: String?, now: Date) -> (window: WindowKind, resetsAt: Date)? {
+        guard let soonest = soonestRelief(model: model, now: now), soonest.at > now else { return nil }
+        guard let kind = WindowKind.allCases.first(where: { soonest.account.windows[$0]?.resetsAt == soonest.at }) else { return nil }
+        return (kind, soonest.at)
     }
 
     /// Cool-downs that have run out and readings whose window has rolled over, forgotten.

@@ -478,3 +478,10 @@
 "Up, but nothing has come through yet — the shell running Claude Code has to source the setup file." = "Läuft, aber es kam noch nichts an – die Shell, die Claude Code startet, muss die Setup-Datei sourcen.";
 "Valid until" = "Gültig bis";
 "For anything that runs the binary directly and lets you name it — an editor, a launcher — point it at this instead of `claude`." = "Für alles, was die Binary direkt startet und Sie den Pfad angeben lässt – ein Editor, ein Launcher –, richten Sie es hierauf statt auf `claude`.";
+"Keep the 5-hour window open" = "5-Stunden-Fenster offen halten";
+"Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking." = "Schickt auf jedem Konto eine winzige Anfrage, sobald dessen Fünf-Stunden-Fenster zurückgesetzt wird, damit das nächste Fenster nach der Uhr läuft statt erst zu beginnen, wenn Sie sich wieder hinsetzen. Standardmäßig aus: die Anfrage geht über Ihr Konto raus. Ein schlafender Mac kann sie nicht senden; ein verschlafenes Zurücksetzen wird binnen einer Minute nach dem Aufwachen geöffnet.";
+"Window keep-alive" = "Fenster offen halten";
+"Could not open a window: %@" = "Fenster konnte nicht geöffnet werden: %@";
+"Off — a window starts when you send your first request." = "Aus — ein Fenster beginnt, sobald Sie Ihre erste Anfrage senden.";
+"On — the next window opens the moment this one resets." = "An — das nächste Fenster öffnet sich, sobald dieses zurückgesetzt wird.";
+"On — opened a window %@ ago." = "An — vor %@ ein Fenster geöffnet.";

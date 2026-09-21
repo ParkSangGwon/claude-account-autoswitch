@@ -478,3 +478,10 @@
 "Up, but nothing has come through yet — the shell running Claude Code has to source the setup file." = "已启动，但还没有任何请求 — 运行 Claude Code 的 shell 需要 source 设置文件。";
 "Valid until" = "有效期至";
 "For anything that runs the binary directly and lets you name it — an editor, a launcher — point it at this instead of `claude`." = "对于直接运行二进制且可以指定路径的地方 — 编辑器、启动器 — 请指向它而不是 `claude`。";
+"Keep the 5-hour window open" = "保持 5 小时窗口开启";
+"Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking." = "在每个账户的 5 小时窗口重置的那一刻发送一次极小的请求，使下一个窗口按时钟推进，而不是从你下次坐下来时才开始。请求会以你的账户发出，因此默认关闭。休眠中的 Mac 无法发送；睡眠期间错过的重置会在唤醒后一分钟内补开。";
+"Window keep-alive" = "窗口保活";
+"Could not open a window: %@" = "无法开启窗口：%@";
+"Off — a window starts when you send your first request." = "关闭 — 窗口在你发出第一个请求时开始。";
+"On — the next window opens the moment this one resets." = "开启 — 当前窗口一重置就开启下一个。";
+"On — opened a window %@ ago." = "开启 — %@ 前开启过一个窗口。";

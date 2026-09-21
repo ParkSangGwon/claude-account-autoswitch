@@ -139,6 +139,18 @@ public struct ProbeInfo: Sendable, Equatable {
     public var nextRunAt: Date? { enabled ? lastFinishedAt?.addingTimeInterval(Double(max(30, intervalSeconds))) : nil }
 }
 
+/// The keep-alive pass: whether it is on, when it last opened a window, and what stopped it last.
+/// A feature that quietly does nothing has to be able to say which of the two it is doing.
+public struct KeepAliveInfo: Sendable, Equatable {
+    public var enabled: Bool
+    public var lastOpenedAt: Date?
+    public var lastError: String?
+
+    public init(enabled: Bool = false, lastOpenedAt: Date? = nil, lastError: String? = nil) {
+        self.enabled = enabled; self.lastOpenedAt = lastOpenedAt; self.lastError = lastError
+    }
+}
+
 /// Everything the app shows, in one value the engine produces on demand.
 public struct EngineState: Sendable, Equatable {
     public var accounts: [AccountStatus]
@@ -152,12 +164,13 @@ public struct EngineState: Sendable, Equatable {
     public var rotation: Configuration.Rotation
     public var listener: ListenerInfo
     public var probe: ProbeInfo
+    public var keepAlive: KeepAliveInfo
     public var observedAt: Date
 
     public init(accounts: [AccountStatus], current: AccountID?, next: AccountID?, familyTargets: [Family: AccountID?], sessions: [SessionRecord],
-                rotation: Configuration.Rotation, listener: ListenerInfo, probe: ProbeInfo, observedAt: Date) {
+                rotation: Configuration.Rotation, listener: ListenerInfo, probe: ProbeInfo, keepAlive: KeepAliveInfo = KeepAliveInfo(), observedAt: Date) {
         self.accounts = accounts; self.current = current; self.next = next; self.familyTargets = familyTargets; self.sessions = sessions
-        self.rotation = rotation; self.listener = listener; self.probe = probe; self.observedAt = observedAt
+        self.rotation = rotation; self.listener = listener; self.probe = probe; self.keepAlive = keepAlive; self.observedAt = observedAt
     }
 
     public func account(_ id: AccountID?) -> AccountStatus? {

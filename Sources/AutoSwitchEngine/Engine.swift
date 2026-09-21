@@ -60,6 +60,10 @@ public actor Engine {
     var deadRefreshTokens: Set<String> = []
     var probeTask: Task<Void, Never>?
     var lastProbeAt: Date?
+    var keepAliveTask: Task<Void, Never>?
+    /// When keep-alive last opened a window, and what stopped the last try that did not.
+    var lastKeepAliveOpenedAt: Date?
+    var keepAliveError: String?
     private var loaded = false
 
     public init(store: ConfigStore, version: String) {
@@ -189,7 +193,13 @@ public actor Engine {
         listener = l
         startedAt = Date()
         lastError = nil
-        if ProcessInfo.processInfo.environment["AUTOSWITCH_DEBUG_DEMO_QUOTA"] != nil { seedDemoWindows() } else { startProbeLoop() }
+        if ProcessInfo.processInfo.environment["AUTOSWITCH_DEBUG_DEMO_QUOTA"] != nil {
+            // The screenshot run's accounts are made up; it must never send on a real one.
+            seedDemoWindows()
+        } else {
+            startProbeLoop()
+            startKeepAliveLoop()
+        }
     }
 
     /// The file a shell profile sources. Written on every start so a port change or a reissued
@@ -237,6 +247,8 @@ public actor Engine {
     public func stop() async {
         probeTask?.cancel()
         probeTask = nil
+        keepAliveTask?.cancel()
+        keepAliveTask = nil
         saveObservations()
         await listener?.stop()
         listener = nil
@@ -309,6 +321,7 @@ public actor Engine {
                 legacyRequests: legacyRequests, lastLegacyRequestAt: lastLegacyRequestAt
             ),
             probe: ProbeInfo(enabled: configuration.quota.refreshEverySeconds > 0, intervalSeconds: configuration.quota.refreshEverySeconds, lastFinishedAt: lastProbeAt),
+            keepAlive: KeepAliveInfo(enabled: configuration.quota.keepSessionOpen, lastOpenedAt: lastKeepAliveOpenedAt, lastError: keepAliveError),
             observedAt: now
         )
     }

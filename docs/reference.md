@@ -20,7 +20,7 @@ Tokens live in this file and nowhere else.
     "spreadSessions": false,
     "waitWhenExhaustedSeconds": 0
   },
-  "quota": { "refreshEverySeconds": 300 },
+  "quota": { "refreshEverySeconds": 300, "keepSessionOpen": false },
   "observed": {
     "lastActive": "6f1c…",
     "accounts": [
@@ -54,6 +54,7 @@ Tokens live in this file and nowhere else.
 | `rotation.spreadSessions` | Give each new Claude Code session the least loaded account among the best-ranked ones. |
 | `rotation.waitWhenExhaustedSeconds` | When every account is out, hold the request this long before answering 429. |
 | `quota.refreshEverySeconds` | Background refresh of idle accounts from the usage endpoint. 0 turns it off; the minimum is 30. |
+| `quota.keepSessionOpen` | Open each account's next five-hour window as soon as the last one resets, by sending one minimal request on that account. Off by default. |
 | `observed` | The engine's own notes, not a setting: the account it left off on and each account's last known windows. Written when rotation moves, after a probe, and on quit. |
 | `accounts[].rank` | Lower is preferred. A strictly lower rank preempts a healthy current account. |
 | `accounts[].enabled` | Off takes the account out of rotation without removing it. |
@@ -74,6 +75,21 @@ Claude meters a subscription on a rolling five-hour window (`session`), a rollin
 The app learns each account's windows from the `anthropic-ratelimit-*` headers on every reply and from the usage endpoint the background probe calls.
 A window whose reset has passed is forgotten, so a stale number never keeps an account out.
 An API key has token and request allowances instead of windows.
+
+### Keeping the five-hour window open
+
+Claude starts an account's five-hour window at its first request, not on a fixed schedule.
+A window first touched at 16:30 therefore runs to 21:30, and a day that could hold 4.8 back-to-back windows holds fewer the later each one starts.
+
+With `quota.keepSessionOpen` on, the engine opens the next window itself.
+Once a minute — or exactly at the next reset, when that is sooner — it looks for accounts whose `session` reading is gone, which is precisely the ones whose window has rolled over, and sends a one-token `/v1/messages` request on each.
+The reply's `anthropic-ratelimit-*` headers are absorbed like any other, so the new window and its reset are known immediately; the request itself is the proof that the window opened.
+An account that cannot take a request anyway is left alone: disabled, held by `skipUntil`, capped, cooling down, needing a login, or with its week spent, since a fresh five hours behind a spent week is five hours nobody can use.
+A try that opened nothing is not repeated for five minutes.
+The request does not go through the rotation: no session is pinned to the account, the current account does not move, and the account's traffic counters stay a record of what the client sent.
+
+The setting is off by default because the request goes out on the user's own account.
+A sleeping Mac cannot send anything, so a reset that passes overnight is opened within a minute of waking rather than on time — the gap this closes is the one during the day.
 
 ## The fleet total
 

@@ -478,3 +478,10 @@
 "Up, but nothing has come through yet — the shell running Claude Code has to source the setup file." = "起動していますが、まだ何も届いていません — Claude Code を実行するシェルが設定ファイルを source する必要があります。";
 "Valid until" = "有効期限";
 "For anything that runs the binary directly and lets you name it — an editor, a launcher — point it at this instead of `claude`." = "バイナリを直接実行し、そのパスを指定できるもの — エディタやランチャー — では、`claude` の代わりにこれを指定してください。";
+"Keep the 5-hour window open" = "5時間ウィンドウを開いたままにする";
+"Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking." = "各アカウントの5時間ウィンドウがリセットされた瞬間に、ごく小さなリクエストを1件送ります。次のウィンドウが次に作業を始めた時刻ではなく、時計どおりに進みます。ユーザーのアカウントで送信するため、既定はオフです。スリープ中のMacは送信できず、眠っている間に過ぎたリセットは復帰から1分以内に開きます。";
+"Window keep-alive" = "ウィンドウ維持";
+"Could not open a window: %@" = "ウィンドウを開けませんでした: %@";
+"Off — a window starts when you send your first request." = "オフ — 最初のリクエストを送った時点でウィンドウが始まります。";
+"On — the next window opens the moment this one resets." = "オン — 今のウィンドウがリセットされ次第、次を開きます。";
+"On — opened a window %@ ago." = "オン — %@ 前にウィンドウを開きました。";

@@ -62,7 +62,21 @@ public struct Configuration: Codable, Sendable, Equatable {
     public struct Quota: Codable, Sendable, Equatable {
         /// Background refresh from the usage endpoint; 0 turns it off.
         public var refreshEverySeconds: Int
-        public init(refreshEverySeconds: Int = 300) { self.refreshEverySeconds = refreshEverySeconds }
+        /// Open each account's next five-hour window as the last one resets, instead of waiting for
+        /// the user's first request to start it. Off by default: it sends on the user's account.
+        public var keepSessionOpen: Bool
+
+        public init(refreshEverySeconds: Int = 300, keepSessionOpen: Bool = false) {
+            self.refreshEverySeconds = refreshEverySeconds; self.keepSessionOpen = keepSessionOpen
+        }
+
+        /// A document written before this key existed, or by hand without it, takes the default.
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            let d = Quota()
+            refreshEverySeconds = try c.decodeIfPresent(Int.self, forKey: .refreshEverySeconds) ?? d.refreshEverySeconds
+            keepSessionOpen = try c.decodeIfPresent(Bool.self, forKey: .keepSessionOpen) ?? d.keepSessionOpen
+        }
     }
 
     /// What the engine learned while it ran, written back so a restart resumes from it instead of

@@ -25,6 +25,13 @@ final class SettingsCatalogTests: XCTestCase {
         XCTAssertEqual(c.rotation.waitWhenExhaustedSeconds, 120)
         try SettingsCatalog.apply(field("quota.refreshEverySeconds"), value: .number(0), to: &c)
         XCTAssertEqual(c.quota.refreshEverySeconds, 0)
+
+        XCTAssertEqual(SettingsCatalog.value(field("quota.keepSessionOpen"), in: c), .bool(false), "off until asked for: it sends on the user's account")
+        try SettingsCatalog.apply(field("quota.keepSessionOpen"), value: .bool(true), to: &c)
+        XCTAssertTrue(c.quota.keepSessionOpen)
+        XCTAssertEqual(SettingsCatalog.value(field("quota.keepSessionOpen"), in: c), .bool(true))
+        try SettingsCatalog.apply(field("quota.keepSessionOpen"), value: nil, to: &c)
+        XCTAssertFalse(c.quota.keepSessionOpen)
         try SettingsCatalog.apply(field("listen.port"), value: .number(4000), to: &c)
         XCTAssertEqual(c.listen.port, 4000)
         try SettingsCatalog.apply(field("api.baseURL"), value: .string("https://example.test/"), to: &c)
@@ -73,7 +80,7 @@ final class SettingsCatalogTests: XCTestCase {
     func testCatalogCoversTheSections() {
         XCTAssertEqual(SettingsCatalog.fields(in: .rotation).map(\.id), ["rotation.switchAt", "rotation.switchAtByWindow", "rotation.spreadSessions", "rotation.waitWhenExhaustedSeconds"])
         XCTAssertEqual(SettingsCatalog.fields(in: .proxy).map(\.id), ["listen.port", "api.baseURL"])
-        XCTAssertEqual(SettingsCatalog.fields(in: .quota).map(\.id), ["quota.refreshEverySeconds"])
+        XCTAssertEqual(SettingsCatalog.fields(in: .quota).map(\.id), ["quota.refreshEverySeconds", "quota.keepSessionOpen"])
         XCTAssertEqual(SettingsCatalog.windowKeys, ["default", "session", "weekly", "weeklyFable", "weeklySonnet"])
     }
 }

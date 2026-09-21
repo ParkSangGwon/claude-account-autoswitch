@@ -148,6 +148,10 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
 - **Totales de todas las cuentas y la línea de tiempo de reinicios.**
   - Agregados ponderados por nivel que solo cuentan las cuentas que aún pueden usar la ventana.
   - Cada reinicio de ventana que se acerca, con `↑` en los que devuelven una cuenta a la rotación.
+- **Ventanas que corren con el reloj, no desde que te sientas.**
+  - Claude empieza una ventana de 5 horas con tu primera petición, así que una tocada a las 16:30 corre hasta las 21:30 y el día cabe menos de las que podría.
+  - *Mantener abierta la ventana de 5 horas*, en el popover bajo la línea de reinicios, abre la siguiente ventana de cada cuenta en cuanto se reinicia la anterior.
+  - Está desactivado hasta que lo pidas, porque la petición sale con tu cuenta, y un Mac que estuvo dormido abre un reinicio que se durmió en menos de un minuto tras despertar.
 - **Rotación que cubre los casos reales.**
   - Un 429 que nombra una ventana cerrada limita la cuenta durante su retry-after.
   - Un 429 que no nombra ninguna ventana solo pasa la petición a la siguiente cuenta y deja la cuenta en la rotación; solo las repeticiones la apartan.

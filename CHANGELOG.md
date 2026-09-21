@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-21
+
 ### Added
 
 - **Keep the 5-hour window open.** Claude starts an account's five-hour window at its first request, so a window first touched at 16:30 runs to 21:30 and a day that could hold 4.8 back-to-back windows holds fewer the later each one starts. Switch this on and the app opens each account's next window itself, the moment the last one resets, by sending a single one-token request on that account — the windows then run on the clock whether or not anyone is at the Mac. The switch is in the popover under the reset timeline and under **Settings → Quota**, and it is off until you ask for it, since the request goes out on your own account. Accounts that could not take a request anyway are left alone, including one whose week is spent: a fresh five hours behind a spent week is five hours nobody can use. A sleeping Mac cannot send anything, so a reset that passes overnight is opened within a minute of waking rather than on time.
@@ -100,7 +102,8 @@ First public release.
 - Seven languages: English, 한국어, 日本語, 简体中文, Español, Deutsch, Français.
 - Homebrew cask (`ParkSangGwon/tap/claude-autoswitch`) and GitHub releases.
 
-[Unreleased]: https://github.com/ParkSangGwon/claude-account-autoswitch/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/ParkSangGwon/claude-account-autoswitch/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.4.0
 [0.3.1]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.3.1
 [0.3.0]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.3.0
 [0.2.1]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.2.1

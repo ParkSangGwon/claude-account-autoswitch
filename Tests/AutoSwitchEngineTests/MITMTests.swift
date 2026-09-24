@@ -121,9 +121,10 @@ final class MITMTests: XCTestCase {
         XCTAssertTrue(result.output.hasSuffix("200"), result.output)
     }
 
-    func testTheHealthEndpointIsNotCountedAsALegacyClient() async throws {
+    func testTheAppsOwnEndpointsAreNotCountedAsALegacyClient() async throws {
         for _ in 0..<5 {
             _ = try curl(["--noproxy", "*", "--max-time", "10", "-s", "-o", "/dev/null", "http://127.0.0.1:\(port)/_autoswitch/health"])
+            _ = try curl(["--noproxy", "*", "--max-time", "10", "-s", "-o", "/dev/null", "http://127.0.0.1:\(port)/_autoswitch/session/some-session"])
         }
         let state = await engine.state()
         XCTAssertEqual(state.listener.legacyRequests, 0, "the app's own health check must not make the app accuse itself")

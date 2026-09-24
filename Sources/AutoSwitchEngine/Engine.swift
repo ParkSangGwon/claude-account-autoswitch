@@ -345,7 +345,10 @@ public actor Engine {
 
     // MARK: - listener
 
-    static let healthPath = "/_autoswitch/health"
+    /// Paths the app answers itself rather than forwarding; none of them is a legacy client.
+    static let controlPrefix = "/_autoswitch/"
+    static let healthPath = controlPrefix + "health"
+    static let sessionPathPrefix = controlPrefix + "session/"
 
     func handle(_ request: HTTPRequest) async -> HTTPResponse {
         if request.method == "GET", request.path == Engine.healthPath {
@@ -354,7 +357,21 @@ public actor Engine {
                 "accounts": .number(Double(runtime.count)), "startedAt": startedAt.map { .string(ISO8601DateFormatter().string(from: $0)) } ?? .null,
             ]))
         }
+        if request.method == "GET", request.path.hasPrefix(Engine.sessionPathPrefix) {
+            return sessionAccount(String(request.path.dropFirst(Engine.sessionPathPrefix.count)))
+        }
         return await serve(request)
+    }
+
+    /// Which account last served a session, so a tool outside the proxy can act as that account —
+    /// opening an artifact in the browser profile signed in to it, for one.
+    private func sessionAccount(_ session: String) -> HTTPResponse {
+        guard let id = affinity.anyPin(session), let r = runtime.first(where: { $0.id == id }) else {
+            return HTTPResponse(status: 404, json: .object(["error": .string("unknown session")]))
+        }
+        return HTTPResponse(status: 200, json: .object([
+            "session": .string(session), "account": .string(r.label), "accountID": .string(id.rawValue),
+        ]))
     }
 }
 

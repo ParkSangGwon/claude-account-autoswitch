@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+### Added
+
+- `GET /_autoswitch/session/<id>` names the account that last served a Claude Code session, so a script can act as that account — for instance, open an artifact the session published in the browser profile signed in to the same account. See `docs/reference.md`.
+
 ## [0.4.0] - 2026-09-21
 
 ### Added

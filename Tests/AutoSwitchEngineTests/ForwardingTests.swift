@@ -220,6 +220,24 @@ final class ForwardingTests: XCTestCase {
         XCTAssertEqual(s.sessions.first?.pins[.weeklySonnet], bob, "the session moved with the rotation")
     }
 
+    func testTheSessionEndpointNamesTheAccountThatServedIt() async throws {
+        _ = try await post(headers: ["x-claude-code-session-id": "sess-artifact"])
+        let (data, response) = try await URLSession.shared.data(from: URL(string: "http://127.0.0.1:\(port)/_autoswitch/session/sess-artifact")!)
+        XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
+        let json = try JSON.parse(data)
+        XCTAssertEqual(json["session"].string, "sess-artifact")
+        XCTAssertEqual(json["account"].string, "alice")
+        XCTAssertEqual(json["accountID"].string, alice.rawValue)
+
+        _ = await engine.switchTo(bob)
+        let (moved, _) = try await URLSession.shared.data(from: URL(string: "http://127.0.0.1:\(port)/_autoswitch/session/sess-artifact")!)
+        XCTAssertEqual(try JSON.parse(moved)["account"].string, "bob", "a switch by hand moves the session with it")
+
+        let (_, unknown) = try await URLSession.shared.data(from: URL(string: "http://127.0.0.1:\(port)/_autoswitch/session/never-seen")!)
+        XCTAssertEqual((unknown as? HTTPURLResponse)?.statusCode, 404)
+        XCTAssertEqual(upstream.count, 1, "the lookup is answered here, never forwarded")
+    }
+
     func testA401RefreshesOnceAndRetriesTheSameAccount() async throws {
         upstream.replies = [.init(status: 401, headers: [("content-type", "application/json")], body: Data(#"{"type":"error"}"#.utf8)),
                             .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"msg_3"}"#.utf8))]

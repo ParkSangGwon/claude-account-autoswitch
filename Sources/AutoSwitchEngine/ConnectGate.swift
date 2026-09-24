@@ -148,9 +148,9 @@ final class ConnectGate: ChannelInboundHandler, @unchecked Sendable {
             return refuse(context: context, status: "501 Not Implemented")
         }
 
-        // Origin-form: the health endpoint and the smoke test, or a client that never moved off
+        // Origin-form: the app's own endpoints and the smoke test, or a client that never moved off
         // ANTHROPIC_BASE_URL. Serve it either way and let the app say which it was.
-        if !target.hasPrefix(Engine.healthPath) { onLegacyRequest(target) }
+        if !target.hasPrefix(Engine.controlPrefix) { onLegacyRequest(target) }
         state = .passthrough
         install(plaintext, context: context, replaying: buffer)
     }

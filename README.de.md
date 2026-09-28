@@ -220,7 +220,9 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
 - `CONNECT api.anthropic.com:443` terminiert sie selbst und leitet jede Anfrage mit der `Authorization` des gewählten Kontos anstelle der des Clients nach oben weiter; jeder andere Host wird unangetastet getunnelt.
 - Jeder andere Header geht durch, und `metadata.user_id` nennt das Konto, dessen Token hinausging.
 - Antworten werden gestreamt, sobald sie eintreffen.
-- Konten werden nach Priorität gewählt, dann nach dem Wochenfenster, das am frühesten zurückgesetzt wird.
+- Konten werden nach Priorität gewählt, dann nach dem Wochenfenster, das am frühesten zurückgesetzt wird, damit die Woche, die zuerst verfällt, zuerst aufgebraucht wird.
+- Innerhalb einer Priorität übernimmt ein Konto, dessen Woche mehr als eine Stunde früher zurückgesetzt wird, vom gerade genutzten Konto.
+- Ein mit *Als aktuell festlegen* gewähltes Konto behält den Verkehr, bis es keine Anfragen mehr annehmen kann.
 - Übersprungen wird jedes Konto, das deaktiviert, gedrosselt, an der Obergrenze, im Fehlerzustand oder für die Modellfamilie der Anfrage an seinem Schwellenwert ist.
 - Die `anthropic-ratelimit-*`-Header jeder Antwort halten die Fenster jedes Kontos aktuell.
 - Eine Hintergrundabfrage des Usage-Endpunkts füllt die inaktiven auf.

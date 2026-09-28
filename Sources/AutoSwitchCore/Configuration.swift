@@ -90,10 +90,12 @@ public struct Configuration: Codable, Sendable, Equatable {
 
         /// The account new requests started from when the engine last ran.
         public var lastActive: AccountID?
+        /// `lastActive` when a person picked it and nothing has taken over since.
+        public var chosenByHand: AccountID?
         public var accounts: [Account]
 
-        public init(lastActive: AccountID? = nil, accounts: [Account] = []) {
-            self.lastActive = lastActive; self.accounts = accounts
+        public init(lastActive: AccountID? = nil, chosenByHand: AccountID? = nil, accounts: [Account] = []) {
+            self.lastActive = lastActive; self.chosenByHand = chosenByHand; self.accounts = accounts
         }
 
         public func windows(of id: AccountID) -> Windows? { accounts.first { $0.id == id }?.windows }

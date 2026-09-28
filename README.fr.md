@@ -220,7 +220,9 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
 - Elle termine elle-même `CONNECT api.anthropic.com:443` et transmet chaque requête en amont avec l'`Authorization` du compte choisi à la place de celle du client ; tout autre hôte est tunnelisé sans y toucher.
 - Tous les autres en-têtes passent tels quels, et `metadata.user_id` nomme le compte dont le jeton est parti.
 - Les réponses sont renvoyées en flux au fur et à mesure qu'elles arrivent.
-- Les comptes sont choisis par priorité, puis par la fenêtre hebdomadaire qui se réinitialise le plus tôt.
+- Les comptes sont choisis par priorité, puis par la fenêtre hebdomadaire qui se réinitialise le plus tôt, pour dépenser d'abord la semaine qui serait perdue en premier.
+- À priorité égale, un compte dont la semaine se réinitialise plus d'une heure plus tôt prend le relais du compte en cours.
+- Un compte choisi avec *Définir comme compte actuel* garde le trafic jusqu'à ce qu'il ne puisse plus accepter de requêtes.
 - Tout compte désactivé, bridé, au plafond, en erreur, ou à son seuil pour la famille de modèle de la requête est sauté.
 - Les en-têtes `anthropic-ratelimit-*` de chaque réponse maintiennent à jour les fenêtres de chaque compte.
 - Une sonde en arrière-plan de l'endpoint d'usage complète les comptes inactifs.

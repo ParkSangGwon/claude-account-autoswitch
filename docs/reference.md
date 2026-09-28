@@ -23,6 +23,7 @@ Tokens live in this file and nowhere else.
   "quota": { "refreshEverySeconds": 300, "keepSessionOpen": false },
   "observed": {
     "lastActive": "6f1c…",
+    "chosenByHand": "6f1c…",
     "accounts": [
       { "id": "6f1c…", "windows": { "readings": ["weekly", { "used": 0.99, "resetsAt": "2026-09-18T09:00:00Z" }] } }
     ]
@@ -55,7 +56,7 @@ Tokens live in this file and nowhere else.
 | `rotation.waitWhenExhaustedSeconds` | When every account is out, hold the request this long before answering 429. |
 | `quota.refreshEverySeconds` | Background refresh of idle accounts from the usage endpoint. 0 turns it off; the minimum is 30. |
 | `quota.keepSessionOpen` | Open each account's next five-hour window as soon as the last one resets, by sending one minimal request on that account. Off by default. |
-| `observed` | The engine's own notes, not a setting: the account it left off on and each account's last known windows. Written when rotation moves, after a probe, and on quit. |
+| `observed` | The engine's own notes, not a setting: the account it left off on, whether that account was picked by hand (`chosenByHand`, absent when rotation picked it), and each account's last known windows. Written when rotation moves, after a probe, and on quit. |
 | `accounts[].rank` | Lower is preferred. A strictly lower rank preempts a healthy current account. |
 | `accounts[].enabled` | Off takes the account out of rotation without removing it. |
 | `accounts[].skipUntil` | Set aside until this time, then back in rotation on its own. The switch above stays on. |
@@ -119,10 +120,15 @@ For every request the engine checks each account, in this order, and skips it on
 
 Among the accounts that can serve, the choice is:
 
-1. the account the session is already on, while it can serve and nothing outranks it
+1. the account the session is already on, while it can serve and nothing overtakes it
 2. with spreading on, the least loaded account among the best-ranked ones (new sessions only)
-3. the current account, while it can serve and nothing outranks it
+3. the current account, while it can serve and nothing overtakes it
 4. the best-ranked account, ties broken by the weekly window that resets soonest, then config order
+
+The best candidate overtakes an account that can still serve when its rank is better, or when the rank is the same and its weekly window resets more than an hour sooner: the week that would be lost first is spent first.
+The hour keeps two accounts whose weeks reset together from trading places over a reading that moved by a second, which would cost the prompt cache each time.
+An account made current by hand is overtaken by a better rank only.
+It keeps the traffic until it cannot serve and another account takes a reply; from then on the soonest reset leads again.
 
 A successful reply makes its account the current one and pins the session to it for that weekly window.
 A request on a window the session has no pin for follows the account that served it last.
@@ -130,7 +136,7 @@ Every check above is made against readings the request refreshes itself, so a wi
 
 **Make current** and **Next available account** move the sessions already running as well as the cursor: a pin outlives the cursor, so a switch that left them alone would reach new sessions only.
 
-A restart picks up where the last run left off: the current account and every account's last known windows come back from `observed`, so the first request is not sent to an account that was already spent when the app quit.
+A restart picks up where the last run left off: the current account, whether it was picked by hand, and every account's last known windows come back from `observed`, so the first request is not sent to an account that was already spent when the app quit.
 Windows whose reset passed while the app was closed are forgotten on the way in, so an account that rolled over is preferred again straight away.
 
 ## What a reply does

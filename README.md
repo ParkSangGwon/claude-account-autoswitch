@@ -220,7 +220,9 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
 - It terminates `CONNECT api.anthropic.com:443` itself and forwards each request upstream with the chosen account's `Authorization` in place of the client's; every other host is tunnelled untouched.
 - Every other header passes through, and `metadata.user_id` names the account whose token went out.
 - Replies stream back as they arrive.
-- Accounts are chosen by priority, then by the weekly window that resets soonest.
+- Accounts are chosen by priority, then by the weekly window that resets soonest, so the week that would be lost first is spent first.
+- Within a priority, an account whose week resets more than an hour sooner takes over from the one in use.
+- An account set with *Make current* keeps the traffic until it can no longer take requests.
 - Any account that is disabled, throttled, capped, in error, or at its threshold for the request's model family is skipped.
 - The `anthropic-ratelimit-*` headers on every reply keep each account's windows current.
 - A background probe of the usage endpoint fills in the idle ones.

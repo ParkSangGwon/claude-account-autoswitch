@@ -194,6 +194,27 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(try store.load().observed.lastActive?.rawValue, "id-bob")
     }
 
+    func testAHandPickedAccountStillHoldsAfterARelaunch() async throws {
+        var c = testConfiguration(accounts: [oauthAccount("alice"), oauthAccount("bob")])
+        var soon = Windows(), late = Windows()
+        soon[.weekly] = WindowReading(used: 0.1, resetsAt: Date().addingTimeInterval(86_400), seenAt: Date())
+        late[.weekly] = WindowReading(used: 0.1, resetsAt: Date().addingTimeInterval(4 * 86_400), seenAt: Date())
+        c.observed = Configuration.Observed(lastActive: AccountID(rawValue: "id-bob"),
+                                            accounts: [.init(id: AccountID(rawValue: "id-alice"), windows: soon), .init(id: AccountID(rawValue: "id-bob"), windows: late)])
+        let store = try temporaryStore(c)
+        let engine = Engine(store: store, version: "t")
+        try await engine.load()
+        let before = await engine.state()
+        XCTAssertEqual(before.label(before.next), "alice", "left to rotation, the week lost first is spent first")
+        _ = await engine.switchTo(AccountID(rawValue: "id-bob"))
+        XCTAssertEqual(try store.load().observed.chosenByHand?.rawValue, "id-bob")
+
+        let relaunched = Engine(store: store, version: "t")
+        try await relaunched.load()
+        let s = await relaunched.state()
+        XCTAssertEqual(s.label(s.next), "bob", "the choice survives the restart")
+    }
+
     func testAnUnreadableDocumentIsNeverOverwritten() async throws {
         let store = try temporaryStore(testConfiguration(accounts: [oauthAccount("alice"), oauthAccount("bob")]))
         let intact = try Data(contentsOf: store.path)

@@ -105,7 +105,7 @@ extension Engine {
                 if reply.status < 400 {
                     runtime[j].warmUp()
                     // Rotation moved: worth a write, and it carries the fresh windows with it.
-                    if cursor != id { cursor = id; saveObservations() }
+                    if cursor != id { cursor = id; chosenByHand = nil; saveObservations() }
                     if let session { affinity.pin(session, window: window, to: id) }
                     runtime[j].traffic.requests += 1
                     runtime[j].traffic.lastUsed = Date()

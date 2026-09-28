@@ -220,7 +220,9 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
 - Termina `CONNECT api.anthropic.com:443` ella misma y reenvía cada petición con la cabecera `Authorization` de la cuenta elegida en lugar de la del cliente; cualquier otro host se tuneliza sin tocarlo.
 - El resto de cabeceras pasan tal cual, y `metadata.user_id` nombra la cuenta cuyo token salió.
 - Las respuestas se transmiten en streaming a medida que llegan.
-- Las cuentas se eligen por prioridad y después por la ventana semanal que se reinicia antes.
+- Las cuentas se eligen por prioridad y después por la ventana semanal que se reinicia antes, para gastar primero la semana que se perdería antes.
+- Dentro de una misma prioridad, una cuenta cuya semana se reinicia más de una hora antes toma el relevo de la que está en uso.
+- Una cuenta elegida con *Usar como actual* conserva el tráfico hasta que ya no puede aceptar solicitudes.
 - Se salta cualquier cuenta desactivada, limitada, en su tope de uso, en error o en su umbral para la familia de modelos de la petición.
 - Las cabeceras `anthropic-ratelimit-*` de cada respuesta mantienen al día las ventanas de cada cuenta.
 - Un sondeo en segundo plano del endpoint de uso rellena las inactivas.

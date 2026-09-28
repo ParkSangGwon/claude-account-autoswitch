@@ -41,6 +41,9 @@ public actor Engine {
     var runtime: [AccountRuntime] = []
     /// The account new requests start from.
     var cursor: AccountID?
+    /// The cursor as a person set it. It holds against a sooner weekly reset until it is blocked
+    /// and another account takes a reply.
+    var chosenByHand: AccountID?
     var affinity = Affinity()
     var startedAt: Date?
     private var listener: ProxyServer?
@@ -107,11 +110,12 @@ public actor Engine {
         }
         affinity.retain(Set(runtime.map(\.id)))
         let before = cursor
-        if cursor == nil { cursor = c.observed.lastActive }
+        if cursor == nil { cursor = c.observed.lastActive; chosenByHand = c.observed.chosenByHand }
         if let cur = cursor, !runtime.contains(where: { $0.id == cur }) { cursor = nil }
         let now = Date()
         sweep(now: now)
         if cursor == nil || !canServe(cursor!, now: now) { cursor = bestCandidate(excluding: [], now: now) ?? cursor }
+        if chosenByHand != cursor { chosenByHand = nil }
         // Quitting cannot be relied on to write, so a cursor settled here is written now.
         if cursor != before { saveObservations() }
     }
@@ -123,6 +127,7 @@ public actor Engine {
         guard loadFailure == nil else { return }
         let observed = Configuration.Observed(
             lastActive: cursor,
+            chosenByHand: chosenByHand,
             accounts: runtime.compactMap { $0.windows.isEmpty ? nil : .init(id: $0.id, windows: $0.windows) }
         )
         guard observed != configuration.observed else { return }
@@ -331,6 +336,7 @@ public actor Engine {
     public func switchTo(_ id: AccountID) -> SwitchOutcome {
         guard let r = runtime.first(where: { $0.id == id }) else { return .failed(L("No such account")) }
         cursor = id
+        chosenByHand = id
         affinity.repin(to: id)
         saveObservations()
         let now = Date()

@@ -416,6 +416,59 @@ final class ForwardingTests: XCTestCase {
         XCTAssertEqual(s.sessions.first?.pins[.weeklySonnet], bob)
     }
 
+    /// What a probe would have learned about an account's week.
+    private func learnWeek(_ i: Int, resetsIn seconds: TimeInterval, used: Double = 0.1) async {
+        await engine.absorb(OAuth.Usage(fiveHour: (utilization: 0.1, resetAt: nil), sevenDay: (utilization: used, resetAt: Date().addingTimeInterval(seconds)), scopedWeekly: [:]),
+                            into: i, asked: Date())
+    }
+
+    func testAWeekThatResetsSoonerTakesTheTrafficWithinARank() async throws {
+        try await engine.update { c in c.accounts[1].rank = 0 }
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-alice")
+        await learnWeek(0, resetsIn: 4 * 86_400)
+        await learnWeek(1, resetsIn: 86_400)
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-bob", "the running session moves to the week that is lost first")
+        _ = try await post()
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-bob")
+        let s = await engine.state()
+        XCTAssertEqual(s.current, bob)
+    }
+
+    func testWeeksResettingWithinTheLeadLeaveTheTrafficWhereItIs() async throws {
+        try await engine.update { c in c.accounts[1].rank = 0 }
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        await learnWeek(0, resetsIn: 4 * 86_400)
+        await learnWeek(1, resetsIn: 4 * 86_400 - 1800)
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        _ = try await post()
+        XCTAssertEqual(upstream.seen.map { $0.headers["authorization"] ?? "" }, Array(repeating: "Bearer token-alice", count: 3),
+                       "half an hour apart is the same week; moving would only cost the cache")
+    }
+
+    func testAnAccountPickedByHandHoldsUntilItIsBlocked() async throws {
+        try await engine.update { c in c.accounts[1].rank = 0 }
+        await learnWeek(0, resetsIn: 86_400)
+        await learnWeek(1, resetsIn: 4 * 86_400)
+        let outcome = await engine.switchTo(bob)
+        XCTAssertEqual(outcome.kind, .ok, "a sooner week does not undo a switch made by hand")
+        let spent = [("content-type", "application/json"), ("anthropic-ratelimit-unified-7d-utilization", "99"),
+                     ("anthropic-ratelimit-unified-7d-reset", String(Int(Date().addingTimeInterval(4 * 86_400).timeIntervalSince1970)))]
+        upstream.replies = [.init(status: 200, headers: spent, body: Data("{}".utf8))]
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-bob")
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(upstream.seen.last?.headers["authorization"], "Bearer token-alice", "bob's week reached the switch point")
+        await learnWeek(1, resetsIn: 4 * 86_400)
+        _ = try await post(headers: ["x-claude-code-session-id": "s"])
+        _ = try await post()
+        XCTAssertEqual(upstream.seen.suffix(2).map { $0.headers["authorization"] ?? "" }, ["Bearer token-alice", "Bearer token-alice"],
+                       "the hand-picked hold ended when alice took over; bob coming back does not revive it")
+        let chosen = await engine.chosenByHand
+        XCTAssertNil(chosen)
+    }
+
     func testASessionFollowsWhereItWasLastServed() async throws {
         try await engine.update { c in c.accounts[1].rank = 0 }
         _ = try await post(body: #"{"model":"claude-sonnet-4-6"}"#, headers: ["x-claude-code-session-id": "s"])

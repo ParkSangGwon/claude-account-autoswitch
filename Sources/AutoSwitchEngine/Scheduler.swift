@@ -53,25 +53,39 @@ extension Engine {
         return candidates.filter { $0.record.rank == top }.min { affinity.activeCount(pinnedTo: $0.id, now: now) < affinity.activeCount(pinnedTo: $1.id, now: now) }?.id
     }
 
-    /// A session stays with its account while that account can serve and no better-ranked one exists;
+    /// Same-rank weekly resets this close leave the traffic where it is: one account's reset wobbles by
+    /// a second between readings, and trading places over that would throw the prompt cache away.
+    static let resetLead: TimeInterval = 3600
+
+    /// Whether `other` takes the traffic from `holder`, which can still serve it: a better rank always
+    /// does; within a rank, a week that resets sooner does — it is spent before it is lost — unless
+    /// the holder is the account picked by hand.
+    func overtakes(_ other: AccountID, _ holder: AccountID) -> Bool {
+        guard let a = runtime.first(where: { $0.id == other }), let b = runtime.first(where: { $0.id == holder }) else { return false }
+        if a.record.rank != b.record.rank { return a.record.rank < b.record.rank }
+        guard holder != chosenByHand else { return false }
+        let ra = a.windows[.weekly]?.resetsAt ?? .distantFuture, rb = b.windows[.weekly]?.resetsAt ?? .distantFuture
+        return ra.addingTimeInterval(Engine.resetLead) < rb
+    }
+
+    /// A session stays with its account while that account can serve and nothing overtakes it;
     /// otherwise spreading, the cursor, or the best candidate, in that order.
     func choose(model: String?, session: String?, excluding: Set<AccountID>, now: Date) -> AccountID? {
         let window = WindowKind.weekly(for: model)
         func ok(_ id: AccountID) -> Bool { !excluding.contains(id) && canServe(id, model: model, now: now) }
-        func rank(_ id: AccountID) -> Int { runtime.first { $0.id == id }?.record.rank ?? Int.max }
         if let pinned = affinity.pin(session, window: window) ?? affinity.anyPin(session), ok(pinned) {
-            if let better = bestCandidate(model: model, excluding: excluding, now: now), rank(better) < rank(pinned) { return better }
+            if let better = bestCandidate(model: model, excluding: excluding, now: now), overtakes(better, pinned) { return better }
             return pinned
         }
         if configuration.rotation.spreadSessions, session != nil, let least = leastLoaded(model: model, excluding: excluding, now: now) { return least }
         if let cur = cursor, ok(cur) {
-            if let better = bestCandidate(model: model, excluding: excluding, now: now), rank(better) < rank(cur) { return better }
+            if let better = bestCandidate(model: model, excluding: excluding, now: now), overtakes(better, cur) { return better }
             return cur
         }
         return bestCandidate(model: model, excluding: excluding, now: now)
     }
 
-    /// Where the next unrouted request lands: the cursor while it can serve and nothing outranks it, else the best candidate.
+    /// Where the next unrouted request lands: the cursor while it can serve and nothing overtakes it, else the best candidate.
     func nextTarget(now: Date) -> AccountID? { choose(model: nil, session: nil, excluding: [], now: now) }
 
     /// The most room the rotation still has on each metered window: the reading of whichever

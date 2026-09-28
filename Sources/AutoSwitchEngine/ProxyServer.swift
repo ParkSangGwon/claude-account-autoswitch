@@ -101,16 +101,16 @@ final class ProxyServer: Sendable {
 
     /// Assembled by hand rather than with `configureHTTPServerPipeline`, which does not let the
     /// decoder forward the bytes it has already buffered. The gate sits in front of the engine's
-    /// handler so an upgrade never reaches a path that would strip its headers.
+    /// handler so an upgrade never reaches a path that would strip its headers. No pipelining
+    /// handler, for the reason `HTTPServer` gives.
     private static func httpPipeline(_ channel: Channel, clientTLS: NIOSSLContext, upstream: @escaping UpgradeGate.UpstreamProvider, handler: @escaping HTTPServer.Handler) -> EventLoopFuture<Void> {
         let decoder = ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes))
         let encoder = HTTPResponseEncoder()
-        let pipelining = HTTPServerPipelineHandler()
         let errors = HTTPServerProtocolErrorHandler()
         let requests = RequestHandler(handler: handler)
         let gate = UpgradeGate(upstream: upstream, clientTLS: clientTLS)
-        gate.httpHandlers = [decoder, encoder, pipelining, errors, requests]
-        return channel.pipeline.addHandlers([decoder, encoder, pipelining, errors, gate, requests])
+        gate.httpHandlers = [decoder, encoder, errors, requests]
+        return channel.pipeline.addHandlers([decoder, encoder, errors, gate, requests])
     }
 
     deinit { try? group.syncShutdownGracefully() }

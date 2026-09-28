@@ -154,7 +154,8 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
   - C'est désactivé tant que vous ne le demandez pas, car la requête part avec votre compte, et un Mac qui a dormi ouvre une réinitialisation manquée dans la minute qui suit le réveil.
 - **Une rotation qui gère les cas réels.**
   - Un 429 qui nomme une fenêtre fermée bride le compte pour la durée de son retry-after.
-  - Un 429 qui ne nomme aucune fenêtre transmet seulement la requête au compte suivant et laisse le compte dans la rotation ; seules les répétitions l'écartent.
+  - Un 429 de limite par minute dont le retry-after ne dépasse pas 30 s est attendu sur le même compte, pour que la session garde son cache de prompt.
+  - Tout autre 429 qui ne nomme aucune fenêtre transmet seulement la requête au compte suivant et laisse le compte dans la rotation ; seules les répétitions l'écartent.
   - Un jeton expiré est rafraîchi une fois puis la requête est rejouée.
   - 403 et 5xx basculent.
   - Quand tous les comptes sont épuisés, les requêtes peuvent être mises en attente pendant une durée configurable au lieu d'échouer.

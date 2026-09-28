@@ -9,6 +9,8 @@ final class FakeAnthropic: @unchecked Sendable {
     var tokenRequests: [JSON] = []
     var refreshStatus = 200
     var usageStatus = 200
+    /// `extra_usage` / `spend` blocks the usage reply carries alongside the windows.
+    var usageBilling: [String: JSON] = [:]
     /// The bearer token of every `/v1/messages` call, in order: what keep-alive sent and on whose behalf.
     var pings: [String] = []
     var pingStatus = 200
@@ -34,11 +36,12 @@ final class FakeAnthropic: @unchecked Sendable {
             return HTTPResponse(status: 200, json: .object(["account": .object(["uuid": .string("acct-1"), "email": .string("alice@example.com")]),
                                                            "organization": .object(["uuid": .string("org-1"), "name": .string("Example Org"), "rate_limit_tier": .string("default_claude_max_20x")])]))
         case "/api/oauth/usage":
-            lock.lock(); let status = usageStatus; lock.unlock()
+            lock.lock(); let status = usageStatus, billing = usageBilling; lock.unlock()
             if status != 200 { return HTTPResponse(status: status, json: .object(["error": .string("unauthorized")])) }
-            return HTTPResponse(status: 200, json: .object(["five_hour": .object(["utilization": .number(42), "resets_at": .string("2030-01-01T00:00:00Z")]),
-                                                           "seven_day": .object(["utilization": .number(61), "resets_at": .string("2030-01-03T00:00:00Z")]),
-                                                           "limits": .array([.object(["group": .string("weekly"), "percent": .number(88), "resets_at": .string("2030-01-03T00:00:00Z"), "scope": .object(["model": .object(["display_name": .string("Fable")])])])])]))
+            let windows: [String: JSON] = ["five_hour": .object(["utilization": .number(42), "resets_at": .string("2030-01-01T00:00:00Z")]),
+                                           "seven_day": .object(["utilization": .number(61), "resets_at": .string("2030-01-03T00:00:00Z")]),
+                                           "limits": .array([.object(["group": .string("weekly"), "percent": .number(88), "resets_at": .string("2030-01-03T00:00:00Z"), "scope": .object(["model": .object(["display_name": .string("Fable")])])])])]
+            return HTTPResponse(status: 200, json: .object(windows.merging(billing) { $1 }))
         case "/v1/messages":
             lock.lock()
             pings.append(req.header("authorization") ?? "")
@@ -184,6 +187,27 @@ final class EngineAccountsTests: XCTestCase {
         XCTAssertEqual(try engine.store.load().accounts[0].plan, .max(multiplier: 20))
         XCTAssertEqual(try XCTUnwrap(Fleet.total(s, .session)?.used), 0.42, accuracy: 1e-9)
         XCTAssertNotNil(s.probe.lastFinishedAt)
+    }
+
+    func testProbeCarriesOverageToTheSpendAlert() async throws {
+        let fake = FakeAnthropic(); try await fake.start(); defer { Task { await fake.stop() } }
+        let engine = try freshEngine(accounts: [oauthAccount("a")], probe: 300)
+        try await engine.load()
+        let before = await engine.state()
+        let seeded = AlertEngine.evaluate(AlertInputs(previous: nil, state: before, reachable: true), state: AlertState(), prefs: AlertPrefs()).state
+
+        fake.usageBilling = ["extra_usage": .object(["is_enabled": .bool(true), "currency": .string("USD"), "decimal_places": .number(2)]),
+                             "spend": .object(["used": .object(["amount_minor": .number(1234), "currency": .string("USD"), "exponent": .number(2)])])]
+        await engine.probeNow()
+        let billed = await engine.state()
+        XCTAssertEqual(billed.accounts[0].overage, Overage(enabled: true, usedMinor: 1234, currency: "USD", exponent: 2))
+        let alerts = AlertEngine.evaluate(AlertInputs(previous: nil, state: billed, reachable: true), state: seeded, prefs: AlertPrefs()).alerts
+        XCTAssertEqual(alerts.map(\.kind), [.spend])
+
+        fake.usageBilling = [:]
+        await engine.probeNow()
+        let silent = await engine.state()
+        XCTAssertEqual(silent.accounts[0].overage, billed.accounts[0].overage, "a reply silent on billing keeps the last reading")
     }
 }
 

@@ -77,6 +77,14 @@ The app learns each account's windows from the `anthropic-ratelimit-*` headers o
 A window whose reset has passed is forgotten, so a stale number never keeps an account out.
 An API key has token and request allowances instead of windows.
 
+### Billing past the plan
+
+The same probe reads whether an account bills past its plan and how much it has billed this month.
+`extra_usage.is_enabled` decides whether it can bill; `spend.enabled` does not, since an organization can have overage while this account is out of credits or opted out.
+The amount is `spend.used.amount_minor`, in the currency and exponent `spend` quotes, falling back to `extra_usage.currency` and `decimal_places`.
+A reply that carries neither block keeps the last reading, and only the probe reports billing — no reply header does.
+This is what the `$` chip in the accounts table and the **Overage billing started** alert show; it does not change which account rotation picks.
+
 ### Keeping the five-hour window open
 
 Claude starts an account's five-hour window at its first request, not on a fixed schedule.

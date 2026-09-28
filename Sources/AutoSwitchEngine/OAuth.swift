@@ -66,6 +66,8 @@ enum OAuth {
         var sevenDay: (utilization: Double?, resetAt: Date?)
         /// family (lower-cased display name) → weekly bucket, from the `limits` array.
         var scopedWeekly: [String: (utilization: Double?, resetAt: Date?)]
+        /// Nil when the reply carried neither `extra_usage` nor `spend`: it said nothing about billing.
+        var overage: Overage? = nil
     }
 
     static func authorizeURL(redirectURI: String, pkce: PKCE) -> URL {
@@ -210,7 +212,19 @@ enum OAuth {
             if let name = limit["scope"]["model"]["display_name"].string?.lowercased(), !name.isEmpty { scoped[name] = bucket(limit) }
         }
         if scoped["sonnet"] == nil, j["seven_day_sonnet"].object != nil { scoped["sonnet"] = bucket(j["seven_day_sonnet"]) }
-        return Usage(fiveHour: bucket(j["five_hour"]), sevenDay: bucket(j["seven_day"]), scopedWeekly: scoped)
+        return Usage(fiveHour: bucket(j["five_hour"]), sevenDay: bucket(j["seven_day"]), scopedWeekly: scoped, overage: parseOverage(j))
+    }
+
+    /// `extra_usage.is_enabled`, not `spend.enabled`: an org can have overage while this account is out of credits or opted out.
+    /// Amounts come from `spend`, in the currency and exponent it quotes them in.
+    static func parseOverage(_ j: JSON) -> Overage? {
+        let extra = j["extra_usage"], spend = j["spend"]
+        guard extra.object != nil || spend.object != nil else { return nil }
+        let used = spend["used"], limit = spend["limit"]
+        let minor = used["amount_minor"].double ?? used["amount_minor"].string.flatMap(Double.init)
+        let currency = used["currency"].string ?? limit["currency"].string ?? extra["currency"].string ?? "USD"
+        let exponent = used["exponent"].int ?? limit["exponent"].int ?? extra["decimal_places"].int ?? 2
+        return Overage(enabled: extra["is_enabled"].bool == true, usedMinor: minor, currency: currency, exponent: exponent)
     }
 
     static func randomBytes(_ n: Int) -> Data {

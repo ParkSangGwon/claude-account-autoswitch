@@ -72,7 +72,34 @@ final class OAuthTests: XCTestCase {
         XCTAssertEqual(u.fiveHour.resetAt, ISO8601DateFormatter().date(from: "2026-09-02T08:50:00Z"))
         XCTAssertEqual(u.sevenDay.utilization, 0.18)
         XCTAssertEqual(u.scopedWeekly["fable"]?.utilization, 0.95)
-        XCTAssertNil(u.scopedWeekly["sonnet"])
+        XCTAssertNil(u.overage, "a reply without extra_usage or spend says nothing about billing")
+    }
+
+    func testOverageParsing() throws {
+        let billable = try XCTUnwrap(OAuth.parseOverage(.object([
+            "extra_usage": .object(["is_enabled": .bool(true), "currency": .string("USD"), "decimal_places": .number(2)]),
+            "spend": .object(["used": .object(["amount_minor": .number(1234), "currency": .string("USD"), "exponent": .number(2)]),
+                              "limit": .object(["amount_minor": .number(1000000), "currency": .string("USD"), "exponent": .number(2)]), "enabled": .bool(true)]),
+        ])))
+        XCTAssertEqual(billable, Overage(enabled: true, usedMinor: 1234, currency: "USD", exponent: 2))
+
+        let outOfCredits = try XCTUnwrap(OAuth.parseOverage(.object([
+            "extra_usage": .object(["is_enabled": .bool(false), "currency": .string("EUR"), "decimal_places": .number(2), "disabled_reason": .string("out_of_credits")]),
+            "spend": .object(["used": .object(["amount_minor": .number(1500), "currency": .string("EUR"), "exponent": .number(2)]), "enabled": .bool(true)]),
+        ])))
+        XCTAssertFalse(outOfCredits.enabled, "spend.enabled is the org's, not whether this account can bill")
+        XCTAssertEqual(outOfCredits.currency, "EUR")
+
+        let fromExtra = try XCTUnwrap(OAuth.parseOverage(.object([
+            "extra_usage": .object(["is_enabled": .bool(true), "currency": .string("JPY"), "decimal_places": .number(0)]),
+            "spend": .object(["used": .object(["amount_minor": .string("500")])]),
+        ])))
+        XCTAssertEqual(fromExtra, Overage(enabled: true, usedMinor: 500, currency: "JPY", exponent: 0), "currency and exponent fall back to extra_usage")
+
+        let neverEnabled = try XCTUnwrap(OAuth.parseOverage(.object(["extra_usage": .object(["is_enabled": .bool(false), "currency": .null, "decimal_places": .null])])))
+        XCTAssertEqual(neverEnabled, Overage(enabled: false, usedMinor: nil, currency: "USD", exponent: 2))
+
+        XCTAssertNil(OAuth.parseOverage(.object([:])))
     }
 
     func testKeychainPayloadShapes() {

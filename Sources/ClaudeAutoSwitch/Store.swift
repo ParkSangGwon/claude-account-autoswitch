@@ -260,16 +260,24 @@ final class AppStore {
     }
 
     private func pollOnce() async {
-        guard await engine.isRunning else {
-            failureStreak += 1
-            if case .down = connection {} else { connection = .down(since: Date(), error: await engine.lastError ?? .listen("stopped")) }
-            evaluateAlerts()
+        guard let port = await engine.listeningPort else {
+            markDown(await engine.lastError ?? .listen("stopped"))
+            return
+        }
+        guard await Engine.answersHealth(port: port) else {
+            markDown(.notResponding)
             return
         }
         apply(await engine.state())
         // Until the first quota probe lands the engine only knows what the config says, so its choice
         // of account is provisional: a switch seen now is start-up noise, not a rotation.
         if !warmingUp { evaluateAlerts(); recordHistory() }
+    }
+
+    private func markDown(_ error: EngineError) {
+        failureStreak += 1
+        if case .down = connection {} else { connection = .down(since: Date(), error: error) }
+        evaluateAlerts()
     }
 
     private var warmingUp: Bool {
@@ -341,6 +349,8 @@ final class AppStore {
     }
 
     var isDown: Bool { if case .down = connection { return true } else { return false } }
+    /// Down while the listener is still up: nothing to rebind, the port is not the problem.
+    var isHung: Bool { if case .down(_, .notResponding) = connection { return true } else { return false } }
 
     var iconModel: IconModel {
         MenuBarState.compute(IconInputs(state: state, reachable: !isDown, lastSuccessAt: lastSuccessAt,

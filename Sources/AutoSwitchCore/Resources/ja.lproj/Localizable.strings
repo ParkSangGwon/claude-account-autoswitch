@@ -485,3 +485,5 @@
 "Off — a window starts when you send your first request." = "オフ — 最初のリクエストを送った時点でウィンドウが始まります。";
 "On — the next window opens the moment this one resets." = "オン — 今のウィンドウがリセットされ次第、次を開きます。";
 "On — opened a window %@ ago." = "オン — %@ 前にウィンドウを開きました。";
+"Listening, but not answering" = "待ち受け中ですが応答がありません";
+"The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener." = "ポートは開いていますが、数秒以内に状態確認の応答がありません。このプロキシを通る Claude Code のセッションも止まっています。再試行を押すとリスナーを再起動します。";

@@ -47,7 +47,7 @@ struct SettingsRootView: View {
                         if let err = store.configError {
                             Banner(kind: .bad, text: L("Config could not be read: %@", err))
                         }
-                        if store.isDown {
+                        if store.isDown && !store.isHung {
                             Banner(kind: .warn, text: L("The listener is down — edits are saved and apply as soon as it starts."))
                         }
                         pane

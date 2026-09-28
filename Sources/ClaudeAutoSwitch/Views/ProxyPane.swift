@@ -20,9 +20,11 @@ struct ProxyPane: View {
                 HStack {
                     Button(L("Poll now")) { store.refreshNow() }.controlSize(.small)
                     if store.isDown { Button(L("Try again")) { Task { await store.restartEngine() } }.controlSize(.small).buttonStyle(.borderedProminent) }
-                    if store.isDown { Button(L("Use a free port")) { Task { await store.moveToFreePort() } }.controlSize(.small) }
+                    if store.isDown && !store.isHung { Button(L("Use a free port")) { Task { await store.moveToFreePort() } }.controlSize(.small) }
                 }
-                if store.isDown {
+                if store.isHung {
+                    Text(L("The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener.")).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                } else if store.isDown {
                     if let holder = store.portHeldBy {
                         Text(L("%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the setup file follows it.", holder)).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     } else {

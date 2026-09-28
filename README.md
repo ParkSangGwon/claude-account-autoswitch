@@ -202,7 +202,7 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
 | `1h12m 42% · 3d12h 61%` | The *Bars + 5h · 7d* style: the weekly window too. |
 | `1h12m 93%!` | Critical: at the switch threshold, or nothing can serve. |
 | `→ par` | A rotation just happened; shown for six seconds. |
-| `—` | The listener is down (usually the port is taken). |
+| `—` | The listener is down (usually the port is taken) or stopped answering. |
 | `0%` | No accounts yet. |
 
 ## Shortcuts

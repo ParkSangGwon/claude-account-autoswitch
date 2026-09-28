@@ -485,3 +485,5 @@
 "Off — a window starts when you send your first request." = "Aus — ein Fenster beginnt, sobald Sie Ihre erste Anfrage senden.";
 "On — the next window opens the moment this one resets." = "An — das nächste Fenster öffnet sich, sobald dieses zurückgesetzt wird.";
 "On — opened a window %@ ago." = "An — vor %@ ein Fenster geöffnet.";
+"Listening, but not answering" = "Aktiv, antwortet aber nicht";
+"The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener." = "Der Port ist offen, aber die Statusprüfung bekam binnen weniger Sekunden keine Antwort – Claude-Code-Sitzungen über diesen Proxy hängen ebenfalls. Erneut versuchen startet den Listener neu.";

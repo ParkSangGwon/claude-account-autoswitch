@@ -485,3 +485,5 @@
 "Off — a window starts when you send your first request." = "Desactivado — la ventana empieza cuando envías tu primera petición.";
 "On — the next window opens the moment this one resets." = "Activado — la siguiente ventana se abre en cuanto esta se reinicia.";
 "On — opened a window %@ ago." = "Activado — se abrió una ventana hace %@.";
+"Listening, but not answering" = "Escuchando, pero sin responder";
+"The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener." = "El puerto está abierto, pero la comprobación de estado no obtuvo respuesta en unos segundos, así que las sesiones de Claude Code que pasan por él también están bloqueadas. Reintentar reinicia el listener.";

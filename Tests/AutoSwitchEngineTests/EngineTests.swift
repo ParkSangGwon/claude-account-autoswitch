@@ -268,6 +268,42 @@ final class EngineTests: XCTestCase {
         await engine.stop()
     }
 
+    func testTheHealthCheckTellsAnAnsweringListenerFromOneThatIsGoneOrStuck() async throws {
+        let port = Int.random(in: 20000..<40000)
+        let engine = Engine(store: try temporaryStore(testConfiguration(accounts: [], port: port)), version: "t")
+        try await engine.start()
+        let listening = await engine.listeningPort
+        XCTAssertEqual(listening, port)
+        let answering = await Engine.answersHealth(port: port)
+        XCTAssertTrue(answering)
+        await engine.stop()
+        let afterStop = await engine.listeningPort
+        XCTAssertNil(afterStop)
+        let gone = await Engine.answersHealth(port: port)
+        XCTAssertFalse(gone)
+
+        // Accepts the connection and never replies: what the menu used to keep calling "listening".
+        let stuck = HTTPServer(port: 0) { _ in
+            try? await Task.sleep(for: .seconds(10))
+            return HTTPResponse(status: 200, json: .object([:]))
+        }
+        try await stuck.start()
+        let asked = Date()
+        let stalled = await Engine.answersHealth(port: stuck.boundPort, timeout: 1)
+        XCTAssertFalse(stalled)
+        XCTAssertLessThan(Date().timeIntervalSince(asked), 5, "the timeout bounds the poll, not the stuck handler")
+        await stuck.stop()
+    }
+
+    func testTheHealthCheckOpensItsOwnConnectionEachTime() async throws {
+        let listener = FirstConnectionOnly()
+        defer { listener.stop() }
+        let first = await Engine.answersHealth(port: listener.port, timeout: 1)
+        XCTAssertTrue(first)
+        let second = await Engine.answersHealth(port: listener.port, timeout: 1)
+        XCTAssertFalse(second, "a kept-alive connection still answers; a client arriving now would not get in")
+    }
+
     func testAFreePortIsOfferedAndTakenWhenTheConfiguredOneIsBusy() async throws {
         let port = Int.random(in: 20000..<40000)
         let squatter = Engine(store: try temporaryStore(testConfiguration(accounts: [], port: port)), version: "t")
@@ -309,4 +345,34 @@ final class EngineTests: XCTestCase {
         }
         await first.stop()
     }
+}
+
+/// Serves the first connection it accepts and never accepts another: a listener whose accept loop
+/// stalled while a connection opened before that still gets answers.
+final class FirstConnectionOnly: Sendable {
+    let port: Int
+    private let fd: Int32
+
+    init() {
+        let fd = socket(AF_INET, SOCK_STREAM, 0)
+        var addr = sockaddr_in()
+        addr.sin_family = sa_family_t(AF_INET)
+        addr.sin_addr.s_addr = inet_addr("127.0.0.1")
+        var length = socklen_t(MemoryLayout<sockaddr_in>.size)
+        _ = withUnsafePointer(to: &addr) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { bind(fd, $0, length) } }
+        listen(fd, 16)
+        _ = withUnsafeMutablePointer(to: &addr) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { getsockname(fd, $0, &length) } }
+        self.fd = fd
+        port = Int(UInt16(bigEndian: addr.sin_port))
+        Thread.detachNewThread {
+            let connection = accept(fd, nil, nil)
+            guard connection >= 0 else { return }
+            var buffer = [UInt8](repeating: 0, count: 4096)
+            let reply = Array("HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n".utf8)
+            while read(connection, &buffer, buffer.count) > 0 { _ = write(connection, reply, reply.count) }
+            Darwin.close(connection)
+        }
+    }
+
+    func stop() { Darwin.close(fd) }
 }

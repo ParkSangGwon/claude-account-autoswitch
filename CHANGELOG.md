@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+### Fixed
+
+- A proxy that stopped answering still read as up. The app judged the listener by whether it had been started, so one that accepted connections and never replied kept showing `listening` while every Claude Code session behind it stalled with no hint why. Each poll now asks the listener's health endpoint on a new connection, as a client arriving now would, and gives it five seconds; no answer puts the menu bar on `—`, the Proxy pane on "Listening, but not answering" with **Try again** to restart the listener, and a second miss in a row raises the proxy-down notification, as a stopped listener already did.
+
 ### Changed
 
 - Within a priority, the account whose weekly window resets soonest now takes the traffic over from the account in use, instead of only breaking ties when rotation had to pick afresh. Rotation used to stay on whichever account it had landed on while that account could serve, so a same-priority account whose week reset days earlier sat idle and its allowance was lost at the reset. The move happens when the other week resets more than an hour sooner, so two accounts whose weeks reset together do not trade places — and the prompt cache — over a reading that moved by a second. Running sessions move too. An account set with **Make current** is left alone until it can no longer take requests, and the choice survives a restart; once another account has taken over, the soonest reset leads again.

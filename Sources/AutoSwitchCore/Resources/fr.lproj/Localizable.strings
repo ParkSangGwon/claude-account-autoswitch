@@ -485,3 +485,5 @@
 "Off — a window starts when you send your first request." = "Désactivé — une fenêtre démarre quand vous envoyez votre première requête.";
 "On — the next window opens the moment this one resets." = "Activé — la prochaine fenêtre s'ouvre dès que celle-ci se réinitialise.";
 "On — opened a window %@ ago." = "Activé — fenêtre ouverte il y a %@.";
+"Listening, but not answering" = "À l’écoute, mais sans réponse";
+"The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener." = "Le port est ouvert, mais la vérification d’état n’a pas eu de réponse en quelques secondes : les sessions Claude Code qui passent par ce proxy sont bloquées elles aussi. Réessayer redémarre le listener.";

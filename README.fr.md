@@ -202,7 +202,7 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
 | `1h12m 42% · 3d12h 61%` | Le style *Barres + 5h · 7d* : la fenêtre hebdomadaire aussi. |
 | `1h12m 93%!` | Critique : au seuil de bascule, ou rien ne peut servir. |
 | `→ par` | Une rotation vient d'avoir lieu ; affiché pendant six secondes. |
-| `—` | L'écoute est arrêtée (en général le port est occupé). |
+| `—` | L'écoute est arrêtée (en général le port est occupé) ou ne répond plus. |
 | `0%` | Aucun compte pour l'instant. |
 
 ## Raccourcis

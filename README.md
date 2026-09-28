@@ -154,7 +154,8 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
   - It is off until you ask for it, because the request goes out on your account, and a Mac that was asleep opens a reset it slept through within a minute of waking.
 - **Rotation that handles the real cases.**
   - A 429 that names a closed window throttles the account for its retry-after.
-  - A 429 that names no window moves the request on but leaves the account in rotation; only repeats sideline it.
+  - A per-minute 429 whose retry-after is 30 s or less is waited out on the same account, so the session keeps its prompt cache.
+  - Any other 429 that names no window moves the request on but leaves the account in rotation; only repeats sideline it.
   - An expired token is refreshed once and retried.
   - 403 and 5xx fail over.
   - When every account is out, requests can hold for a configurable time instead of failing.

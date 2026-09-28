@@ -359,6 +359,60 @@ final class ForwardingTests: XCTestCase {
         XCTAssertNil(s.account(bob)?.blocker, "bob served them all and stays clear")
     }
 
+    /// A per-minute limit: no window named, and a `retry-after` that says it lifts in a moment.
+    static func throttled(retryAfter seconds: Int) -> [(String, String)] { unattributed + [("retry-after", String(seconds))] }
+
+    func testAShortRetryAfterIsWaitedOutOnTheSameAccount() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.throttled(retryAfter: 1), body: Data()),
+                            .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"msg_w"}"#.utf8))]
+        let started = Date()
+        let (status, data, _) = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(status, 200)
+        XCTAssertEqual(String(decoding: data, as: UTF8.self), #"{"id":"msg_w"}"#)
+        XCTAssertGreaterThanOrEqual(Date().timeIntervalSince(started), 0.9, "the retry waited for the limit to lift")
+        XCTAssertEqual(upstream.seen.map { $0.headers["authorization"] }, ["Bearer token-alice", "Bearer token-alice"], "and went back to the account that asked for the wait")
+        let s = await engine.state()
+        XCTAssertEqual(s.current, alice)
+        XCTAssertEqual(s.sessions.first?.pins[.weeklySonnet], alice, "the session keeps the account holding its prompt cache")
+        XCTAssertNil(s.account(alice)?.blocker)
+    }
+
+    func testALongRetryAfterSendsTheRequestElsewhere() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.throttled(retryAfter: 120), body: Data()),
+                            .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"msg_l"}"#.utf8))]
+        let started = Date()
+        let (status, _, _) = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(status, 200)
+        XCTAssertLessThan(Date().timeIntervalSince(started), 5, "a wait past the limit is not waited")
+        XCTAssertEqual(upstream.seen.map { $0.headers["authorization"] }, ["Bearer token-alice", "Bearer token-bob"])
+        let s = await engine.state()
+        XCTAssertEqual(s.sessions.first?.pins[.weeklySonnet], bob)
+    }
+
+    func testARefusedRetryMovesTheRequestOn() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.throttled(retryAfter: 1), body: Data()),
+                            .init(status: 429, headers: Self.throttled(retryAfter: 1), body: Data()),
+                            .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"msg_r"}"#.utf8))]
+        let (status, data, _) = try await post(headers: ["x-claude-code-session-id": "s"])
+        XCTAssertEqual(status, 200)
+        XCTAssertEqual(String(decoding: data, as: UTF8.self), #"{"id":"msg_r"}"#)
+        XCTAssertEqual(upstream.seen.map { $0.headers["authorization"] }, ["Bearer token-alice", "Bearer token-alice", "Bearer token-bob"], "one wait per request, then the sibling")
+        let s = await engine.state()
+        XCTAssertEqual(s.sessions.first?.pins[.weeklySonnet], bob)
+    }
+
+    func testAClientThatHangsUpEndsTheWait() async throws {
+        upstream.replies = [.init(status: 429, headers: Self.throttled(retryAfter: 2), body: Data()),
+                            .init(status: 200, headers: Self.quotaHeaders, body: Data("{}".utf8))]
+        var req = URLRequest(url: URL(string: "http://127.0.0.1:\(port)/v1/messages")!)
+        req.httpMethod = "POST"
+        req.httpBody = Data(#"{"model":"claude-sonnet-4-6","messages":[]}"#.utf8)
+        req.timeoutInterval = 0.5
+        do { _ = try await URLSession.shared.data(for: req); XCTFail("the client gave up before the wait was over") } catch {}
+        try await Task.sleep(for: .seconds(2.5))
+        XCTAssertEqual(upstream.count, 1, "nobody is left to answer, so no retry goes out")
+    }
+
     func testAServerErrorHopsOnce() async throws {
         upstream.replies = [.init(status: 503, headers: [], body: Data()), .init(status: 200, headers: Self.quotaHeaders, body: Data(#"{"id":"msg_4"}"#.utf8))]
         let (status, _, _) = try await post()

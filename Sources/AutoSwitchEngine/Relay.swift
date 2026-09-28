@@ -11,12 +11,16 @@ extension Engine {
     /// Paths where the client's own credential must go through untouched.
     static let clientCredentialPaths = ["/v1/code/", "/api/oauth/"]
     static let maxBodyBytes = 64 * 1024 * 1024
+    /// The longest `retry-after` a 429 naming no window is waited out on the account that gave it.
+    /// A per-minute limit asking for more than half its minute is mostly spent, and the sibling is the quicker way through.
+    static let sameAccountWaitLimit: Double = 30
 
     /// What one attempt on one account decided.
     private enum Verdict {
         case deliver
         case retryElsewhere
         case retrySameAfterRefresh
+        case retrySameAfterWait(Double)
     }
 
     func serve(_ request: HTTPRequest) async -> HTTPResponse {
@@ -30,6 +34,9 @@ extension Engine {
         var tried: Set<AccountID> = []
         var refreshed: Set<AccountID> = []
         var hopped = false
+        var waited = false
+        /// The account a wait was spent on: the retry goes back to it, wherever rotation moved meanwhile.
+        var held: AccountID?
         /// Why the last account dropped out without an answer, when nothing could be reached.
         var unreachable: String?
         let deadline = Date().addingTimeInterval(Double(configuration.rotation.waitWhenExhaustedSeconds))
@@ -40,7 +47,9 @@ extension Engine {
         while true {
             let now = Date()
             sweepAccounts(now: now)
-            guard let id = choose(model: model, session: session, excluding: tried, now: now) else {
+            let picked = held.flatMap { canServe($0, model: model, now: now) ? $0 : nil } ?? choose(model: model, session: session, excluding: tried, now: now)
+            held = nil
+            guard let id = picked else {
                 // Nothing can serve: wait while the config allows, then answer the way Anthropic would.
                 let relief = earliestRelief(model: model, now: now)
                 if now.addingTimeInterval(min(relief, 60)) < deadline {
@@ -82,13 +91,26 @@ extension Engine {
             switch reply.status {
             case 429:
                 switch Signals.refusal(reply.headers) {
-                case .sharedWindow: runtime[j].coolDown(seconds: min(max(Signals.retryAfter(reply.headers), 1), 3600))
-                case .fableWindow: runtime[j].windows.refusedAt = Date()
+                case .sharedWindow:
+                    runtime[j].coolDown(seconds: min(max(Signals.retryAfter(reply.headers), 1), 3600))
+                    verdict = .retryElsewhere
+                case .fableWindow:
+                    runtime[j].windows.refusedAt = Date()
+                    verdict = .retryElsewhere
                 // No window named: step aside for this request only. A minute of exile on a burst
                 // costs both accounts at once, because whatever refused this one refuses its sibling.
-                case .plain: runtime[j].noteUnattributedRefusal(retryAfter: Signals.retryAfter(reply.headers, fallback: 5))
+                case .plain:
+                    runtime[j].noteUnattributedRefusal(retryAfter: Signals.retryAfter(reply.headers, fallback: 5))
+                    // A short `retry-after` is a per-minute limit about to lift. Waiting it out here keeps
+                    // the session on the account holding its prompt cache; with no `retry-after` the
+                    // refusal is about the request, and waiting on this account buys nothing.
+                    let wait = Signals.retryAfter(reply.headers, fallback: .infinity)
+                    if !waited, runtime[j].health != .coolingDown, wait <= Engine.sameAccountWaitLimit {
+                        verdict = .retrySameAfterWait(max(wait, 0))
+                    } else {
+                        verdict = .retryElsewhere
+                    }
                 }
-                verdict = .retryElsewhere
             case 401:
                 if account.record.kind == .subscription, !refreshed.contains(id) {
                     refreshed.insert(id)
@@ -115,6 +137,12 @@ extension Engine {
 
             switch verdict {
             case .retrySameAfterRefresh:
+                continue
+            case .retrySameAfterWait(let seconds):
+                waited = true
+                // Nobody is left to answer, so the retry would spend the account's minute for nothing.
+                guard await request.hangup.sleep(seconds) else { return deliver(reply, account: id, model: model) }
+                held = id
                 continue
             case .retryElsewhere:
                 tried.insert(id)

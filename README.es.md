@@ -154,7 +154,8 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
   - Está desactivado hasta que lo pidas, porque la petición sale con tu cuenta, y un Mac que estuvo dormido abre un reinicio que se durmió en menos de un minuto tras despertar.
 - **Rotación que cubre los casos reales.**
   - Un 429 que nombra una ventana cerrada limita la cuenta durante su retry-after.
-  - Un 429 que no nombra ninguna ventana solo pasa la petición a la siguiente cuenta y deja la cuenta en la rotación; solo las repeticiones la apartan.
+  - Un 429 de límite por minuto con un retry-after de 30 s o menos se espera en la misma cuenta, para que la sesión conserve su caché de prompts.
+  - Cualquier otro 429 que no nombra ninguna ventana solo pasa la petición a la siguiente cuenta y deja la cuenta en la rotación; solo las repeticiones la apartan.
   - Un token caducado se refresca una vez y se reintenta.
   - 403 y 5xx hacen failover.
   - Cuando todas las cuentas están agotadas, las peticiones pueden esperar un tiempo configurable en lugar de fallar.

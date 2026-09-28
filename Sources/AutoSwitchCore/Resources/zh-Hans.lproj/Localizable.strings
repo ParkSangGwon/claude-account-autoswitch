@@ -485,3 +485,5 @@
 "Off — a window starts when you send your first request." = "关闭 — 窗口在你发出第一个请求时开始。";
 "On — the next window opens the moment this one resets." = "开启 — 当前窗口一重置就开启下一个。";
 "On — opened a window %@ ago." = "开启 — %@ 前开启过一个窗口。";
+"Listening, but not answering" = "正在监听，但没有响应";
+"The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener." = "端口已打开，但几秒内没有收到状态检查的响应，经过此代理的 Claude Code 会话也已卡住。点按重试会重新启动监听器。";

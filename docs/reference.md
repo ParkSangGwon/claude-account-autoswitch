@@ -189,6 +189,8 @@ The listener is an HTTP proxy on `127.0.0.1` only, reached through `HTTPS_PROXY`
 It reads each connection's request line as raw bytes and takes one of three routes:
 
 When the configured port is taken the listener does not start, and the Proxy pane names what holds it and offers a free port nearby.
+While it runs, every poll asks `GET /_autoswitch/health` on a new connection, as a client arriving now would, with the system proxy bypassed, and waits five seconds.
+No answer counts as down just as a stopped listener does: the menu bar shows `—`, the Proxy pane says the listener is listening but not answering, and a second miss in a row raises the proxy-down notification.
 
 - `CONNECT api.anthropic.com:443` is terminated locally with the app's own leaf, and what comes out of the tunnel is forwarded to `api.baseURL` with the chosen account's credential in place of the client's. ALPN offers `http/1.1` alone: Remote Control's channel is a WebSocket, and over HTTP/2 that would need RFC 8441 extended CONNECT.
 - Any other `CONNECT` is a blind TCP tunnel — the MCP servers, telemetry and npm all inherit the proxy and arrive here. Names that resolve back to this listener, to loopback or to link-local are refused with 403; a dial that fails answers 502.

@@ -11,11 +11,12 @@ The app is ad-hoc signed, not notarized, so macOS asks on first launch.
 
 ## The menu bar shows `—`
 
-The listener is not running, almost always because the port is taken.
+The listener is not running, almost always because the port is taken — or it is running and stopped answering.
 
 - **Settings → Proxy** names the program holding the port and offers **Use a free port**, which moves the listener and writes the new port down.
 - Or quit that program and press **Try again**. To find it yourself: `lsof -nP -iTCP:10912 -sTCP:LISTEN`.
 - After a port change nothing in the profile needs editing: the setup file is rewritten with the new port. Open a new terminal, or source it again.
+- **Settings → Proxy** reading "Listening, but not answering" means the port is open and the health check got nothing back within five seconds, so the Claude Code sessions going through it are stalled as well. **Try again** restarts the listener; if it stays that way, **Settings → Advanced → Export diagnostics…** and report it.
 
 ## Claude Code still uses one account
 

@@ -203,7 +203,7 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
 | `1h12m 42% · 3d12h 61%` | Der Stil *Balken + 5h · 7d*: dazu das Wochenfenster. |
 | `1h12m 93%!` | Kritisch: am Wechsel-Schwellenwert, oder nichts kann bedienen. |
 | `→ par` | Gerade ist eine Rotation passiert; sechs Sekunden lang angezeigt. |
-| `—` | Der Listener ist aus (meist ist der Port belegt). |
+| `—` | Der Listener ist aus (meist ist der Port belegt) oder antwortet nicht mehr. |
 | `0%` | Noch keine Konten. |
 
 ## Tastaturkurzbefehle

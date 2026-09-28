@@ -203,7 +203,7 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
 | `1h12m 42% · 3d12h 61%` | El estilo *Barras + 5h · 7d*: también la ventana semanal. |
 | `1h12m 93%!` | Crítico: en el umbral de cambio, o nada puede servir. |
 | `→ par` | Acaba de ocurrir una rotación; se muestra durante seis segundos. |
-| `—` | El proxy no está escuchando (normalmente el puerto está ocupado). |
+| `—` | El proxy no está escuchando (normalmente el puerto está ocupado) o dejó de responder. |
 | `0%` | Aún no hay cuentas. |
 
 ## Atajos

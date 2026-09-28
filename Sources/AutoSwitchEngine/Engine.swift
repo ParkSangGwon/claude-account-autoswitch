@@ -13,6 +13,7 @@ public enum EngineError: Error, Sendable, Equatable {
     case timedOut
     case cancelled
     case configUnreadable
+    case notResponding
 
     public var message: String {
         switch self {
@@ -27,6 +28,7 @@ public enum EngineError: Error, Sendable, Equatable {
         case .timedOut: return L("Timed out waiting for the sign-in")
         case .cancelled: return L("Cancelled")
         case .configUnreadable: return L("Not saving — the config file could not be read. Fix the file first so the accounts in it are not lost.")
+        case .notResponding: return L("Listening, but not answering")
         }
     }
 }
@@ -173,6 +175,8 @@ public actor Engine {
     // MARK: - lifecycle
 
     public var isRunning: Bool { listener != nil }
+    /// Where the listener actually sits, which is not `port` under `AUTOSWITCH_DEBUG_BIND_PORT`.
+    public var listeningPort: Int? { listener?.boundPort }
 
     public func start() async throws {
         if !loaded { try load() }
@@ -355,6 +359,20 @@ public actor Engine {
     static let controlPrefix = "/_autoswitch/"
     static let healthPath = controlPrefix + "health"
     static let sessionPathPrefix = controlPrefix + "session/"
+
+    /// Asked over a fresh connection, the way a client arriving now would: `isRunning` stays true for a
+    /// listener that stopped answering, and a pooled keep-alive connection outlives a stalled accept.
+    /// The system proxy is bypassed so the question cannot loop back into the listener it is about.
+    public static func answersHealth(port: Int, timeout: TimeInterval = 5) async -> Bool {
+        let c = URLSessionConfiguration.ephemeral
+        c.connectionProxyDictionary = [:]
+        let session = URLSession(configuration: c)
+        defer { session.invalidateAndCancel() }
+        var request = URLRequest(url: URL(string: "http://127.0.0.1:\(port)\(healthPath)")!)
+        request.timeoutInterval = timeout
+        guard let (_, response) = try? await session.data(for: request) else { return false }
+        return (response as? HTTPURLResponse)?.statusCode == 200
+    }
 
     func handle(_ request: HTTPRequest) async -> HTTPResponse {
         if request.method == "GET", request.path == Engine.healthPath {

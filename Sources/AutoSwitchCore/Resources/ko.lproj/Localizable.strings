@@ -486,3 +486,5 @@
 "Off — a window starts when you send your first request." = "꺼짐 — 첫 요청을 보내는 시점에 윈도우가 시작됩니다.";
 "On — the next window opens the moment this one resets." = "켜짐 — 지금 윈도우가 리셋되는 즉시 다음 윈도우를 엽니다.";
 "On — opened a window %@ ago." = "켜짐 — %@ 전에 윈도우를 열었습니다.";
+"Listening, but not answering" = "수신 중이지만 응답 없음";
+"The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener." = "포트는 열려 있지만 몇 초 안에 상태 확인 응답이 없어, 이 프록시를 거치는 Claude Code 세션도 멈춰 있습니다. 다시 시도를 누르면 리스너를 다시 시작합니다.";

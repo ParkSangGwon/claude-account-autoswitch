@@ -267,5 +267,7 @@ extension Engine {
             guard let family = Family(rawValue: name) else { continue }
             put(family.window, bucket)
         }
+        // A reply silent on billing is no evidence it stopped; only the probe reports it, so nothing newer can be in flight.
+        if let o = usage.overage { runtime[i].overage = o }
     }
 }

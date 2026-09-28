@@ -9,9 +9,26 @@ struct HTTPRequest: Sendable {
     var uri: String
     var headers: [(String, String)]
     var body: Data
+    var hangup = Hangup()
 
     var path: String { uri.split(separator: "?", maxSplits: 1).first.map(String.init) ?? uri }
     func header(_ name: String) -> String? { headers.first { $0.0.caseInsensitiveCompare(name) == .orderedSame }?.1 }
+}
+
+/// Set once the client's connection is gone, so a handler that is only waiting can stop waiting.
+final class Hangup: @unchecked Sendable {
+    private let lock = NSLock()
+    private var closed = false
+
+    var isClosed: Bool { lock.lock(); defer { lock.unlock() }; return closed }
+    func close() { lock.lock(); closed = true; lock.unlock() }
+
+    /// Waits `seconds`, or less if the client leaves first; true when it is still there.
+    func sleep(_ seconds: Double) async -> Bool {
+        let end = Date().addingTimeInterval(seconds)
+        while !isClosed, end.timeIntervalSinceNow > 0 { try? await Task.sleep(for: .seconds(min(end.timeIntervalSinceNow, 0.25))) }
+        return !isClosed
+    }
 }
 
 /// A response the handler hands back whole, or as a stream of chunks (SSE relays).
@@ -58,7 +75,9 @@ final class HTTPServer: Sendable {
         let bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             .childChannelInitializer { channel in
-                channel.pipeline.configureHTTPServerPipeline(withErrorHandling: true).flatMap {
+                // No pipelining assistance: it stops reading while a reply is pending, so a client that
+                // hangs up goes unnoticed until the reply is written. RequestHandler queues pipelined requests itself.
+                channel.pipeline.configureHTTPServerPipeline(withPipeliningAssistance: false, withErrorHandling: true).flatMap {
                     channel.pipeline.addHandler(RequestHandler(handler: handler))
                 }
             }
@@ -117,6 +136,7 @@ final class RequestHandler: ChannelInboundHandler, RemovableChannelHandler, @unc
     /// Requests are answered one at a time per connection; pipelined ones queue behind the running one.
     private var busy = false
     private var pending: [(HTTPRequestHead, Data)] = []
+    private let hangup = Hangup()
 
     init(handler: @escaping HTTPServer.Handler) { self.handler = handler }
 
@@ -137,7 +157,7 @@ final class RequestHandler: ChannelInboundHandler, RemovableChannelHandler, @unc
 
     private func run(_ h: HTTPRequestHead, _ body: Data, context: ChannelHandlerContext) {
         busy = true
-        let request = HTTPRequest(method: h.method.rawValue, uri: h.uri, headers: h.headers.map { ($0.name, $0.value) }, body: body)
+        let request = HTTPRequest(method: h.method.rawValue, uri: h.uri, headers: h.headers.map { ($0.name, $0.value) }, body: body, hangup: hangup)
         let handler = self.handler
         let loop = context.eventLoop
         let keepAlive = h.isKeepAlive
@@ -182,6 +202,11 @@ final class RequestHandler: ChannelInboundHandler, RemovableChannelHandler, @unc
             let (h, b) = pending.removeFirst()
             run(h, b, context: context)
         }
+    }
+
+    func channelInactive(context: ChannelHandlerContext) {
+        hangup.close()
+        context.fireChannelInactive()
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {

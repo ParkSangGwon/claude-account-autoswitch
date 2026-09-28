@@ -154,7 +154,8 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
   - Es ist aus, bis Sie es verlangen, denn die Anfrage geht über Ihr Konto raus, und ein Mac, der geschlafen hat, öffnet ein verschlafenes Zurücksetzen binnen einer Minute nach dem Aufwachen.
 - **Rotation, die die echten Fälle abdeckt.**
   - Ein 429, das ein geschlossenes Fenster nennt, drosselt das Konto für sein Retry-After.
-  - Ein 429, das kein Fenster nennt, schickt nur die Anfrage weiter und lässt das Konto in der Rotation; erst Wiederholungen stellen es beiseite.
+  - Ein Minuten-429 mit einem Retry-After von höchstens 30 s wird auf demselben Konto abgewartet, damit die Sitzung ihren Prompt-Cache behält.
+  - Jedes andere 429, das kein Fenster nennt, schickt nur die Anfrage weiter und lässt das Konto in der Rotation; erst Wiederholungen stellen es beiseite.
   - Ein abgelaufenes Token wird einmal aufgefrischt und erneut versucht.
   - Bei 403 und 5xx wird auf ein anderes Konto gewechselt.
   - Wenn jedes Konto erschöpft ist, können Anfragen für eine konfigurierbare Zeit gehalten werden, statt fehlzuschlagen.

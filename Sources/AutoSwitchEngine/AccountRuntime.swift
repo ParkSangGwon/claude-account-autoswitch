@@ -31,6 +31,8 @@ struct AccountRuntime: Sendable {
         unattributedRefusals = old.unattributedRefusals
         traffic = old.traffic; probe = old.probe; overage = old.overage
         lastKeepAliveAt = old.lastKeepAliveAt
+        // A sign-in again brings new tokens with a far expiry, so no refresh would ever clear the mark.
+        if health == .needsLogin, record.credential != old.record.credential { health = .ok }
     }
 
     /// What goes on the wire: the bearer token or the API key.

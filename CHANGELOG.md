@@ -18,6 +18,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 - A proxy that stopped answering still read as up.
   The app judged the listener by whether it had been started, so one that accepted connections and never replied kept showing `listening` while every Claude Code session behind it stalled with no hint why.
   Each poll now asks the listener's health endpoint on a new connection, as a client arriving now would, and gives it five seconds; no answer puts the menu bar on `—`, the Proxy pane on "Listening, but not answering" with **Try again** to restart the listener, and a second miss in a row raises the proxy-down notification, as a stopped listener already did.
+- Signing in again to an account whose refresh token had been rejected left it marked as needing a sign-in and out of rotation, even though the sheet reported it updated.
+  Only a successful refresh cleared the mark, and the new tokens were hours from expiry, so none came until the app restarted.
+  An account whose tokens change — a browser or pasted sign-in, a Claude Code import, or an edit to the config file — now takes requests again at once.
 
 ## [0.4.1] - 2026-09-24
 

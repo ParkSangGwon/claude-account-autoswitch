@@ -172,6 +172,27 @@ final class EngineAccountsTests: XCTestCase {
         XCTAssertEqual(s.accounts[0].health, .needsLogin)
     }
 
+    func testSigningInAgainClearsNeedsLogin() async throws {
+        let fake = FakeAnthropic(); try await fake.start(); defer { Task { await fake.stop() } }
+        fake.refreshStatus = 401
+        let engine = try freshEngine(accounts: [oauthAccount("a", claudeID: "acct-1")])
+        try await engine.load()
+        let id = AccountID(rawValue: "id-a")
+        _ = await engine.ensureFreshToken(id, force: true)
+        // An edit that leaves the dead tokens in place keeps the mark.
+        try await engine.update { c in c.accounts[0].rank = 2 }
+        var s = await engine.state()
+        XCTAssertEqual(s.accounts[0].health, .needsLogin)
+        let file = FileManager.default.temporaryDirectory.appending(path: "creds-\(UUID().uuidString).json")
+        try Data(#"{"claudeAiOauth":{"accessToken":"sk-ant-oat01-new","refreshToken":"sk-ant-ort01-new","expiresAt":4102444800000}}"#.utf8).write(to: file)
+        _ = try await engine.addAccount(.credentialsFile(file.path), label: nil) { _ in }
+        s = await engine.state()
+        XCTAssertEqual(s.accounts.count, 1)
+        XCTAssertEqual(s.accounts[0].health, .ok)
+        XCTAssertNil(s.accounts[0].blocker)
+        XCTAssertEqual(fake.tokenRequests.count, 1, "the new tokens need no refresh to be trusted")
+    }
+
     func testProbeFillsTheWindows() async throws {
         let fake = FakeAnthropic(); try await fake.start(); defer { Task { await fake.stop() } }
         let engine = try freshEngine(accounts: [oauthAccount("a", plan: .unknown)], probe: 300)

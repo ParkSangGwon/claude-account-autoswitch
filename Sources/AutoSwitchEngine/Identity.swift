@@ -261,6 +261,9 @@ extension Engine {
             if let seen = runtime[i].windows[kind]?.seenAt, seen > asked { return }
             runtime[i].windows[kind] = WindowReading(used: u, resetsAt: bucket.resetAt, seenAt: now)
         }
+        // A verified Ultra plan drops its five-hour limit; an unverified one gets it back on the next probe.
+        runtime[i].windows.sessionless = usage.noFiveHour
+        if usage.noFiveHour { runtime[i].windows[.session] = nil }
         put(.session, usage.fiveHour)
         put(.weekly, usage.sevenDay)
         for (name, bucket) in usage.scopedWeekly {

@@ -17,11 +17,15 @@ struct AccountsTable: View {
     /// A family column only exists when some account meters that family separately (the fleet card's rule).
     var families: [Family] { Family.allCases.filter { f in state.accounts.contains { $0.windows[f.window] != nil } } }
 
+    /// The session column goes when no account has a five-hour window to show; an API key uses it for tokens.
+    var showsSession: Bool { state.accounts.contains { $0.kind == .apiKey || !$0.sessionless } }
+
     /// Whatever the window columns do not need goes to the name.
     var nameWidth: CGFloat {
         let inner = StatusItemController.popoverWidth - 28 - 20 - Self.menuWidth
-        let cols = 2 * Self.wideCol + CGFloat(families.count) * Self.narrowCol
-        let gaps = Self.gap * CGFloat(3 + families.count)
+        let wide: CGFloat = showsSession ? 2 : 1
+        let cols = wide * Self.wideCol + CGFloat(families.count) * Self.narrowCol
+        let gaps = Self.gap * (wide + 1 + CGFloat(families.count))
         return max(90, inner - cols - gaps)
     }
 
@@ -30,7 +34,7 @@ struct AccountsTable: View {
             header
             ForEach(state.byRank) { a in
                 Divider().padding(.vertical, 2)
-                AccountTableRow(account: a, state: state, now: now, nameWidth: nameWidth, families: families)
+                AccountTableRow(account: a, state: state, now: now, nameWidth: nameWidth, showsSession: showsSession, families: families)
             }
         }
         .padding(.horizontal, 10).padding(.vertical, 6)
@@ -41,7 +45,7 @@ struct AccountsTable: View {
     private var header: some View {
         HStack(spacing: Self.gap) {
             Text(L("ACCOUNT")).frame(width: nameWidth, alignment: .leading)
-            Text(L("SES")).frame(width: Self.wideCol, alignment: .leading)
+            if showsSession { Text(L("SES")).frame(width: Self.wideCol, alignment: .leading) }
             Text(L("WK")).frame(width: Self.wideCol, alignment: .leading)
             ForEach(families, id: \.self) { f in Text(f.window.tag).frame(width: Self.narrowCol, alignment: .leading) }
             Spacer(minLength: 0)
@@ -57,6 +61,7 @@ struct AccountTableRow: View {
     var state: EngineState
     var now: Date
     var nameWidth: CGFloat
+    var showsSession: Bool
     var families: [Family]
     @State private var priorityText = ""
     @State private var askPriority = false
@@ -85,7 +90,11 @@ struct AccountTableRow: View {
                     cell(account.windows.requests?.used, resetsAt: account.windows.metersResetAt, kind: nil, name: L("Requests"), prefix: L("Req "), width: AccountsTable.wideCol)
                     ForEach(families, id: \.self) { _ in placeholder(AccountsTable.narrowCol) }
                 } else {
-                    cell(account.windows[.session]?.used, resetsAt: account.windows[.session]?.resetsAt, kind: .session, name: WindowKind.session.title, width: AccountsTable.wideCol)
+                    if account.sessionless {
+                        if showsSession { noSessionLimit }
+                    } else {
+                        cell(account.windows[.session]?.used, resetsAt: account.windows[.session]?.resetsAt, kind: .session, name: WindowKind.session.title, width: AccountsTable.wideCol)
+                    }
                     cell(account.windows[.weekly]?.used, resetsAt: account.windows[.weekly]?.resetsAt, kind: .weekly, name: WindowKind.weekly.title, width: AccountsTable.wideCol)
                     ForEach(families, id: \.self) { f in family(account.windows[f.window], kind: f.window, name: L("%@ weekly", f.title)) }
                 }
@@ -168,6 +177,19 @@ struct AccountTableRow: View {
         .accessibilityLabel((ratio.map { "\(name) \(Format.percent($0))" + (resetLong.isEmpty ? "" : ", " + resetLong) } ?? L("%@ unknown", name)) + note)
     }
 
+    /// A verified Ultra plan has no five-hour window: nothing to fill, nothing to reset.
+    private var noSessionLimit: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Color.clear.frame(width: AccountsTable.wideCol - 6, height: 5)
+            Text("∞").font(.system(size: isCurrent ? 12 : 11, design: .monospaced)).foregroundStyle(.secondary)
+            Text(" ").font(.system(size: 10, design: .monospaced))
+        }
+        .frame(width: AccountsTable.wideCol, alignment: .leading)
+        .help(L("No 5-hour limit"))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(L("No 5-hour limit"))
+    }
+
     /// Grey says nothing to a screen reader, so the reason rides along in the label.
     private func strandedNote(_ stranded: Bool) -> String {
         guard stranded, let b = account.blocker else { return "" }
@@ -230,12 +252,12 @@ struct AccountTableRow: View {
         return parts.joined(separator: " · ")
     }
 
-    /// Everything that does not fit the row: the full label, the organization, the overage.
+    /// Everything that does not fit the row: the full label, the organization, the usage credits.
     private var nameHelp: String {
         var lines = [account.label + (account.organization?.name.map { " · \($0)" } ?? "")]
         if isNext { lines.append(L("Next: the next unrouted request goes here")) }
         if let o = account.overage, o.enabled {
-            lines.append(L("Overage %@ this month", Format.money(minor: o.usedMinor ?? 0, currency: o.currency, exponent: o.exponent)))
+            lines.append(L("Usage credits %@ this month", Format.money(minor: o.usedMinor ?? 0, currency: o.currency, exponent: o.exponent)))
         }
         return lines.joined(separator: "\n")
     }

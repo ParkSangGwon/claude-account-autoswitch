@@ -7,12 +7,13 @@ enum Fixture {
 
     static func id(_ label: String) -> AccountID { AccountID(rawValue: "id-\(label)") }
 
-    static func account(_ label: String, rank: Int = 0, enabled: Bool = true, plan: Plan = .max(multiplier: 20), kind: CredentialKind = .subscription,
+    static func account(_ label: String, rank: Int = 0, enabled: Bool = true, plan: Plan = .ultra, kind: CredentialKind = .subscription,
                         session: Double? = nil, sessionReset: TimeInterval? = 3600, weekly: Double? = nil, weeklyReset: TimeInterval? = 86_400 * 3,
                         fable: Double? = nil, sonnet: Double? = nil, blocker: Blocker? = nil, health: Health = .ok, coolingUntil: Date? = nil,
                         sessions: Int = 0, known: Int = 0, requests: Int = 0, probeError: String? = nil, overage: Overage? = nil,
-                        tokens: Meter? = nil, requestsMeter: Meter? = nil) -> AccountStatus {
+                        tokens: Meter? = nil, requestsMeter: Meter? = nil, sessionless: Bool = false) -> AccountStatus {
         var w = Windows()
+        if sessionless { w.sessionless = true }
         if let session { w[.session] = WindowReading(used: session, resetsAt: sessionReset.map { now.addingTimeInterval($0) }, seenAt: now) }
         if let weekly { w[.weekly] = WindowReading(used: weekly, resetsAt: weeklyReset.map { now.addingTimeInterval($0) }, seenAt: now) }
         if let fable { w[.weeklyFable] = WindowReading(used: fable, resetsAt: weeklyReset.map { now.addingTimeInterval($0) }, seenAt: now) }

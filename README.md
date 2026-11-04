@@ -26,7 +26,7 @@
 
 ## The problem
 
-**One $200 Max plan is not enough anymore, so you pay for two or three.**<br>
+**One $200 Ultra plan is not enough anymore, so you pay for two or three.**<br>
 Here is what that looks like from the inside.
 
 #### The freelancer with two Max plans
@@ -55,7 +55,7 @@ That is half a day gone every month.
 
 **Sound familiar?**
 
-- [ ] You pay for more than one Max plan.
+- [ ] You pay for more than one Max or Ultra plan.
 - [ ] A limit message sends you straight to the browser.
 - [ ] You sometimes forget which account a terminal is on.
 - [ ] You open a terminal just to see how much is left.
@@ -137,21 +137,25 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
 
 - **A menu bar item that reads as usage.**
   - `1h12m 42%` is the fleet's 5-hour window: time until it resets, then how much is used. The bars under it are 5-hour and weekly.
+  - With no 5-hour window in the fleet, as on verified Ultra plans, the title shows the weekly window under a single bar.
   - Orange when a bar runs ahead of its window, red at the switch threshold or when nothing can serve.
   - `→ par` for six seconds on a rotation, `—` when the listener is down.
 - **Every account at a glance.**
   - Session, weekly and per-family (Fable, Sonnet) bars, with the number and reset under each.
   - Tier, priority, throttle countdowns and the sessions pinned to the account.
+  - Plans as Claude names them now: Pro, Max, Ultra and Team.
+  - A verified Ultra plan has no 5-hour limit: its session cell reads `∞`, and the column goes when no account has one.
   - A row menu: make current, enable, skip for a while, priority, remove.
 - **Where the next request goes, and why.**
   - The old account's reason, a better priority, or "stays on ted".
 - **Fleet totals and the reset timeline.**
-  - Tier-weighted aggregates that count only the accounts still able to spend the window.
+  - Tier-weighted aggregates (Pro 1, Max 5, Ultra 10) that count only the accounts still able to spend the window.
   - Every coming window reset, with `↑` on the ones that bring an account back.
 - **Windows that run on the clock, not on when you sit down.**
   - Claude starts a 5-hour window at your first request, so one entered at 16:30 runs to 21:30 and the day holds fewer of them than it could.
   - *Keep the 5-hour window open*, in the popover under the reset timeline, opens each account's next window the moment the last one resets.
   - It is off until you ask for it, because the request goes out on your account, and a Mac that was asleep opens a reset it slept through within a minute of waking.
+  - An account with no 5-hour limit, such as a verified Ultra plan, has no window to open and is skipped.
 - **Rotation that handles the real cases.**
   - A 429 that names a closed window throttles the account for its retry-after.
   - A per-minute 429 whose retry-after is 30 s or less is waited out on the same account, so the session keeps its prompt cache.
@@ -172,7 +176,7 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
   - `⌃⌥⌘T` opens the popover.
 - **Notifications that mean something.**
   - Fleet thresholds, a rotation with its reason, an account leaving or re-entering rotation.
-  - A re-login needed, the probe failing, a hold, overage billing.
+  - A re-login needed, the probe failing, a hold, usage credits being spent.
   - Pause them for an hour.
 - **Seven days of history.**
   - A sample a minute while the app runs: fleet sparklines and a state strip per account, kept locally.
@@ -201,6 +205,7 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
 | `1h12m 42%` | The fleet's 5-hour window resets in 1h12m and is 42% used. The bars below are 5-hour (top) and weekly (bottom). |
 | `ted 1h12m 42%` | Pinned to the current account (Settings → General): its three-letter tag leads. |
 | `1h12m 42% · 3d12h 61%` | The *Bars + 5h · 7d* style: the weekly window too. |
+| `3d12h 61%` | No account has a 5-hour window (verified Ultra plans): the weekly window, under a single bar. |
 | `1h12m 93%!` | Critical: at the switch threshold, or nothing can serve. |
 | `→ par` | A rotation just happened; shown for six seconds. |
 | `—` | The listener is down (usually the port is taken) or stopped answering. |
@@ -225,6 +230,7 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
 - Within a priority, an account whose week resets more than an hour sooner takes over from the one in use.
 - An account set with *Make current* keeps the traffic until it can no longer take requests.
 - Any account that is disabled, throttled, capped, in error, or at its threshold for the request's model family is skipped.
+- A Fable request skips Pro accounts, where Fable is paid for in usage credits, unless nothing else can take it.
 - The `anthropic-ratelimit-*` headers on every reply keep each account's windows current.
 - A background probe of the usage endpoint fills in the idle ones.
 - Tokens refresh five minutes before they expire.

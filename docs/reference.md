@@ -35,7 +35,7 @@ Tokens live in this file and nowhere else.
       "rank": 0,
       "enabled": true,
       "cap": { "uniform": { "_0": 0.9 } },
-      "plan": { "max": { "multiplier": 20 } },
+      "plan": { "ultra": {} },
       "skipUntil": "2026-09-14T18:00:00Z",
       "planText": "default_claude_max_20x",
       "organization": { "name": "Example Org", "id": "org-…" },
@@ -55,13 +55,13 @@ Tokens live in this file and nowhere else.
 | `rotation.spreadSessions` | Give each new Claude Code session the least loaded account among the best-ranked ones. |
 | `rotation.waitWhenExhaustedSeconds` | When every account is out, hold the request this long before answering 429. |
 | `quota.refreshEverySeconds` | Background refresh of idle accounts from the usage endpoint. 0 turns it off; the minimum is 30. |
-| `quota.keepSessionOpen` | Open each account's next five-hour window as soon as the last one resets, by sending one minimal request on that account. Off by default. |
+| `quota.keepSessionOpen` | Open each account's next five-hour window as soon as the last one resets, by sending one minimal request on that account. Off by default; an account with no five-hour limit is skipped. |
 | `observed` | The engine's own notes, not a setting: the account it left off on, whether that account was picked by hand (`chosenByHand`, absent when rotation picked it), and each account's last known windows. Written when rotation moves, after a probe, and on quit. |
 | `accounts[].rank` | Lower is preferred. A strictly lower rank preempts a healthy current account. |
 | `accounts[].enabled` | Off takes the account out of rotation without removing it. |
 | `accounts[].skipUntil` | Set aside until this time, then back in rotation on its own. The switch above stays on. |
 | `accounts[].cap` | A hard ceiling per window (`uniform` for all, or `perWindow`). At the cap the account takes nothing. |
-| `accounts[].plan` | `max` (multiplier 5 or 20), `pro`, `team` (multiplier), or `unknown`. Weights the fleet total. |
+| `accounts[].plan` | `pro`, `max`, `ultra`, `team` (multiplier), or `unknown`. Weights the fleet total and keeps Fable off Pro. A file written before Max and Ultra reads `max` with multiplier 20 as `ultra` and multiplier 5 as `max`, and is written back under the new names. |
 | `accounts[].credential` | `oauth` (access, refresh, expiresAt) or `apiKey`. |
 
 Missing sections take their defaults, so a hand-written file needs only what it changes.
@@ -77,13 +77,27 @@ The app learns each account's windows from the `anthropic-ratelimit-*` headers o
 A window whose reset has passed is forgotten, so a stale number never keeps an account out.
 An API key has token and request allowances instead of windows.
 
-### Billing past the plan
+### Accounts with no five-hour limit
 
-The same probe reads whether an account bills past its plan and how much it has billed this month.
-`extra_usage.is_enabled` decides whether it can bill; `spend.enabled` does not, since an organization can have overage while this account is out of credits or opted out.
+A verified Ultra plan has no five-hour limit.
+Its usage reply carries `"five_hour": null` beside an ordinary `seven_day`, and its replies carry no `5h` rate-limit headers.
+The profile still reports the old `default_claude_max_20x` tier, so the plan name cannot tell a verified Ultra from an unverified one; the usage reply is the only signal.
+When the probe reads a week and no five-hour object at all, the account is marked as having no five-hour window and any old `session` reading is dropped.
+A `five_hour` object without a number is a failed reading, not a missing limit.
+An unverified Ultra plan keeps a temporary five-hour limit, and the next probe after it is verified moves it over; one that gets the limit back loses the mark the same way.
+
+Such an account has no `session` cell in the accounts table, only `∞` with *No 5-hour limit* as its tooltip, and the column goes when no account has one.
+It is left out of the five-hour fleet total, and the menu bar shows the weekly window when no account has a five-hour one.
+A refusal on it is not tied to a five-hour reset, so it lasts its half-hour TTL.
+
+### Usage credits
+
+The same probe reads whether an account spends usage credits past its plan and how much it has spent this month.
+Claude used to call these "extra usage"; the API fields keep that name.
+`extra_usage.is_enabled` decides whether it can spend them; `spend.enabled` does not, since an organization can have them on while this account is out of credits or opted out.
 The amount is `spend.used.amount_minor`, in the currency and exponent `spend` quotes, falling back to `extra_usage.currency` and `decimal_places`.
 A reply that carries neither block keeps the last reading, and only the probe reports billing — no reply header does.
-This is what the `$` chip in the accounts table and the **Overage billing started** alert show; it does not change which account rotation picks.
+This is what the `$` chip in the accounts table and the **An account started spending usage credits** alert show; it does not change which account rotation picks.
 
 ### Keeping the five-hour window open
 
@@ -94,6 +108,7 @@ With `quota.keepSessionOpen` on, the engine opens the next window itself.
 Once a minute — or exactly at the next reset, when that is sooner — it looks for accounts whose `session` reading is gone, which is precisely the ones whose window has rolled over, and sends a one-token `/v1/messages` request on each.
 The reply's `anthropic-ratelimit-*` headers are absorbed like any other, so the new window and its reset are known immediately; the request itself is the proof that the window opened.
 An account that cannot take a request anyway is left alone: disabled, held by `skipUntil`, capped, cooling down, needing a login, or with its week spent, since a fresh five hours behind a spent week is five hours nobody can use.
+So is an account with no five-hour limit, which has no window to open.
 A try that opened nothing is not repeated for five minutes.
 The request does not go through the rotation: no session is pinned to the account, the current account does not move, and the account's traffic counters stay a record of what the client sent.
 
@@ -102,7 +117,7 @@ A sleeping Mac cannot send anything, so a reset that passes overnight is opened 
 
 ## The fleet total
 
-The fleet bars average every enabled account's window, weighted by what its plan is worth: a Max 20x counts for twenty Pro plans, and an account whose tier is unknown counts for nothing.
+The fleet bars average every enabled account's window, weighted by what its plan is worth in weekly allowance: Pro 1, Max 5, Ultra 10, Team its multiplier, and an account whose tier is unknown counts for nothing.
 
 An account only counts on a window it can still spend before that window rolls over.
 A blocker that outlasts the window strands the allowance behind it: an account at its weekly threshold gets a fresh five-hour window every five hours and can use none of them, so it is left out of the five-hour and family totals while staying in the weekly one, which is the number that explains it.
@@ -137,6 +152,11 @@ The best candidate overtakes an account that can still serve when its rank is be
 The hour keeps two accounts whose weeks reset together from trading places over a reading that moved by a second, which would cost the prompt cache each time.
 An account made current by hand is overtaken by a better rank only.
 It keeps the traffic until it cannot serve and another account takes a reply; from then on the soonest reset leads again.
+
+A Fable request runs the same choice with Pro accounts left out first, because a Pro plan has no Fable in it and every Fable request there spends usage credits.
+Only when nothing else can take it does the choice run again with Pro included.
+This holds for pinned sessions and the current account too: a session on a Pro account sends its Fable requests elsewhere.
+Team seats are not told apart, so a Team standard seat, which also pays for Fable in usage credits, is treated like any other Team account.
 
 A successful reply makes its account the current one and pins the session to it for that weekly window.
 A request on a window the session has no pin for follows the account that served it last.
@@ -221,4 +241,4 @@ Importing reads the Keychain item Claude Code writes (`Claude Code-credentials`,
 | Wrapper | `~/Library/Application Support/Claude AutoSwitch/claude-autoswitch` (`0755`), sources the setup file and execs `claude`, for launchers that run the binary directly |
 | Local CA and leaf | `ca.pem` and `leaf.pem` (`0644`), `leaf.key` (`0600`), beside the config. The CA private key is never written; renewal mints the whole chain again |
 
-Debug hooks for screenshots and UI work: `AUTOSWITCH_DEBUG_DEMO_QUOTA=1` seeds plausible windows without a login, `AUTOSWITCH_DEBUG_WINDOW=<section>` opens a settings pane and the popover, `AUTOSWITCH_DEBUG_APPEARANCE=light|dark` pins the appearance, `AUTOSWITCH_DEBUG_SIDECAR=<tag>` moves preferences to the `<domain>.<tag>` suite and the menu bar slot to its own key, `AUTOSWITCH_DEBUG_BIND_PORT=<port>` listens there while the panes keep showing the configured port. The last two let a second instance run beside an installed app without touching it.
+Debug hooks for screenshots and UI work: `AUTOSWITCH_DEBUG_DEMO_QUOTA=1` seeds plausible windows without a login (an Ultra account gets none for five hours, as a verified one reports), `AUTOSWITCH_DEBUG_WINDOW=<section>` opens a settings pane and the popover, `AUTOSWITCH_DEBUG_APPEARANCE=light|dark` pins the appearance, `AUTOSWITCH_DEBUG_SIDECAR=<tag>` moves preferences to the `<domain>.<tag>` suite and the menu bar slot to its own key, `AUTOSWITCH_DEBUG_BIND_PORT=<port>` listens there while the panes keep showing the configured port. The last two let a second instance run beside an installed app without touching it.

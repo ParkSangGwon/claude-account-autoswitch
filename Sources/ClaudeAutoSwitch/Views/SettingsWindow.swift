@@ -176,7 +176,7 @@ struct GeneralPane: View {
                 Toggle(L("No account can serve (hold)"), isOn: $prefs.alertPrefs.hold)
                 Toggle(L("Proxy not responding"), isOn: $prefs.alertPrefs.proxyDown)
                 Toggle(L("Proxy is back"), isOn: $prefs.alertPrefs.proxyBack)
-                Toggle(L("Overage billing started"), isOn: $prefs.alertPrefs.spend)
+                Toggle(L("An account started spending usage credits"), isOn: $prefs.alertPrefs.spend)
                 HStack {
                     if let until = prefs.alertPrefs.pausedUntil, until > Date() {
                         Text(L("Paused until %@", Format.localizedDate(until, date: .omitted, time: .shortened))).foregroundStyle(.secondary)

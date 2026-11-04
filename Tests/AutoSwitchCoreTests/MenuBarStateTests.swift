@@ -31,6 +31,17 @@ final class MenuBarStateTests: XCTestCase {
         XCTAssertTrue(m.tooltip.hasPrefix("Claude AutoSwitch · current ted · 5h 30% · 7d 40% · 5h resets in 2h · 2/2 accounts available"))
     }
 
+    /// Verified Ultra accounts have no five hours: the week takes the label instead of leaving it empty.
+    func testAFleetWithoutFiveHourWindowsShowsTheWeek() {
+        let s = Fixture.state([Fixture.account("ted", weekly: 0.40, sessionless: true), Fixture.account("bob", weekly: 0.20, sessionless: true)], current: "ted")
+        let m = compute(s)
+        XCTAssertNil(m.fiveHour)
+        XCTAssertEqual(m.label, "3d 30%")
+        XCTAssertNil(m.weeklyLabel, "the week is already the label")
+        XCTAssertFalse(m.tooltip.contains("5h"))
+        XCTAssertEqual(compute(s, pin: true).label, "3d 40%")
+    }
+
     func testPinnedShowsTheCurrentAccountWithItsTag() {
         let s = Fixture.state([Fixture.account("ted", session: 0.58, sessionReset: 2 * 3600, weekly: 0.4), Fixture.account("bob", session: 0.1, weekly: 0.1)], current: "ted")
         let m = compute(s, pin: true)

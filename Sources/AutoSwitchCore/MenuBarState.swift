@@ -34,9 +34,10 @@ public struct IconModel: Sendable, Equatable {
     /// Bar fills (0–1), already flipped to "remaining" when the preference says so.
     public var fiveHour: Double?
     public var weekly: Double?
-    /// `1h12m 42%`: the countdown to the 5-hour reset, then the percentage.
+    /// `1h12m 42%`: the countdown to the 5-hour reset, then the percentage; the weekly window
+    /// when there is no five-hour one.
     public var label: String?
-    /// The weekly window in the same shape, for the style that shows both.
+    /// The weekly window in the same shape, for the style that shows both; nil when `label` already is.
     public var weeklyLabel: String?
     public var tooltip: String
     /// Three-letter tag drawn under the bars when pinned to the current account.
@@ -100,7 +101,9 @@ public enum MenuBarState {
         }
 
         var label: String? = fiveHour.map { windowLabel(used: $0, resetsAt: fiveReset, now: i.now, remaining: i.showRemaining) }
-        let weeklyLabel = weekly.map { windowLabel(used: $0, resetsAt: weekReset, now: i.now, remaining: i.showRemaining) }
+        var weeklyLabel = weekly.map { windowLabel(used: $0, resetsAt: weekReset, now: i.now, remaining: i.showRemaining) }
+        // An Ultra fleet has no five hours to show; the week is the number that runs out.
+        if label == nil { label = weeklyLabel; weeklyLabel = nil }
         if case .rotating(let to) = state { label = "→ \(Format.tag(to))" }
         if state == .critical, let l = label, !l.hasSuffix("!") { label = l + "!" }
 

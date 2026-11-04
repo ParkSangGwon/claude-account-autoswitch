@@ -64,6 +64,8 @@ public struct AccountStatus: Sendable, Equatable, Identifiable {
 
     public var canServe: Bool { blocker == nil }
 
+    public var sessionless: Bool { windows.isSessionless }
+
     /// Whether the account can still spend its `kind` allowance before that window rolls over.
     /// A weekly-capped account keeps a fresh five-hour window it will never get to use, so that
     /// allowance is not the fleet's to count.

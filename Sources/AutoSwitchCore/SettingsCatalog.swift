@@ -61,12 +61,12 @@ public enum SettingsCatalog {
         SettingField("rotation.spreadSessions", .rotation, "Session distribution", "Off: quota-driven rotation only. On: give each new Claude Code session the least loaded account among the preferred ones.", .picker(["off", "on"])),
         SettingField("rotation.waitWhenExhaustedSeconds", .rotation, "Hold on exhaustion", "Hold the request open until an account can serve instead of answering 429 when every account is spent. 0 returns 429 at once.", .int(min: 0, max: 3600, step: 30, unit: "s")),
         SettingField("quota.refreshEverySeconds", .quota, "Quota probe", "Background refresh of idle accounts from the usage endpoint (spends no quota). 0 turns it off; minimum 30 s.", .int(min: 0, max: 604_800, step: 60, unit: "s")),
-        SettingField("quota.keepSessionOpen", .quota, "Keep the 5-hour window open", "Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking.", .toggle),
+        SettingField("quota.keepSessionOpen", .quota, "Keep the 5-hour window open", "Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking. An account with no five-hour limit, such as a verified Ultra plan, has no window to open and is skipped.", .toggle),
         SettingField("listen.port", .proxy, "Port", "Local port the proxy listens on. The listener moves at once.", .int(min: 1, max: 65535, step: 1, unit: nil)),
         SettingField("api.baseURL", .proxy, "Upstream", "API base URL for Anthropic accounts.", .text(placeholder: "https://api.anthropic.com")),
     ]
 
-    public static let planKeys = ["unknown", "pro", "max5", "max20", "team"]
+    public static let planKeys = ["unknown", "pro", "max", "ultra", "team"]
 
     public static let accountFields: [SettingField] = [
         SettingField("cap", .accounts, "Usage cap", "Hard per-account cap: a fraction (0–1) or a per-window table. At the cap the account receives no requests at all.", .keyedNumbers(keys: windowKeys)),
@@ -108,7 +108,8 @@ public enum SettingsCatalog {
     static func planKey(_ plan: Plan) -> String {
         switch plan {
         case .pro: return "pro"
-        case .max(let m): return m >= 20 ? "max20" : "max5"
+        case .max: return "max"
+        case .ultra: return "ultra"
         case .team: return "team"
         case .unknown: return "unknown"
         }
@@ -152,8 +153,8 @@ public enum SettingsCatalog {
         if field.id == "plan" {
             switch value?.string {
             case "pro": r.plan = .pro
-            case "max5": r.plan = .max(multiplier: 5)
-            case "max20": r.plan = .max(multiplier: 20)
+            case "max": r.plan = .max
+            case "ultra": r.plan = .ultra
             case "team": r.plan = .team(multiplier: 1)
             case "unknown": r.plan = .unknown
             default: throw SettingsError.invalid(L("Unknown plan %@", value?.string ?? "-"))

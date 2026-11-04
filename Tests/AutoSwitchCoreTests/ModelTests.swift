@@ -3,18 +3,45 @@ import XCTest
 
 final class ModelTests: XCTestCase {
     func testPlanFromClaudesOwnWords() {
-        XCTAssertEqual(Plan(tierText: "default_claude_max_20x", seatText: nil), .max(multiplier: 20))
-        XCTAssertEqual(Plan(tierText: "default_claude_max_5x", seatText: nil), .max(multiplier: 5))
+        // Ultra still reports the tier of the plan it replaced.
+        XCTAssertEqual(Plan(tierText: "default_claude_max_20x", seatText: nil), .ultra)
+        XCTAssertEqual(Plan(tierText: "default_claude_max_5x", seatText: nil), .max)
+        XCTAssertEqual(Plan(tierText: "default_claude_ultra", seatText: nil), .ultra)
         XCTAssertEqual(Plan(tierText: "default_claude_max_5x", seatText: "team_premium"), .team(multiplier: 5))
         XCTAssertEqual(Plan(tierText: "default", seatText: nil), .pro)
+        XCTAssertEqual(Plan(tierText: "default_claude_pro", seatText: nil), .pro)
+        XCTAssertEqual(Plan(tierText: "default_claude_xyz", seatText: nil), .unknown, "a tier nobody has seen is not guessed to be Pro")
         XCTAssertEqual(Plan(tierText: nil, seatText: "team_standard"), .team(multiplier: 1))
         XCTAssertEqual(Plan(tierText: nil, seatText: nil), .unknown)
-        XCTAssertEqual(Plan.max(multiplier: 20).weight, 20)
+        XCTAssertEqual(Plan.ultra.weight, 10)
+        XCTAssertEqual(Plan.max.weight, 5)
         XCTAssertEqual(Plan.pro.weight, 1)
         XCTAssertNil(Plan.unknown.weight)
-        XCTAssertEqual(Plan.max(multiplier: 20).badge, "Max 20x")
+        XCTAssertEqual(Plan.ultra.badge, "Ultra")
+        XCTAssertEqual(Plan.max.badge, "Max")
         XCTAssertEqual(Plan.team(multiplier: 1).badge, "Team")
         XCTAssertEqual(Plan.team(multiplier: 20).badge, "Team 20x")
+        XCTAssertFalse(Plan.pro.includesFable)
+        XCTAssertTrue(Plan.max.includesFable)
+        XCTAssertTrue(Plan.ultra.includesFable)
+    }
+
+    /// A refusal goes with the five-hour reading that carries it; without a five-hour window only the TTL ends it.
+    func testARefusalOnAnAccountWithNoFiveHourLimitLastsItsTTL() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        var limited = Windows()
+        limited.refusedAt = now
+        limited.sweep(now: now)
+        XCTAssertNil(limited.refusedAt, "no five-hour reading left to carry it")
+
+        var ultra = Windows()
+        ultra.sessionless = true
+        ultra[.weekly] = WindowReading(used: 0.5, resetsAt: now.addingTimeInterval(86_400))
+        ultra.refusedAt = now
+        ultra.sweep(now: now.addingTimeInterval(60))
+        XCTAssertEqual(ultra.refusedAt, now, "still refused on the next sweep")
+        ultra.sweep(now: now.addingTimeInterval(Windows.refusalTTL + 1))
+        XCTAssertNil(ultra.refusedAt)
     }
 
     func testFamilyWindows() {

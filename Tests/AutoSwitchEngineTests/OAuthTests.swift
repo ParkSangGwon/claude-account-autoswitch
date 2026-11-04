@@ -73,6 +73,19 @@ final class OAuthTests: XCTestCase {
         XCTAssertEqual(u.sevenDay.utilization, 0.18)
         XCTAssertEqual(u.scopedWeekly["fable"]?.utilization, 0.95)
         XCTAssertNil(u.overage, "a reply without extra_usage or spend says nothing about billing")
+        XCTAssertFalse(u.noFiveHour)
+    }
+
+    /// A verified Ultra plan answers `five_hour: null` beside an ordinary week.
+    func testAMissingFiveHourWindowIsNoLimitOnlyBesideAWeek() {
+        let week: JSON = .object(["utilization": .number(18), "resets_at": .string("2026-09-05T00:00:00Z")])
+        let ultra = OAuth.parseUsage(.object(["five_hour": .null, "seven_day": week]))
+        XCTAssertTrue(ultra.noFiveHour)
+        XCTAssertNil(ultra.fiveHour.utilization)
+        XCTAssertEqual(ultra.sevenDay.utilization, 0.18)
+        XCTAssertTrue(OAuth.parseUsage(.object(["seven_day": week])).noFiveHour, "absent reads the same as null")
+        XCTAssertFalse(OAuth.parseUsage(.object([:])).noFiveHour, "a reply with neither window says nothing")
+        XCTAssertFalse(OAuth.parseUsage(.object(["five_hour": .object([:]), "seven_day": week])).noFiveHour, "a window without a number is a failed reading")
     }
 
     func testOverageParsing() throws {

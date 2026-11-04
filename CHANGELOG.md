@@ -8,13 +8,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 ### Changed
 
 - Within a priority, the account whose weekly window resets soonest now takes the traffic over from the account in use, instead of only breaking ties when rotation had to pick afresh. Rotation used to stay on whichever account it had landed on while that account could serve, so a same-priority account whose week reset days earlier sat idle and its allowance was lost at the reset. The move happens when the other week resets more than an hour sooner, so two accounts whose weeks reset together do not trade places — and the prompt cache — over a reading that moved by a second. Running sessions move too. An account set with **Make current** is left alone until it can no longer take requests, and the choice survives a restart; once another account has taken over, the soonest reset leads again.
+- Plans carry the names Claude gave them on 2026-10-30: Pro, Max, Ultra and Team.
+  The former Max 20x is Ultra and the former Max 5x is Max, in the accounts table, the plan picker and the config file; a config written before reads `{"max":{"multiplier":20}}` as Ultra and is written back as `{"ultra":{}}`.
+  The fleet total weighs plans by their weekly allowance — Pro 1, Max 5, Ultra 10 — instead of counting Max 20x as twenty Pro plans.
+  A tier string the app has never seen is left as unknown instead of being taken for Pro, so it no longer skews the fleet total.
+- A Fable request goes to a Pro account only when nothing else can take it.
+  Pro has no Fable in the plan, so each Fable request there spent usage credits or came back 429 while a Max or Ultra account had room.
+  Team standard seats, which pay for Fable the same way, are not told apart from other Team seats.
+- Overage is called usage credits, as Claude now calls it: the alert, its switch in Settings → General, and the tooltip on the `$` chip.
 - A 429 that names no window and asks for 30 seconds or less — a per-minute limit about to lift — is now waited out on the account that gave it, once per request, instead of sending the request to another account. Moving it threw away the prompt cache the session had built on the first account and moved the session over with it, for a limit that was gone seconds later. A longer `retry-after`, none at all, or a second refusal still move the request on, and a client that gives up during the wait has no retry sent on its behalf.
 
 ### Fixed
 
-- The **Overage billing started** alert and the `$` chip in the accounts table never appeared, because nothing recorded whether an account bills past its plan.
-  The background probe now reads it from the usage endpoint's `extra_usage` and `spend` blocks: whether the account can bill, and how much it has billed this month in the currency the endpoint quotes.
-  An organization that has overage while this account is out of credits or opted out is not reported as billing.
+- The usage credits alert and the `$` chip in the accounts table never appeared, because nothing recorded whether an account spends past its plan.
+  The background probe now reads it from the usage endpoint's `extra_usage` and `spend` blocks: whether the account can spend usage credits, and how much it has spent this month in the currency the endpoint quotes.
+  An organization that has usage credits on while this account is out of credits or opted out is not reported as spending.
+- A verified Ultra account, which has no five-hour limit, was treated as one whose five-hour window had closed.
+  With *Keep the 5-hour window open* on, the app sent it a request every five minutes forever, and a refusal on it was forgotten on the next request.
+  The probe now recognises the usage endpoint's `"five_hour": null`: keep-alive skips the account, a refusal lasts its half hour, and its session cell reads `∞` with *No 5-hour limit*, the column going when no account has one.
+- With only Ultra accounts, the menu bar title was empty and the *Bars + 5h · 7d* style showed nothing.
+  The title now shows the weekly window when no account has a five-hour one, under a single bar.
 - A proxy that stopped answering still read as up.
   The app judged the listener by whether it had been started, so one that accepted connections and never replied kept showing `listening` while every Claude Code session behind it stalled with no hint why.
   Each poll now asks the listener's health endpoint on a new connection, as a client arriving now would, and gives it five seconds; no answer puts the menu bar on `—`, the Proxy pane on "Listening, but not answering" with **Try again** to restart the listener, and a second miss in a row raises the proxy-down notification, as a stopped listener already did.

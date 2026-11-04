@@ -39,10 +39,10 @@ extension Engine {
     }
 
     /// `sweep` drops a reading whose reset has passed, so a missing five-hour window *is* a closed
-    /// one. `blocker` covers the rest in one line: a disabled, held, capped, cooling, refused or
+    /// one — unless the account has no five-hour limit to open. `blocker` covers the rest in one line: a disabled, held, capped, cooling, refused or
     /// logged-out account, and one whose week is spent — a new five hours it could not use anyway.
     private func needsOpening(_ r: AccountRuntime, now: Date) -> Bool {
-        guard r.record.kind == .subscription else { return false }
+        guard r.record.kind == .subscription, !r.windows.isSessionless else { return false }
         guard r.windows[.session] == nil else { return false }
         guard blocker(of: r, now: now) == nil else { return false }
         guard let last = r.lastKeepAliveAt else { return true }

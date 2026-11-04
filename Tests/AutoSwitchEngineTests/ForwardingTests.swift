@@ -455,6 +455,21 @@ final class ForwardingTests: XCTestCase {
         XCTAssertNil(s.account(alice)?.blocker, "a spent family window is not a blocker for other models")
     }
 
+    /// Fable on Pro is paid for in usage credits: a Fable request skips a better-ranked Pro account
+    /// for one whose plan includes Fable, and lands on Pro only when nothing else can take it.
+    func testFableGoesToProOnlyWhenNothingElseCanTakeIt() async throws {
+        try await engine.update { c in c.accounts[0].plan = .pro }
+        _ = try await post(body: #"{"model":"claude-opus-5"}"#)
+        _ = try await post(body: #"{"model":"claude-fable-5-1"}"#)
+        var auths = upstream.seen.map { $0.headers["authorization"] ?? "" }
+        XCTAssertEqual(auths, ["Bearer token-alice", "Bearer token-bob"], "rank alone would have sent Fable to alice's Pro plan")
+
+        try await engine.update { c in c.accounts[1].enabled = false }
+        _ = try await post(body: #"{"model":"claude-fable-5-1"}"#)
+        auths = upstream.seen.map { $0.headers["authorization"] ?? "" }
+        XCTAssertEqual(auths.last, "Bearer token-alice", "with nothing else left, Pro still serves Fable")
+    }
+
     // MARK: - handing traffic over
 
     func testAManualSwitchTakesTheRunningSessionsWithIt() async throws {

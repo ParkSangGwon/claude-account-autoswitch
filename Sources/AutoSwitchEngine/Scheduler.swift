@@ -68,9 +68,19 @@ extension Engine {
         return ra.addingTimeInterval(Engine.resetLead) < rb
     }
 
+    /// Fable on a Pro plan is billed in usage credits, so a Fable request goes to Pro only when
+    /// nothing whose plan includes Fable can take it.
+    func choose(model: String?, session: String?, excluding: Set<AccountID>, now: Date) -> AccountID? {
+        if Family.of(model: model) == .fable {
+            let billed = Set(runtime.filter { !$0.record.plan.includesFable }.map(\.id))
+            if !billed.isSubset(of: excluding), let id = pick(model: model, session: session, excluding: excluding.union(billed), now: now) { return id }
+        }
+        return pick(model: model, session: session, excluding: excluding, now: now)
+    }
+
     /// A session stays with its account while that account can serve and nothing overtakes it;
     /// otherwise spreading, the cursor, or the best candidate, in that order.
-    func choose(model: String?, session: String?, excluding: Set<AccountID>, now: Date) -> AccountID? {
+    private func pick(model: String?, session: String?, excluding: Set<AccountID>, now: Date) -> AccountID? {
         let window = WindowKind.weekly(for: model)
         func ok(_ id: AccountID) -> Bool { !excluding.contains(id) && canServe(id, model: model, now: now) }
         if let pinned = affinity.pin(session, window: window) ?? affinity.anyPin(session), ok(pinned) {
@@ -112,11 +122,11 @@ extension Engine {
         if let until = r.record.skipUntil, until > now { ends.append(until) }
         if r.health == .coolingDown, let until = r.coolingUntil, until > now { ends.append(until) }
         // The sweep forgets a refusal along with the five-hour reading that carries it, so the hold
-        // ends at that window's reset when the reset comes first — and a refusal with no reading
-        // left to carry it is gone on the next sweep, which is the head of the next request.
-        if let at = r.windows.refusedAt, let session = r.windows[.session] {
+        // ends at that window's reset when the reset comes first. An account with no five-hour
+        // window keeps its refusal for the TTL.
+        if let at = r.windows.refusedAt {
             let ttl = at.addingTimeInterval(Windows.refusalTTL)
-            ends.append(session.resetsAt.map { min(ttl, $0) } ?? ttl)
+            ends.append(r.windows[.session]?.resetsAt.map { min(ttl, $0) } ?? ttl)
         }
         let rotation = configuration.rotation
         // The shared windows hold every request; a family's own week holds only its own models.

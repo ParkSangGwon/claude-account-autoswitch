@@ -44,6 +44,15 @@ final class ModelTests: XCTestCase {
         XCTAssertNil(ultra.refusedAt)
     }
 
+    func testFiveHourLimitIsAboutSubscriptionsThatStillHaveOne() {
+        let ultra = Fixture.account("u", weekly: 0.2, sessionless: true)
+        XCTAssertFalse(Fixture.state([ultra]).hasFiveHourLimit)
+        XCTAssertFalse(Fixture.state([ultra, Fixture.account("key", kind: .apiKey)]).hasFiveHourLimit, "an API key has no five-hour window either")
+        XCTAssertTrue(Fixture.state([ultra, Fixture.account("m", plan: .max, session: 0.1)]).hasFiveHourLimit)
+        XCTAssertTrue(Fixture.state([Fixture.account("new")]).hasFiveHourLimit, "not known to be without one until a probe says so")
+        XCTAssertFalse(Fixture.state([]).hasFiveHourLimit)
+    }
+
     func testFamilyWindows() {
         XCTAssertEqual(WindowKind.weekly(for: "claude-fable-5-1"), .weeklyFable)
         XCTAssertEqual(WindowKind.weekly(for: "claude-sonnet-4-6"), .weeklySonnet)

@@ -9,6 +9,8 @@ struct HistoryPane: View {
     var body: some View {
         let now = Date()
         let since = now.addingTimeInterval(-window)
+        // Unknown until the first poll, so the 5-hour lines stay until an answer says they are empty.
+        let fiveHour = store.state?.hasFiveHourLimit ?? true
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Picker(L("Window"), selection: $window) {
@@ -20,7 +22,7 @@ struct HistoryPane: View {
                 Text(L("%d samples · one a minute while the app runs", store.history.samples.count)).font(.system(size: 11)).foregroundStyle(.secondary)
             }
             TitledGroup(title: L("Fleet")) {
-                sparkline(title: L("Session (5-hour)"), points: store.history.series(since: since, until: now) { $0.fleetSession }, since: since, until: now)
+                if fiveHour { sparkline(title: L("Session (5-hour)"), points: store.history.series(since: since, until: now) { $0.fleetSession }, since: since, until: now) }
                 sparkline(title: L("Weekly"), points: store.history.series(since: since, until: now) { $0.fleetWeekly }, since: since, until: now)
             }
             TitledGroup(title: L("Accounts")) {
@@ -37,7 +39,9 @@ struct HistoryPane: View {
                         }
                         HistoryStrip(segments: store.history.segments(account: label, since: since, until: now), since: since, until: now)
                             .frame(height: 12)
-                        sparkline(title: nil, points: store.history.series(since: since, until: now) { $0.accounts[label]?.session }, since: since, until: now, height: 28)
+                        if store.state?.account(labelled: label)?.sessionless != true {
+                            sparkline(title: nil, points: store.history.series(since: since, until: now) { $0.accounts[label]?.session }, since: since, until: now, height: 28)
+                        }
                     }
                 }
                 HStack(spacing: 10) {

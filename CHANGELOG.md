@@ -26,6 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 - A verified Ultra account, which has no five-hour limit, was treated as one whose five-hour window had closed.
   With *Keep the 5-hour window open* on, the app sent it a request every five minutes forever, and a refusal on it was forgotten on the next request.
   The probe now recognises the usage endpoint's `"five_hour": null`: keep-alive skips the account, a refusal lasts its half hour, and its session cell reads `∞` with *No 5-hour limit*, the column going when no account has one.
+  With no five-hour limit left in the fleet, the keep-alive switch leaves the popover and History leaves out the 5-hour lines that could only stay empty.
 - With only Ultra accounts, the menu bar title was empty and the *Bars + 5h · 7d* style showed nothing.
   The title now shows the weekly window when no account has a five-hour one, under a single bar.
 - A proxy that stopped answering still read as up.

@@ -19,7 +19,7 @@ func testConfiguration(accounts: [AccountRecord], port: Int = 0, probe: Int = 0,
     return c
 }
 
-func oauthAccount(_ label: String, rank: Int = 0, enabled: Bool = true, plan: Plan = .max(multiplier: 20), claudeID: String? = nil, expiresIn: TimeInterval = 3600) -> AccountRecord {
+func oauthAccount(_ label: String, rank: Int = 0, enabled: Bool = true, plan: Plan = .ultra, claudeID: String? = nil, expiresIn: TimeInterval = 3600) -> AccountRecord {
     AccountRecord(id: AccountID(rawValue: "id-\(label)"), label: label, rank: rank, enabled: enabled, plan: plan, claudeAccountID: claudeID,
                   credential: .oauth(OAuthTokens(access: "token-\(label)", refresh: "refresh-\(label)", expiresAt: Date().addingTimeInterval(expiresIn))))
 }
@@ -45,7 +45,7 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(s.accounts.map(\.label), ["bob", "alice"])
         XCTAssertEqual(s.label(s.current), "alice", "the lowest rank is preferred")
         XCTAssertEqual(s.next, s.current)
-        XCTAssertEqual(s.accounts[1].plan.badge, "Max 20x")
+        XCTAssertEqual(s.accounts[1].plan.badge, "Ultra")
         XCTAssertTrue(s.accounts.allSatisfy { $0.blocker == nil })
     }
 
@@ -124,7 +124,8 @@ final class EngineTests: XCTestCase {
         await engine.seedDemoWindows()
         try await engine.update { $0.rotation.switchAt = 0.9 }
         let s = await engine.state()
-        XCTAssertNotNil(s.accounts[0].windows[.session], "windows survive a config change")
+        XCTAssertNotNil(s.accounts[0].windows[.weekly], "windows survive a config change")
+        XCTAssertTrue(s.accounts[0].sessionless, "and so does knowing the account has no five-hour limit")
     }
 
     func testAStoredObservationKeepsASpentAccountOutOfTheFirstRequest() async throws {

@@ -69,8 +69,13 @@ enum IconRenderer {
                 fg.withAlphaComponent(fillAlpha).setFill()
                 f.fill()
             }
-            bar(y: top, fill: model.fiveHour)
-            bar(y: bottom, fill: model.weekly)
+            if model.fiveHour == nil, model.weekly != nil {
+                // No five-hour window anywhere: one bar for the week, where the two would sit.
+                bar(y: (top + bottom) / 2, fill: model.weekly)
+            } else {
+                bar(y: top, fill: model.fiveHour)
+                bar(y: bottom, fill: model.weekly)
+            }
             if model.state == .critical {
                 fg.setFill()
                 NSBezierPath(ovalIn: NSRect(x: 16, y: rect.height - 4.5, width: 4, height: 4)).fill()

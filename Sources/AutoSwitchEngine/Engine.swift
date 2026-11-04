@@ -293,7 +293,12 @@ public actor Engine {
             let s = samples[i % samples.count]
             let week = now.addingTimeInterval(Double(86_400 * (i + 1) + 5_000))
             // Session resets chosen so the demo shows one window that keeps pace and one that runs ahead of the clock.
-            runtime[i].windows[.session] = WindowReading(used: s.0, resetsAt: now.addingTimeInterval(Double(11_880 + i * 3_420)), seenAt: now)
+            // An Ultra account shows what a verified one reports: no five-hour window at all.
+            if runtime[i].record.plan == .ultra {
+                runtime[i].windows.sessionless = true
+            } else {
+                runtime[i].windows[.session] = WindowReading(used: s.0, resetsAt: now.addingTimeInterval(Double(11_880 + i * 3_420)), seenAt: now)
+            }
             runtime[i].windows[.weekly] = WindowReading(used: s.1, resetsAt: week, seenAt: now)
             runtime[i].windows[.weeklyFable] = WindowReading(used: s.2, resetsAt: week, seenAt: now)
             runtime[i].windows[.weeklySonnet] = WindowReading(used: s.3, resetsAt: week, seenAt: now)

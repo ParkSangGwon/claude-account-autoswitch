@@ -26,7 +26,7 @@
 
 ## El problema
 
-**Un solo plan Max de $200 ya no basta, así que pagas dos o tres.**<br>
+**Un solo plan Ultra de $200 ya no basta, así que pagas dos o tres.**<br>
 Así es como se ve desde dentro.
 
 #### El freelance con dos planes Max
@@ -55,7 +55,7 @@ Eso es medio día perdido cada mes.
 
 **¿Te suena?**
 
-- [ ] Pagas más de un plan Max.
+- [ ] Pagas más de un plan Max o Ultra.
 - [ ] Un mensaje de límite te manda directo al navegador.
 - [ ] A veces olvidas en qué cuenta está una terminal.
 - [ ] Abres una terminal solo para ver cuánto queda.
@@ -137,21 +137,25 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
 
 - **Un elemento de la barra de menús que se lee como uso.**
   - `1h12m 42%` es la ventana de 5 horas de todas las cuentas: el tiempo hasta que se reinicia y después cuánto se ha usado. Las barras de debajo son la de 5 horas y la semanal.
+  - Si ninguna cuenta tiene ventana de 5 horas, como en los planes Ultra verificados, el título muestra la ventana semanal bajo una sola barra.
   - Naranja cuando una barra va por delante de su ventana, rojo en el umbral de cambio o cuando nada puede servir.
   - `→ par` durante seis segundos tras una rotación, `—` cuando el proxy no está escuchando.
 - **Todas las cuentas de un vistazo.**
   - Barras de sesión, semanal y por familia (Fable, Sonnet), con el número y el reinicio bajo cada una.
   - Nivel, prioridad, cuentas atrás de limitación y las sesiones fijadas a la cuenta.
+  - Los planes con el nombre que Claude les da ahora: Pro, Max, Ultra y Team.
+  - Un plan Ultra verificado no tiene límite de 5 horas: su celda de sesión muestra `∞`, y la columna desaparece cuando ninguna cuenta lo tiene.
   - Un menú por fila: usar como actual, activar, omitir un rato, prioridad, eliminar.
 - **Adónde va la siguiente petición, y por qué.**
   - El motivo de la cuenta anterior, una prioridad mejor o "se queda en ted".
 - **Totales de todas las cuentas y la línea de tiempo de reinicios.**
-  - Agregados ponderados por nivel que solo cuentan las cuentas que aún pueden usar la ventana.
+  - Agregados ponderados por nivel (Pro 1, Max 5, Ultra 10) que solo cuentan las cuentas que aún pueden usar la ventana.
   - Cada reinicio de ventana que se acerca, con `↑` en los que devuelven una cuenta a la rotación.
 - **Ventanas que corren con el reloj, no desde que te sientas.**
   - Claude empieza una ventana de 5 horas con tu primera petición, así que una tocada a las 16:30 corre hasta las 21:30 y el día cabe menos de las que podría.
   - *Mantener abierta la ventana de 5 horas*, en el popover bajo la línea de reinicios, abre la siguiente ventana de cada cuenta en cuanto se reinicia la anterior.
   - Está desactivado hasta que lo pidas, porque la petición sale con tu cuenta, y un Mac que estuvo dormido abre un reinicio que se durmió en menos de un minuto tras despertar.
+  - Una cuenta sin límite de 5 horas, como un plan Ultra verificado, no tiene ventana que abrir y se omite.
 - **Rotación que cubre los casos reales.**
   - Un 429 que nombra una ventana cerrada limita la cuenta durante su retry-after.
   - Un 429 de límite por minuto con un retry-after de 30 s o menos se espera en la misma cuenta, para que la sesión conserve su caché de prompts.
@@ -172,7 +176,7 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
   - `⌃⌥⌘T` abre el panel emergente.
 - **Notificaciones con sentido.**
   - Umbrales de todas las cuentas, una rotación con su motivo, una cuenta que sale o vuelve a la rotación.
-  - Una cuenta que necesita iniciar sesión de nuevo, el sondeo fallando, una retención, facturación de excedente.
+  - Una cuenta que necesita iniciar sesión de nuevo, el sondeo fallando, una retención, créditos de uso gastándose.
   - Páusalas durante una hora.
 - **Siete días de historial.**
   - Una muestra por minuto mientras la app se ejecuta: sparklines de todas las cuentas y una franja de estado por cuenta, guardadas localmente.
@@ -201,6 +205,7 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
 | `1h12m 42%` | La ventana de 5 horas de todas las cuentas se reinicia en 1h12m y está al 42% de uso. Las barras de debajo son la de 5 horas (arriba) y la semanal (abajo). |
 | `ted 1h12m 42%` | Fijado a la cuenta actual (Ajustes → General): su etiqueta de tres letras encabeza el título. |
 | `1h12m 42% · 3d12h 61%` | El estilo *Barras + 5h · 7d*: también la ventana semanal. |
+| `3d12h 61%` | Ninguna cuenta tiene ventana de 5 horas (planes Ultra verificados): la ventana semanal, bajo una sola barra. |
 | `1h12m 93%!` | Crítico: en el umbral de cambio, o nada puede servir. |
 | `→ par` | Acaba de ocurrir una rotación; se muestra durante seis segundos. |
 | `—` | El proxy no está escuchando (normalmente el puerto está ocupado) o dejó de responder. |
@@ -225,6 +230,7 @@ Borra la carpeta de la app y la confianza se va con ella, sin dejar nada en el l
 - Dentro de una misma prioridad, una cuenta cuya semana se reinicia más de una hora antes toma el relevo de la que está en uso.
 - Una cuenta elegida con *Usar como actual* conserva el tráfico hasta que ya no puede aceptar solicitudes.
 - Se salta cualquier cuenta desactivada, limitada, en su tope de uso, en error o en su umbral para la familia de modelos de la petición.
+- Una petición de Fable se salta las cuentas Pro, donde Fable se paga con créditos de uso, salvo que ninguna otra pueda atenderla.
 - Las cabeceras `anthropic-ratelimit-*` de cada respuesta mantienen al día las ventanas de cada cuenta.
 - Un sondeo en segundo plano del endpoint de uso rellena las inactivas.
 - Los tokens se refrescan cinco minutos antes de caducar.

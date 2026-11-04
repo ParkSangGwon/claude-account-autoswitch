@@ -183,7 +183,8 @@ struct PopoverView: View {
 
     @ViewBuilder
     private func fleetCard(_ state: EngineState, now: Date) -> some View {
-        let known = Fleet.total(state, .session)?.knownAccounts ?? 0
+        // Accounts with no five-hour limit report only the week, so it is the week that counts who is known.
+        let known = max(Fleet.total(state, .session)?.knownAccounts ?? 0, Fleet.total(state, .weekly)?.knownAccounts ?? 0)
         let unweighed = Fleet.unweighed(state).count
         VStack(alignment: .leading, spacing: 6) {
             SectionHeader(title: L("Fleet"), trailing: L("weighted by tier · %d/%d known", known, state.accounts.count) + (unweighed == 0 ? "" : " · " + L("%d without a tier", unweighed)))

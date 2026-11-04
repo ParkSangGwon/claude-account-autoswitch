@@ -79,15 +79,15 @@ final class FleetTests: XCTestCase {
 
     func testTotalsAreWeightedByPlan() throws {
         let s = Fixture.state([
-            Fixture.account("big", plan: .max(multiplier: 20), session: 0.5, weekly: 0.2),
+            Fixture.account("big", plan: .ultra, session: 0.5, weekly: 0.2),
             Fixture.account("small", plan: .pro, session: 1.0, weekly: 0.8),
             Fixture.account("off", enabled: false, session: 1.0, blocker: .switchedOff),
             Fixture.account("mystery", plan: .unknown, session: 1.0),
         ])
         let five = try XCTUnwrap(Fleet.total(s, .session))
-        XCTAssertEqual(five.used, (20 * 0.5 + 1 * 1.0) / 21, accuracy: 1e-9)
+        XCTAssertEqual(five.used, (10 * 0.5 + 1 * 1.0) / 11, accuracy: 1e-9)
         XCTAssertEqual(five.knownAccounts, 2)
-        XCTAssertEqual(five.capacity, 21)
+        XCTAssertEqual(five.capacity, 11)
         XCTAssertEqual(Fleet.unweighed(s).map(\.label), ["mystery"])
         XCTAssertNil(Fleet.total(s, .weeklyFable))
     }

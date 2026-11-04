@@ -26,7 +26,7 @@
 
 ## Das Problem
 
-**Ein Max-Plan für $200 reicht nicht mehr, also zahlen Sie für zwei oder drei.**<br>
+**Ein Ultra-Plan für $200 reicht nicht mehr, also zahlen Sie für zwei oder drei.**<br>
 So sieht das von innen aus.
 
 #### Der Freelancer mit zwei Max-Plänen
@@ -55,7 +55,7 @@ Das ist jeden Monat ein halber Tag, der einfach weg ist.
 
 **Kommt Ihnen das bekannt vor?**
 
-- [ ] Sie zahlen für mehr als einen Max-Plan.
+- [ ] Sie zahlen für mehr als einen Max- oder Ultra-Plan.
 - [ ] Eine Limit-Meldung schickt Sie direkt in den Browser.
 - [ ] Sie vergessen manchmal, auf welchem Konto ein Terminal gerade läuft.
 - [ ] Sie öffnen ein Terminal, nur um zu sehen, wie viel noch übrig ist.
@@ -137,21 +137,25 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
 
 - **Ein Menüleisten-Element, das sich als Verbrauch liest.**
   - `1h12m 42%` ist das 5-Stunden-Fenster aller Konten: Zeit bis zur Zurücksetzung, dann wie viel verbraucht ist. Die Balken darunter sind 5 Stunden und Woche.
+  - Hat kein Konto ein 5-Stunden-Fenster, wie bei verifizierten Ultra-Plänen, zeigt der Titel das Wochenfenster unter einem einzigen Balken.
   - Orange, wenn ein Balken seinem Fenster vorausläuft, rot am Wechsel-Schwellenwert oder wenn nichts bedienen kann.
   - `→ par` für sechs Sekunden bei einer Rotation, `—`, wenn der Listener aus ist.
 - **Jedes Konto auf einen Blick.**
   - Sitzungs-, Wochen- und Modellfamilien-Balken (Fable, Sonnet), mit Zahl und Zurücksetzung darunter.
   - Stufe, Priorität, Drossel-Countdowns und die an das Konto angehefteten Sitzungen.
+  - Pläne so, wie Claude sie heute nennt: Pro, Max, Ultra und Team.
+  - Ein verifizierter Ultra-Plan hat kein 5-Stunden-Limit: Seine Sitzungszelle zeigt `∞`, und die Spalte entfällt, wenn kein Konto eines hat.
   - Ein Zeilenmenü: Als aktuell festlegen, Aktivieren, Eine Weile überspringen, Priorität, Entfernen.
 - **Wohin die nächste Anfrage geht, und warum.**
   - Der Grund des alten Kontos, eine bessere Priorität oder „bleibt bei ted“.
 - **Summen aller Konten und die Zeitleiste der Zurücksetzungen.**
-  - Nach Stufe gewichtete Aggregate, die nur Konten zählen, die das Fenster noch nutzen können.
+  - Nach Stufe gewichtete Aggregate (Pro 1, Max 5, Ultra 10), die nur Konten zählen, die das Fenster noch nutzen können.
   - Jede kommende Fenster-Zurücksetzung, mit `↑` bei denen, die ein Konto zurückbringen.
 - **Fenster, die nach der Uhr laufen und nicht danach, wann Sie sich hinsetzen.**
   - Claude startet ein 5-Stunden-Fenster mit Ihrer ersten Anfrage, ein um 16:30 angefasstes läuft also bis 21:30 und der Tag fasst weniger davon, als er könnte.
   - *5-Stunden-Fenster offen halten* im Popover unter der Zeitleiste der Zurücksetzungen öffnet das nächste Fenster jedes Kontos, sobald das letzte zurückgesetzt wird.
   - Es ist aus, bis Sie es verlangen, denn die Anfrage geht über Ihr Konto raus, und ein Mac, der geschlafen hat, öffnet ein verschlafenes Zurücksetzen binnen einer Minute nach dem Aufwachen.
+  - Ein Konto ohne 5-Stunden-Limit, etwa ein verifizierter Ultra-Plan, hat kein Fenster zu öffnen und wird übersprungen.
 - **Rotation, die die echten Fälle abdeckt.**
   - Ein 429, das ein geschlossenes Fenster nennt, drosselt das Konto für sein Retry-After.
   - Ein Minuten-429 mit einem Retry-After von höchstens 30 s wird auf demselben Konto abgewartet, damit die Sitzung ihren Prompt-Cache behält.
@@ -172,7 +176,7 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
   - `⌃⌥⌘T` öffnet das Popover.
 - **Mitteilungen, die etwas bedeuten.**
   - Schwellenwerte aller Konten, eine Rotation mit ihrem Grund, ein Konto, das die Rotation verlässt oder zurückkehrt.
-  - Eine nötige erneute Anmeldung, eine fehlschlagende Abfrage, eine Sperre, Abrechnung von Mehrverbrauch.
+  - Eine nötige erneute Anmeldung, eine fehlschlagende Abfrage, eine Sperre, verbrauchtes Nutzungsguthaben.
   - Pausieren Sie sie für eine Stunde.
 - **Sieben Tage Verlauf.**
   - Ein Messwert pro Minute, solange die App läuft: Sparklines aller Konten und ein Zustandsstreifen pro Konto, lokal gehalten.
@@ -201,6 +205,7 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
 | `1h12m 42%` | Das 5-Stunden-Fenster aller Konten wird in 1h12m zurückgesetzt und ist zu 42% verbraucht. Die Balken darunter sind 5 Stunden (oben) und Woche (unten). |
 | `ted 1h12m 42%` | An das aktuelle Konto angeheftet (Einstellungen → Allgemein): seine dreistellige Kennung steht vorn. |
 | `1h12m 42% · 3d12h 61%` | Der Stil *Balken + 5h · 7d*: dazu das Wochenfenster. |
+| `3d12h 61%` | Kein Konto hat ein 5-Stunden-Fenster (verifizierte Ultra-Pläne): das Wochenfenster unter einem einzigen Balken. |
 | `1h12m 93%!` | Kritisch: am Wechsel-Schwellenwert, oder nichts kann bedienen. |
 | `→ par` | Gerade ist eine Rotation passiert; sechs Sekunden lang angezeigt. |
 | `—` | Der Listener ist aus (meist ist der Port belegt) oder antwortet nicht mehr. |
@@ -225,6 +230,7 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
 - Innerhalb einer Priorität übernimmt ein Konto, dessen Woche mehr als eine Stunde früher zurückgesetzt wird, vom gerade genutzten Konto.
 - Ein mit *Als aktuell festlegen* gewähltes Konto behält den Verkehr, bis es keine Anfragen mehr annehmen kann.
 - Übersprungen wird jedes Konto, das deaktiviert, gedrosselt, an der Obergrenze, im Fehlerzustand oder für die Modellfamilie der Anfrage an seinem Schwellenwert ist.
+- Eine Fable-Anfrage überspringt Pro-Konten, auf denen Fable mit Nutzungsguthaben bezahlt wird, außer kein anderes Konto kann sie annehmen.
 - Die `anthropic-ratelimit-*`-Header jeder Antwort halten die Fenster jedes Kontos aktuell.
 - Eine Hintergrundabfrage des Usage-Endpunkts füllt die inaktiven auf.
 - Tokens werden fünf Minuten vor Ablauf aufgefrischt.

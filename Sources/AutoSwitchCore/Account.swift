@@ -10,38 +10,77 @@ public struct AccountID: RawRepresentable, Hashable, Codable, Sendable, CustomSt
 
 /// The subscription behind an account, reduced to what rotation and the fleet total care about.
 public enum Plan: Codable, Sendable, Equatable, Hashable {
-    case max(multiplier: Int)
     case pro
+    case max
+    case ultra
     case team(multiplier: Int)
     case unknown
 
-    /// Claude's own words for the plan, as the profile endpoint reports them.
+    /// Claude's own words for the plan, as the profile endpoint reports them. Ultra still reports
+    /// the `max_20x` tier it replaced, so the multiplier is what tells Max and Ultra apart.
     public init(tierText: String?, seatText: String?) {
         let tier = (tierText ?? "").lowercased()
-        let team = (seatText ?? "").lowercased().hasPrefix("team")
         let multiplier: Int? = tier.contains("20x") ? 20 : tier.contains("5x") ? 5 : nil
-        if let multiplier { self = team ? .team(multiplier: multiplier) : .max(multiplier: multiplier); return }
-        if team { self = .team(multiplier: 1); return }
-        if tier.contains("pro") || tier.contains("default") { self = .pro; return }
+        if (seatText ?? "").lowercased().hasPrefix("team") { self = .team(multiplier: multiplier ?? 1); return }
+        if tier.contains("ultra") || multiplier == 20 { self = .ultra; return }
+        if multiplier == 5 { self = .max; return }
+        if tier.contains("pro") || tier == "default" { self = .pro; return }
         self = .unknown
     }
 
-    /// How much one account counts for in the fleet total: a Max 20x plan is twenty Pro plans.
+    /// How much one account counts for in the fleet total, in Pro plans of weekly allowance.
     public var weight: Int? {
         switch self {
-        case .max(let m): return m
-        case .team(let m): return m
         case .pro: return 1
+        case .max: return 5
+        case .ultra: return 10
+        case .team(let m): return m
         case .unknown: return nil
         }
     }
 
     public var badge: String {
         switch self {
-        case .max(let m): return "Max \(m)x"
-        case .team(let m): return m > 1 ? "Team \(m)x" : "Team"
         case .pro: return "Pro"
+        case .max: return "Max"
+        case .ultra: return "Ultra"
+        case .team(let m): return m > 1 ? "Team \(m)x" : "Team"
         case .unknown: return L("tier ?")
+        }
+    }
+
+    /// Pro meters no Fable in the plan: every Fable request there is paid for in usage credits.
+    public var includesFable: Bool { self != .pro }
+
+    private enum CodingKeys: String, CodingKey { case pro, max, ultra, team, unknown }
+    private enum MultiplierKeys: String, CodingKey { case multiplier }
+
+    /// A config written before Max and Ultra stores `{"max":{"multiplier":20}}` for what is Ultra now.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        guard let key = c.allKeys.first else {
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "no plan"))
+        }
+        func multiplier() -> Int? { try? c.nestedContainer(keyedBy: MultiplierKeys.self, forKey: key).decodeIfPresent(Int.self, forKey: .multiplier) }
+        switch key {
+        case .pro: self = .pro
+        case .max: self = (multiplier() ?? 5) >= 20 ? .ultra : .max
+        case .ultra: self = .ultra
+        case .team: self = .team(multiplier: multiplier() ?? 1)
+        case .unknown: self = .unknown
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .pro: _ = c.nestedContainer(keyedBy: MultiplierKeys.self, forKey: .pro)
+        case .max: _ = c.nestedContainer(keyedBy: MultiplierKeys.self, forKey: .max)
+        case .ultra: _ = c.nestedContainer(keyedBy: MultiplierKeys.self, forKey: .ultra)
+        case .team(let m):
+            var n = c.nestedContainer(keyedBy: MultiplierKeys.self, forKey: .team)
+            try n.encode(m, forKey: .multiplier)
+        case .unknown: _ = c.nestedContainer(keyedBy: MultiplierKeys.self, forKey: .unknown)
         }
     }
 }

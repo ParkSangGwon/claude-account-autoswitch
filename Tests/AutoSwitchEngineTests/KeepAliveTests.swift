@@ -72,6 +72,19 @@ final class KeepAliveTests: XCTestCase {
         XCTAssertEqual(fake.pings, [], "spent week, switched off, held aside, and an API key with no five-hour window")
     }
 
+    /// A verified Ultra plan has no five-hour window, so there is nothing to open — a ping every
+    /// retry gap would only spend the account's week.
+    func testAnAccountWithNoFiveHourLimitIsNeverPinged() async throws {
+        let fake = FakeAnthropic(); try await fake.start(); defer { Task { await fake.stop() } }
+        var none = windows(weekly: (0.2, 86_400))
+        none.sessionless = true
+        let engine = try engine([oauthAccount("ultra")], observed: [AccountID(rawValue: "id-ultra"): none])
+        try await engine.load()
+        await engine.keepSessionsOpen()
+        await engine.keepSessionsOpen(now: Date().addingTimeInterval(Engine.keepAliveRetry + 1))
+        XCTAssertEqual(fake.pings, [])
+    }
+
     func testAFailedTryIsNotRepeatedEveryTick() async throws {
         let fake = FakeAnthropic(); try await fake.start(); defer { Task { await fake.stop() } }
         fake.pingStatus = 500

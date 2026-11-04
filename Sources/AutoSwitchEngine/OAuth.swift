@@ -68,6 +68,8 @@ enum OAuth {
         var scopedWeekly: [String: (utilization: Double?, resetAt: Date?)]
         /// Nil when the reply carried neither `extra_usage` nor `spend`: it said nothing about billing.
         var overage: Overage? = nil
+        /// The week was read and the five hours were not there at all: a plan with no five-hour limit.
+        var noFiveHour = false
     }
 
     static func authorizeURL(redirectURI: String, pkce: PKCE) -> URL {
@@ -212,7 +214,10 @@ enum OAuth {
             if let name = limit["scope"]["model"]["display_name"].string?.lowercased(), !name.isEmpty { scoped[name] = bucket(limit) }
         }
         if scoped["sonnet"] == nil, j["seven_day_sonnet"].object != nil { scoped["sonnet"] = bucket(j["seven_day_sonnet"]) }
-        return Usage(fiveHour: bucket(j["five_hour"]), sevenDay: bucket(j["seven_day"]), scopedWeekly: scoped, overage: parseOverage(j))
+        let sevenDay = bucket(j["seven_day"])
+        // A `five_hour` object without a number is a reading that failed, not a limit that is gone.
+        let noFiveHour = j["five_hour"].object == nil && sevenDay.utilization != nil
+        return Usage(fiveHour: bucket(j["five_hour"]), sevenDay: sevenDay, scopedWeekly: scoped, overage: parseOverage(j), noFiveHour: noFiveHour)
     }
 
     /// `extra_usage.is_enabled`, not `spend.enabled`: an org can have overage while this account is out of credits or opted out.

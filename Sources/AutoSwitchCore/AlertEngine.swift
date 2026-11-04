@@ -213,7 +213,7 @@ public enum AlertEngine {
         }
         s.allOut = hold
 
-        // First billable overage seen this month, per account.
+        // First usage credits spent this month, per account.
         let month = Calendar.current.dateComponents([.year, .month], from: inputs.now)
         let monthKey = "\(month.year ?? 0)-\(month.month ?? 0)"
         for a in st.accounts {
@@ -222,7 +222,7 @@ public enum AlertEngine {
             if !s.spendSeen.contains(key) {
                 s.spendSeen.append(key)
                 if !seeding, prefs.spend {
-                    emit(Alert(kind: .spend, id: key, title: L("%@ is billing overage", a.label), body: L("%@ used this month", Format.money(minor: used, currency: o.currency, exponent: o.exponent)), sound: false))
+                    emit(Alert(kind: .spend, id: key, title: L("%@ is spending usage credits", a.label), body: L("%@ used this month", Format.money(minor: used, currency: o.currency, exponent: o.exponent)), sound: false))
                 }
             }
         }

@@ -64,16 +64,19 @@ final class SettingsCatalogTests: XCTestCase {
         XCTAssertEqual(SettingsCatalog.accountValue(plan, in: r), .string("unknown"))
         XCTAssertNil(r.plan.weight, "an unknown plan is left out of the fleet total")
 
-        try SettingsCatalog.applyAccount(plan, value: .string("max20"), to: &r)
-        XCTAssertEqual(r.plan, .max(multiplier: 20))
-        XCTAssertEqual(r.plan.weight, 20)
+        XCTAssertEqual(SettingsCatalog.planKeys, ["unknown", "pro", "max", "ultra", "team"])
+        try SettingsCatalog.applyAccount(plan, value: .string("ultra"), to: &r)
+        XCTAssertEqual(r.plan, .ultra)
+        XCTAssertEqual(r.plan.weight, 10)
         XCTAssertNil(r.planText, "Claude's own words no longer describe what this says")
-        XCTAssertEqual(SettingsCatalog.accountValue(plan, in: r), .string("max20"))
+        XCTAssertEqual(SettingsCatalog.accountValue(plan, in: r), .string("ultra"))
 
-        for (key, expected) in [("pro", Plan.pro), ("max5", .max(multiplier: 5)), ("team", .team(multiplier: 1)), ("unknown", .unknown)] {
+        for (key, expected) in [("pro", Plan.pro), ("max", .max), ("team", .team(multiplier: 1)), ("unknown", .unknown)] {
             try SettingsCatalog.applyAccount(plan, value: .string(key), to: &r)
             XCTAssertEqual(r.plan, expected)
+            XCTAssertEqual(SettingsCatalog.accountValue(plan, in: r), .string(key))
         }
+        XCTAssertThrowsError(try SettingsCatalog.applyAccount(plan, value: .string("max20"), to: &r), "the old picker keys are gone")
         XCTAssertThrowsError(try SettingsCatalog.applyAccount(plan, value: .string("platinum"), to: &r))
     }
 

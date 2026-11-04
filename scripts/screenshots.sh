@@ -22,10 +22,10 @@ unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
 cat > "$TMP/config.json" <<JSON
 { "version": 1, "listen": { "port": $PORT },
   "accounts": [
-    { "id": "a1", "label": "ted", "rank": 0, "enabled": true, "plan": { "max": { "multiplier": 20 } },
+    { "id": "a1", "label": "ted", "rank": 0, "enabled": true, "plan": { "ultra": {} },
       "organization": { "name": "Example Org", "id": "org-1" },
       "credential": { "oauth": { "_0": { "access": "x", "refresh": "y" } } } },
-    { "id": "b2", "label": "ParkSangGwon", "rank": 1, "enabled": true, "plan": { "max": { "multiplier": 20 } },
+    { "id": "b2", "label": "ParkSangGwon", "rank": 1, "enabled": true, "plan": { "max": {} },
       "organization": { "name": "Example Org", "id": "org-1" },
       "credential": { "oauth": { "_0": { "access": "x", "refresh": "y" } } } } ] }
 JSON

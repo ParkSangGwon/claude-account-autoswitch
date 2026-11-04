@@ -92,6 +92,9 @@ public struct Windows: Codable, Sendable, Equatable {
     /// The upstream flagged the account's unified status as rejected; forgotten after half an hour.
     public var refusedAt: Date?
     public static let refusalTTL: TimeInterval = 1800
+    /// The usage endpoint reports no five-hour window for this account at all. Optional so
+    /// observations saved before it existed still load.
+    public var sessionless: Bool?
 
     public init() {}
 
@@ -104,10 +107,13 @@ public struct Windows: Codable, Sendable, Equatable {
 
     public var isRefused: Bool { refusedAt != nil }
 
+    public var isSessionless: Bool { sessionless == true }
+
     /// Forget every window whose reset has passed, so a stale number never keeps an account out.
     public mutating func sweep(now: Date) {
         for (kind, r) in readings where r.resetsAt.map({ $0 <= now }) ?? false { readings.removeValue(forKey: kind) }
-        if readings[.session] == nil { refusedAt = nil }
+        // Without a five-hour window there is no reset to carry the refusal away, only the TTL.
+        if readings[.session] == nil, !isSessionless { refusedAt = nil }
         if let at = refusedAt, now.timeIntervalSince(at) > Windows.refusalTTL { refusedAt = nil }
         if let at = metersResetAt, at <= now { tokens = nil; requests = nil; metersResetAt = nil }
     }

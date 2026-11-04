@@ -89,7 +89,7 @@ final class EngineAccountsTests: XCTestCase {
         let s = await engine.state()
         XCTAssertEqual(s.accounts.map(\.label), ["alice@example.com"])
         XCTAssertEqual(s.accounts.first?.organization?.name, "Example Org")
-        XCTAssertEqual(s.accounts.first?.plan, .max(multiplier: 20))
+        XCTAssertEqual(s.accounts.first?.plan, .ultra)
         let onDisk = try engine.store.load().accounts[0]
         XCTAssertEqual(onDisk.credential, .oauth(OAuthTokens(access: "at-exchanged", refresh: "rt-exchanged", expiresAt: onDisk.credential.oauthExpiry)))
         XCTAssertEqual(onDisk.claudeAccountID, "acct-1")
@@ -204,10 +204,36 @@ final class EngineAccountsTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(w[.weekly]?.used), 0.61, accuracy: 1e-9)
         XCTAssertEqual(try XCTUnwrap(w[.weeklyFable]?.used), 0.88, accuracy: 1e-9)
         XCTAssertNil(s.accounts[0].probe?.error)
-        XCTAssertEqual(s.accounts[0].plan, .max(multiplier: 20), "the probe fetched the profile for an account without a plan")
-        XCTAssertEqual(try engine.store.load().accounts[0].plan, .max(multiplier: 20))
+        XCTAssertEqual(s.accounts[0].plan, .ultra, "the probe fetched the profile for an account without a plan")
+        XCTAssertEqual(try engine.store.load().accounts[0].plan, .ultra)
         XCTAssertEqual(try XCTUnwrap(Fleet.total(s, .session)?.used), 0.42, accuracy: 1e-9)
         XCTAssertNotNil(s.probe.lastFinishedAt)
+    }
+
+    /// A verified Ultra plan reports `five_hour: null`: the account loses its five-hour reading and
+    /// is marked as having none, and an account that gets the limit back loses the mark again.
+    func testProbeMarksAnAccountWithNoFiveHourLimit() async throws {
+        let fake = FakeAnthropic(); try await fake.start(); defer { Task { await fake.stop() } }
+        let engine = try freshEngine(accounts: [oauthAccount("a")], probe: 300)
+        try await engine.load()
+        await engine.probeNow()
+        let limited = await engine.state()
+        XCTAssertFalse(limited.accounts[0].sessionless)
+        XCTAssertNotNil(limited.accounts[0].windows[.session])
+
+        fake.usageBilling = ["five_hour": .null]
+        await engine.probeNow()
+        let verified = await engine.state()
+        XCTAssertTrue(verified.accounts[0].sessionless)
+        XCTAssertNil(verified.accounts[0].windows[.session], "the old five-hour reading goes with the limit")
+        XCTAssertEqual(try XCTUnwrap(verified.accounts[0].windows[.weekly]?.used), 0.61, accuracy: 1e-9)
+        XCTAssertNil(Fleet.total(verified, .session))
+
+        fake.usageBilling = [:]
+        await engine.probeNow()
+        let back = await engine.state()
+        XCTAssertFalse(back.accounts[0].sessionless)
+        XCTAssertNotNil(back.accounts[0].windows[.session])
     }
 
     func testProbeCarriesOverageToTheSpendAlert() async throws {

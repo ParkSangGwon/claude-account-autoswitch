@@ -31,7 +31,7 @@ final class ConfigurationTests: XCTestCase {
         var c = Configuration.defaults
         c.rotation.switchAtByWindow = [.weekly: 0.9]
         c.accounts = [
-            AccountRecord(label: "ted", rank: 1, enabled: false, cap: .perWindow([.session: 0.5]), plan: .max(multiplier: 20), planText: "default_claude_max_20x",
+            AccountRecord(label: "ted", rank: 1, enabled: false, cap: .perWindow([.session: 0.5]), plan: .ultra, planText: "default_claude_max_20x",
                           organization: Organization(name: "Org", id: "org-1"), claudeAccountID: "acct-1",
                           credential: .oauth(OAuthTokens(access: "at", refresh: "rt", expiresAt: Date(timeIntervalSince1970: 1_800_000_000)))),
             AccountRecord(label: "key", credential: .apiKey("sk-ant-api03-x")),
@@ -42,6 +42,23 @@ final class ConfigurationTests: XCTestCase {
         let text = String(decoding: data, as: UTF8.self)
         XCTAssertTrue(text.contains("\"switchAtByWindow\""))
         XCTAssertFalse(text.contains("unified5h"), "no wire-format names leak into the document")
+    }
+
+    /// A config written before Max and Ultra stored the multiplier; 20x is what became Ultra.
+    func testOldMaxPlansReadAsTheirNewNames() throws {
+        func plan(_ json: String) throws -> Plan { try Configuration.decoder().decode(Plan.self, from: Data(json.utf8)) }
+        XCTAssertEqual(try plan(#"{"max":{"multiplier":20}}"#), .ultra)
+        XCTAssertEqual(try plan(#"{"max":{"multiplier":5}}"#), .max)
+        XCTAssertEqual(try plan(#"{"max":{}}"#), .max)
+        XCTAssertEqual(try plan(#"{"ultra":{}}"#), .ultra)
+        XCTAssertEqual(try plan(#"{"pro":{}}"#), .pro)
+        XCTAssertEqual(try plan(#"{"team":{"multiplier":5}}"#), .team(multiplier: 5))
+        XCTAssertEqual(try plan(#"{"unknown":{}}"#), .unknown)
+        for p in [Plan.pro, .max, .ultra, .team(multiplier: 5), .unknown] {
+            XCTAssertEqual(try Configuration.decoder().decode(Plan.self, from: Configuration.encoder().encode(p)), p)
+        }
+        let written = String(decoding: try Configuration.encoder().encode(Plan.ultra), as: UTF8.self)
+        XCTAssertTrue(written.contains("\"ultra\""), "a plan is written under its new name: \(written)")
     }
 
     func testMissingSectionsTakeDefaults() throws {

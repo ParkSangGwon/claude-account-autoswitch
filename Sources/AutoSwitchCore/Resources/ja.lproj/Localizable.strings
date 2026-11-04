@@ -6,7 +6,7 @@
 "%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ は別のアプリが既に使っているため、ここでは動作しません。あちらで解放してから、このスイッチをオフにして入れ直してください。";
 "%@ is available" = "%@ が利用できます";
 "%@ is back in rotation" = "%@ がローテーションに復帰";
-"%@ is billing overage" = "%@ は超過利用を課金中";
+"%@ is spending usage credits" = "%@ は使用クレジットを消費中";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the setup file follows it." = "%@ がこのポートを使っています。そのプログラムを終了して再試行するか、このプロキシを空きポートに移してください — 設定ファイルもそれに追従します。";
 "%@ is not the shape the app expects" = "%@ の形式がアプリの想定と異なります";
 "%@ left rotation" = "%@ がローテーションを離脱";
@@ -204,8 +204,8 @@
 "Open Terminal with Claude Code" = "ターミナルで Claude Code を開く";
 "Opening the browser for sign-in…" = "サインインのためブラウザを開いています…";
 "Opens your browser for the same sign-in Claude Code uses; the app waits up to two minutes for the callback." = "Claude Code と同じサインインをブラウザで開きます。アプリはコールバックを最大 2 分待ちます。";
-"Overage %@ this month" = "今月の超過利用 %@";
-"Overage billing started" = "超過利用の課金が開始";
+"Usage credits %@ this month" = "今月の使用クレジット %@";
+"An account started spending usage credits" = "アカウントが使用クレジットの消費を開始";
 "Pause Notifications for 1 Hour" = "通知を 1 時間停止";
 "Pause for 1 hour" = "1 時間停止";
 "Paused until %@" = "%@ まで停止中";
@@ -368,8 +368,8 @@
 "listening" = "待ち受け中";
 "manual" = "手動";
 "max %@" = "最大 %@";
-"max20" = "Max 20x";
-"max5" = "Max 5x";
+"max" = "Max";
+"ultra" = "Ultra";
 "min %@" = "最小 %@";
 "next" = "次";
 "next in %@" = "次は %@ 後";
@@ -479,7 +479,7 @@
 "Valid until" = "有効期限";
 "For anything that runs the binary directly and lets you name it — an editor, a launcher — point it at this instead of `claude`." = "バイナリを直接実行し、そのパスを指定できるもの — エディタやランチャー — では、`claude` の代わりにこれを指定してください。";
 "Keep the 5-hour window open" = "5時間ウィンドウを開いたままにする";
-"Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking." = "各アカウントの5時間ウィンドウがリセットされた瞬間に、ごく小さなリクエストを1件送ります。次のウィンドウが次に作業を始めた時刻ではなく、時計どおりに進みます。ユーザーのアカウントで送信するため、既定はオフです。スリープ中のMacは送信できず、眠っている間に過ぎたリセットは復帰から1分以内に開きます。";
+"Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking. An account with no five-hour limit, such as a verified Ultra plan, has no window to open and is skipped." = "各アカウントの5時間ウィンドウがリセットされた瞬間に、ごく小さなリクエストを1件送ります。次のウィンドウが次に作業を始めた時刻ではなく、時計どおりに進みます。ユーザーのアカウントで送信するため、既定はオフです。スリープ中のMacは送信できず、眠っている間に過ぎたリセットは復帰から1分以内に開きます。認証済みの Ultra プランのように5時間の上限がないアカウントは、開くウィンドウがないためスキップします。";
 "Window keep-alive" = "ウィンドウ維持";
 "Could not open a window: %@" = "ウィンドウを開けませんでした: %@";
 "Off — a window starts when you send your first request." = "オフ — 最初のリクエストを送った時点でウィンドウが始まります。";
@@ -487,3 +487,4 @@
 "On — opened a window %@ ago." = "オン — %@ 前にウィンドウを開きました。";
 "Listening, but not answering" = "待ち受け中ですが応答がありません";
 "The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener." = "ポートは開いていますが、数秒以内に状態確認の応答がありません。このプロキシを通る Claude Code のセッションも止まっています。再試行を押すとリスナーを再起動します。";
+"No 5-hour limit" = "5時間の上限なし";

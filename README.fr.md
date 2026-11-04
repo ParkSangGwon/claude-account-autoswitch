@@ -26,7 +26,7 @@
 
 ## Le problème
 
-**Un seul forfait Max à $200 ne suffit plus, alors vous en payez deux ou trois.**<br>
+**Un seul forfait Ultra à $200 ne suffit plus, alors vous en payez deux ou trois.**<br>
 Voici à quoi ça ressemble de l'intérieur.
 
 #### Le freelance aux deux forfaits Max
@@ -55,7 +55,7 @@ Soit une demi-journée perdue chaque mois.
 
 **Ça vous parle ?**
 
-- [ ] Vous payez plus d'un forfait Max.
+- [ ] Vous payez plus d'un forfait Max ou Ultra.
 - [ ] Un message de limite vous envoie tout droit dans le navigateur.
 - [ ] Il vous arrive d'oublier sur quel compte est un terminal.
 - [ ] Vous ouvrez un terminal juste pour voir ce qu'il reste.
@@ -137,21 +137,25 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
 
 - **Un élément de barre des menus qui se lit comme un usage.**
   - `1h12m 42%` est la fenêtre 5 heures de tous les comptes : le temps avant sa réinitialisation, puis la part utilisée. Les barres en dessous sont 5 heures et hebdomadaire.
+  - Quand aucun compte n'a de fenêtre de 5 heures, comme avec les forfaits Ultra vérifiés, le titre affiche la fenêtre hebdomadaire sous une seule barre.
   - Orange quand une barre devance sa fenêtre, rouge au seuil de bascule ou quand rien ne peut servir.
   - `→ par` pendant six secondes lors d'une rotation, `—` quand l'écoute est arrêtée.
 - **Chaque compte d'un coup d'œil.**
   - Barres Session, Hebdomadaire et par famille (Fable, Sonnet), avec le nombre et la réinitialisation sous chacune.
   - Palier, priorité, comptes à rebours de bridage et les sessions épinglées sur le compte.
+  - Les forfaits sous le nom que Claude leur donne aujourd'hui : Pro, Max, Ultra et Team.
+  - Un forfait Ultra vérifié n'a pas de limite de 5 heures : sa cellule de session affiche `∞`, et la colonne disparaît quand aucun compte n'en a.
   - Un menu par ligne : définir comme compte actuel, activer, ignorer un moment, priorité, retirer.
 - **Où va la prochaine requête, et pourquoi.**
   - La raison de l'ancien compte, une meilleure priorité, ou « reste sur ted ».
 - **Totaux de tous les comptes et chronologie des réinitialisations.**
-  - Agrégats pondérés par palier qui ne comptent que les comptes pouvant encore utiliser la fenêtre.
+  - Agrégats pondérés par palier (Pro 1, Max 5, Ultra 10) qui ne comptent que les comptes pouvant encore utiliser la fenêtre.
   - Chaque prochaine réinitialisation de fenêtre, avec `↑` sur celles qui remettent un compte en rotation.
 - **Des fenêtres qui suivent l'horloge, pas l'heure à laquelle vous vous installez.**
   - Claude démarre une fenêtre de 5 heures à votre première requête : une fenêtre touchée à 16h30 court donc jusqu'à 21h30, et la journée en contient moins qu'elle ne le pourrait.
   - *Garder la fenêtre de 5 heures ouverte*, dans le popover sous la chronologie des réinitialisations, ouvre la fenêtre suivante de chaque compte dès que la précédente se réinitialise.
   - C'est désactivé tant que vous ne le demandez pas, car la requête part avec votre compte, et un Mac qui a dormi ouvre une réinitialisation manquée dans la minute qui suit le réveil.
+  - Un compte sans limite de 5 heures, comme un forfait Ultra vérifié, n'a pas de fenêtre à ouvrir et est ignoré.
 - **Une rotation qui gère les cas réels.**
   - Un 429 qui nomme une fenêtre fermée bride le compte pour la durée de son retry-after.
   - Un 429 de limite par minute dont le retry-after ne dépasse pas 30 s est attendu sur le même compte, pour que la session garde son cache de prompt.
@@ -172,7 +176,7 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
   - `⌃⌥⌘T` ouvre le panneau.
 - **Des notifications qui ont un sens.**
   - Seuils de tous les comptes, une rotation avec sa raison, un compte qui quitte la rotation ou y revient.
-  - Une reconnexion nécessaire, la sonde en échec, une mise en attente, la facturation du dépassement.
+  - Une reconnexion nécessaire, la sonde en échec, une mise en attente, des crédits d'utilisation consommés.
   - Suspendez-les pendant une heure.
 - **Sept jours d'historique.**
   - Un échantillon par minute tant que l'app tourne : sparklines de tous les comptes et bande d'état par compte, conservés localement.
@@ -201,6 +205,7 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
 | `1h12m 42%` | La fenêtre 5 heures de tous les comptes se réinitialise dans 1h12m et est utilisée à 42 %. Les barres en dessous sont 5 heures (haut) et hebdomadaire (bas). |
 | `ted 1h12m 42%` | Épinglé sur le compte actuel (Réglages → Général) : son tag à trois lettres ouvre le titre. |
 | `1h12m 42% · 3d12h 61%` | Le style *Barres + 5h · 7d* : la fenêtre hebdomadaire aussi. |
+| `3d12h 61%` | Aucun compte n'a de fenêtre de 5 heures (forfaits Ultra vérifiés) : la fenêtre hebdomadaire, sous une seule barre. |
 | `1h12m 93%!` | Critique : au seuil de bascule, ou rien ne peut servir. |
 | `→ par` | Une rotation vient d'avoir lieu ; affiché pendant six secondes. |
 | `—` | L'écoute est arrêtée (en général le port est occupé) ou ne répond plus. |
@@ -225,6 +230,7 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
 - À priorité égale, un compte dont la semaine se réinitialise plus d'une heure plus tôt prend le relais du compte en cours.
 - Un compte choisi avec *Définir comme compte actuel* garde le trafic jusqu'à ce qu'il ne puisse plus accepter de requêtes.
 - Tout compte désactivé, bridé, au plafond, en erreur, ou à son seuil pour la famille de modèle de la requête est sauté.
+- Une requête Fable évite les comptes Pro, où Fable se paie en crédits d'utilisation, sauf si aucun autre compte ne peut la prendre.
 - Les en-têtes `anthropic-ratelimit-*` de chaque réponse maintiennent à jour les fenêtres de chaque compte.
 - Une sonde en arrière-plan de l'endpoint d'usage complète les comptes inactifs.
 - Les jetons sont rafraîchis cinq minutes avant leur expiration.

@@ -6,7 +6,7 @@
 "%@ is already taken by another app, so it does nothing here. Free it there, then switch this off and on again." = "%@ ya lo usa otra app, así que aquí no hace nada. Libéralo allí y luego apaga y enciende este interruptor.";
 "%@ is available" = "%@ disponible";
 "%@ is back in rotation" = "%@ vuelve a la rotación";
-"%@ is billing overage" = "Excedente facturado en %@";
+"%@ is spending usage credits" = "%@ está gastando créditos de uso";
 "%@ is listening on this port. Quit it and try again, or move this proxy to a free port — the setup file follows it." = "%@ está escuchando en este puerto. Ciérralo y vuelve a intentarlo, o mueve este proxy a un puerto libre: el archivo de configuración lo sigue.";
 "%@ is not the shape the app expects" = "%@ no tiene la forma que la aplicación espera";
 "%@ left rotation" = "%@ salió de la rotación";
@@ -204,8 +204,8 @@
 "Open Terminal with Claude Code" = "Abrir Terminal con Claude Code";
 "Opening the browser for sign-in…" = "Abriendo el navegador para iniciar sesión…";
 "Opens your browser for the same sign-in Claude Code uses; the app waits up to two minutes for the callback." = "Abre el navegador con el mismo inicio de sesión que usa Claude Code; la app espera la respuesta hasta dos minutos.";
-"Overage %@ this month" = "Excedente %@ este mes";
-"Overage billing started" = "Empezó la facturación de excedente";
+"Usage credits %@ this month" = "Créditos de uso %@ este mes";
+"An account started spending usage credits" = "Una cuenta empezó a gastar créditos de uso";
 "Pause Notifications for 1 Hour" = "Pausar notificaciones durante 1 hora";
 "Pause for 1 hour" = "Pausar durante 1 hora";
 "Paused until %@" = "En pausa hasta %@";
@@ -368,8 +368,8 @@
 "listening" = "escuchando";
 "manual" = "manual";
 "max %@" = "máx %@";
-"max20" = "Max 20x";
-"max5" = "Max 5x";
+"max" = "Max";
+"ultra" = "Ultra";
 "min %@" = "mín %@";
 "next" = "siguiente";
 "next in %@" = "siguiente en %@";
@@ -479,7 +479,7 @@
 "Valid until" = "Válido hasta";
 "For anything that runs the binary directly and lets you name it — an editor, a launcher — point it at this instead of `claude`." = "Para cualquier cosa que ejecute el binario directamente y te deje indicar la ruta —un editor, un lanzador—, apúntala aquí en lugar de a `claude`.";
 "Keep the 5-hour window open" = "Mantener abierta la ventana de 5 horas";
-"Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking." = "Envía una petición mínima en cada cuenta en cuanto se reinicia su ventana de cinco horas, para que la siguiente ventana corra con el reloj en lugar de empezar cuando vuelvas a sentarte. Desactivado por defecto: la petición sale con tu cuenta. Un Mac dormido no puede enviarla, y un reinicio que se durmió se abre en menos de un minuto tras despertar.";
+"Send one tiny request on each account as its five-hour window resets, so the next window runs on the clock instead of starting when you next sit down. Off by default: the request goes out on your account. A sleeping Mac cannot send it, and a reset it slept through is opened within a minute of waking. An account with no five-hour limit, such as a verified Ultra plan, has no window to open and is skipped." = "Envía una petición mínima en cada cuenta en cuanto se reinicia su ventana de cinco horas, para que la siguiente ventana corra con el reloj en lugar de empezar cuando vuelvas a sentarte. Desactivado por defecto: la petición sale con tu cuenta. Un Mac dormido no puede enviarla, y un reinicio que se durmió se abre en menos de un minuto tras despertar. Una cuenta sin límite de 5 horas, como un plan Ultra verificado, no tiene ventana que abrir y se omite.";
 "Window keep-alive" = "Mantenimiento de la ventana";
 "Could not open a window: %@" = "No se pudo abrir una ventana: %@";
 "Off — a window starts when you send your first request." = "Desactivado — la ventana empieza cuando envías tu primera petición.";
@@ -487,3 +487,4 @@
 "On — opened a window %@ ago." = "Activado — se abrió una ventana hace %@.";
 "Listening, but not answering" = "Escuchando, pero sin responder";
 "The port is open but the health check got no answer within a few seconds, so Claude Code sessions going through it are stuck too. Try again restarts the listener." = "El puerto está abierto, pero la comprobación de estado no obtuvo respuesta en unos segundos, así que las sesiones de Claude Code que pasan por él también están bloqueadas. Reintentar reinicia el listener.";
+"No 5-hour limit" = "Sin límite de 5 horas";

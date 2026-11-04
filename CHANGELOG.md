@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-05
+
 ### Changed
 
 - Within a priority, the account whose weekly window resets soonest now takes the traffic over from the account in use, instead of only breaking ties when rotation had to pick afresh. Rotation used to stay on whichever account it had landed on while that account could serve, so a same-priority account whose week reset days earlier sat idle and its allowance was lost at the reset. The move happens when the other week resets more than an hour sooner, so two accounts whose weeks reset together do not trade places — and the prompt cache — over a reading that moved by a second. Running sessions move too. An account set with **Make current** is left alone until it can no longer take requests, and the choice survives a restart; once another account has taken over, the soonest reset leads again.
@@ -139,7 +141,8 @@ First public release.
 - Seven languages: English, 한국어, 日本語, 简体中文, Español, Deutsch, Français.
 - Homebrew cask (`ParkSangGwon/tap/claude-autoswitch`) and GitHub releases.
 
-[Unreleased]: https://github.com/ParkSangGwon/claude-account-autoswitch/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/ParkSangGwon/claude-account-autoswitch/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.5.0
 [0.4.1]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.4.1
 [0.4.0]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.4.0
 [0.3.1]: https://github.com/ParkSangGwon/claude-account-autoswitch/releases/tag/v0.3.1

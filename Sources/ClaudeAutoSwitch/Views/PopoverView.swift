@@ -27,7 +27,7 @@ struct PopoverView: View {
                         accounts(state, now: now)
                         // One account: the fleet is that account, already in the row above.
                         if state.accounts.count > 1 { fleetCard(state, now: now) }
-                        keepAliveCard(state, now: now)
+                        if state.hasFiveHourLimit { keepAliveCard(state, now: now) }
                         let rows = Explain.targets(state)
                         if !rows.isEmpty { targets(rows, state: state) }
                         sessions(state, now: now)

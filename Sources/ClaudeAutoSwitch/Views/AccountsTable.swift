@@ -18,7 +18,7 @@ struct AccountsTable: View {
     var families: [Family] { Family.allCases.filter { f in state.accounts.contains { $0.windows[f.window] != nil } } }
 
     /// The session column goes when no account has a five-hour window to show; an API key uses it for tokens.
-    var showsSession: Bool { state.accounts.contains { $0.kind == .apiKey || !$0.sessionless } }
+    var showsSession: Bool { state.hasFiveHourLimit || state.accounts.contains { $0.kind == .apiKey } }
 
     /// Whatever the window columns do not need goes to the name.
     var nameWidth: CGFloat {

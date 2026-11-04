@@ -155,7 +155,7 @@ Supprimez le dossier de l’app et la confiance disparaît avec lui, sans rien l
   - Claude démarre une fenêtre de 5 heures à votre première requête : une fenêtre touchée à 16h30 court donc jusqu'à 21h30, et la journée en contient moins qu'elle ne le pourrait.
   - *Garder la fenêtre de 5 heures ouverte*, dans le popover sous la chronologie des réinitialisations, ouvre la fenêtre suivante de chaque compte dès que la précédente se réinitialise.
   - C'est désactivé tant que vous ne le demandez pas, car la requête part avec votre compte, et un Mac qui a dormi ouvre une réinitialisation manquée dans la minute qui suit le réveil.
-  - Un compte sans limite de 5 heures, comme un forfait Ultra vérifié, n'a pas de fenêtre à ouvrir et est ignoré.
+  - Un compte sans limite de 5 heures, comme un forfait Ultra vérifié, n'a pas de fenêtre à ouvrir et est ignoré ; s'il n'y a que de tels comptes, l'interrupteur quitte le popover et les courbes de 5 heures quittent l'historique.
 - **Une rotation qui gère les cas réels.**
   - Un 429 qui nomme une fenêtre fermée bride le compte pour la durée de son retry-after.
   - Un 429 de limite par minute dont le retry-after ne dépasse pas 30 s est attendu sur le même compte, pour que la session garde son cache de prompt.

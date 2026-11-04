@@ -155,7 +155,7 @@ Delete the app's folder and the trust is gone with it, leaving nothing behind in
   - Claude starts a 5-hour window at your first request, so one entered at 16:30 runs to 21:30 and the day holds fewer of them than it could.
   - *Keep the 5-hour window open*, in the popover under the reset timeline, opens each account's next window the moment the last one resets.
   - It is off until you ask for it, because the request goes out on your account, and a Mac that was asleep opens a reset it slept through within a minute of waking.
-  - An account with no 5-hour limit, such as a verified Ultra plan, has no window to open and is skipped.
+  - An account with no 5-hour limit, such as a verified Ultra plan, has no window to open and is skipped; with only such accounts, the switch leaves the popover and the 5-hour lines leave the history.
 - **Rotation that handles the real cases.**
   - A 429 that names a closed window throttles the account for its retry-after.
   - A per-minute 429 whose retry-after is 30 s or less is waited out on the same account, so the session keeps its prompt cache.

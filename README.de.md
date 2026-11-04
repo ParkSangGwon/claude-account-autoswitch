@@ -155,7 +155,7 @@ Löschen Sie den Ordner der App, verschwindet damit auch das Vertrauen, und im S
   - Claude startet ein 5-Stunden-Fenster mit Ihrer ersten Anfrage, ein um 16:30 angefasstes läuft also bis 21:30 und der Tag fasst weniger davon, als er könnte.
   - *5-Stunden-Fenster offen halten* im Popover unter der Zeitleiste der Zurücksetzungen öffnet das nächste Fenster jedes Kontos, sobald das letzte zurückgesetzt wird.
   - Es ist aus, bis Sie es verlangen, denn die Anfrage geht über Ihr Konto raus, und ein Mac, der geschlafen hat, öffnet ein verschlafenes Zurücksetzen binnen einer Minute nach dem Aufwachen.
-  - Ein Konto ohne 5-Stunden-Limit, etwa ein verifizierter Ultra-Plan, hat kein Fenster zu öffnen und wird übersprungen.
+  - Ein Konto ohne 5-Stunden-Limit, etwa ein verifizierter Ultra-Plan, hat kein Fenster zu öffnen und wird übersprungen; gibt es nur solche Konten, verschwindet der Schalter aus dem Popover und die 5-Stunden-Kurven aus dem Verlauf.
 - **Rotation, die die echten Fälle abdeckt.**
   - Ein 429, das ein geschlossenes Fenster nennt, drosselt das Konto für sein Retry-After.
   - Ein Minuten-429 mit einem Retry-After von höchstens 30 s wird auf demselben Konto abgewartet, damit die Sitzung ihren Prompt-Cache behält.

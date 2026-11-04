@@ -109,6 +109,7 @@ Once a minute — or exactly at the next reset, when that is sooner — it looks
 The reply's `anthropic-ratelimit-*` headers are absorbed like any other, so the new window and its reset are known immediately; the request itself is the proof that the window opened.
 An account that cannot take a request anyway is left alone: disabled, held by `skipUntil`, capped, cooling down, needing a login, or with its week spent, since a fresh five hours behind a spent week is five hours nobody can use.
 So is an account with no five-hour limit, which has no window to open.
+When every subscription account is like that, the popover drops the switch, and History drops the fleet's 5-hour line along with each such account's own.
 A try that opened nothing is not repeated for five minutes.
 The request does not go through the rotation: no session is pinned to the account, the current account does not move, and the account's traffic counters stay a record of what the client sent.
 

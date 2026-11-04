@@ -194,6 +194,9 @@ public struct EngineState: Sendable, Equatable {
         }.map(\.element)
     }
 
+    /// Some subscription still has a five-hour limit, which is all keep-alive and the 5-hour history are for.
+    public var hasFiveHourLimit: Bool { accounts.contains { $0.kind == .subscription && !$0.sessionless } }
+
     /// Every account is out: requests will wait or come back 429.
     public var isExhausted: Bool { !accounts.isEmpty && accounts.allSatisfy { $0.blocker != nil } }
 
